@@ -5,7 +5,7 @@
 ## Usage
 
 ```
-$ ./bin/nailed -h
+$ nailed -h
 Options:
       --migrate, -m:   Set database to pristine state
       --upgrade, -u:   Upgrade database
