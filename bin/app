@@ -18,12 +18,12 @@ class App < Sinatra::Base
   register Sinatra::AssetPack
 
   assets {
-    serve '/js',     from: '../public/js'
-    serve '/css',    from: '../public/css'
+    serve '/js',     from: '../public/vendor/js'
+    serve '/css',    from: '../public/vendor/css'
     serve '/images', from: '../public/images'
 
     js :foundation, '/js/foundation.min.js', [
-      '/js/vendor/*.js',
+      '/js/external/*.js',
       '/js/foundation/foundation.js',
       '/js/foundation/*.js'
     ]
