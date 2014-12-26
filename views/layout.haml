@@ -1,0 +1,49 @@
+!!!
+%html
+  %head
+    != css :foundation, :media => 'screen'
+    != css :morris, :media => 'screen'
+    %meta{:charset => "utf-8"}
+    %meta{:name => "viewport", :content => "width=device-width, initial-scale=1.0"}
+    %title Dashboard
+    %link{:href => "/images/favicon.ico", :rel => "shortcut icon"}
+  %body
+    .off-canvas-wrap{:data => {'offcanvas' => true}}
+      .inner-wrap
+        -# Mobile and Desktop devices
+        %nav.tab-bar
+          %section
+            %a.left-off-canvas-toggle.menu-icon
+              %span
+          %section.middle.tab-bar-section
+            %h1.title
+              %a{:href => '/',:style => "color:white"} Dashboard
+    
+        %aside.left-off-canvas-menu
+          %ul.off-canvas-list
+            %li
+              %a{:href => '/'}Home
+            %li 
+              %label Bugzilla
+            - @products.each do |product|
+              %li
+                %a{:href => "/#{product.gsub(/ /,'_')}/bugzilla"} #{product}
+            %li
+              %label GitHub
+            - @components.each do |component|
+              %li
+                %a{:href => "/github/#{component}"} #{component}
+
+        %a.exit-off-canvas
+        = yield
+    :javascript
+      $(document).ready(function(){
+        var timer;
+
+        $(window).resize(function() {
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+                $('.inner-wrap').css("min-height", $(window).height() + "px" );
+            }, 40);
+        }).resize();
+      });

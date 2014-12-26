@@ -1,0 +1,142 @@
+#!/usr/bin/env ruby
+
+require 'sinatra/base'
+require 'sinatra/assetpack'
+require 'haml'
+require 'json'
+require 'time'
+require File.join(File.expand_path("..", File.dirname(__FILE__)),"lib","nailed")
+require  File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
+
+class App < Sinatra::Base
+  ROOT_PATH = File.join(File.expand_path("..", File.dirname(__FILE__)))
+  self.set :root, File.join(ROOT_PATH, "lib")
+  set :public_folder, File.join(ROOT_PATH, "public")
+  set :views, File.join(ROOT_PATH, "views")
+  set :bind, '0.0.0.0'
+
+  register Sinatra::AssetPack
+
+  assets {
+    serve '/js',     from: '../public/js'
+    serve '/css',    from: '../public/css'
+    serve '/images', from: '../public/images'
+
+    js :foundation, '/js/foundation.min.js', [
+      '/js/vendor/*.js',
+      '/js/foundation/foundation.js',
+      '/js/foundation/*.js'
+    ]
+    js :morris, '/js/morris.min.js', [
+      '/js/morris/morris.js',
+      '/js/morris/raphael.js'
+    ]
+
+    css :foundation, '/css/foundation.min.css', [
+      '/css/foundation.css',
+      '/css/normalize.css'
+    ]
+    css :morris, '/css/morris.min.js', [
+      '/css/morris.css'
+    ]
+
+    js_compression  :jsmin
+    css_compression :simple
+  }
+
+  components = Pullrequest.all(:order => [:created_at.desc]).map(&:crowbar_component).uniq
+
+  def get_trends(action, item)
+    case action
+    when :bug
+      trend = Bugtrend.all(:product_name => item)
+    when :pull
+      trend = Pulltrend.all(:crowbar_component => item)
+    when :l3
+      trend = L3Trend.all
+    end
+    trend_clone = trend.clone
+    begin
+      interval = (trend.length/20.0).round
+      last_iter_open = trend.first.open
+      trend.each do |bt|
+        if trend.index(bt) % interval != 0
+          if bt != trend.last
+            if bt.open == last_iter_open
+              trend_clone.delete(bt)
+            end
+          end
+        else
+          next
+        end
+        last_iter_open = bt.open
+      end
+    rescue ZeroDivisionError
+    end
+    trend_clone.to_json
+  end
+
+  # define sinatra routes
+  get '/' do
+    @products = Nailed::PRODUCTS["products"]
+    @product_query = Nailed::PRODUCTS["products"].join('&product=')
+    @components = components
+    @allpulls = repository(:default).adapter.select('SELECT COUNT(crowbar_component) AS open,
+                                                                  crowbar_component AS label
+                                                     FROM pullrequests
+                                                     GROUP BY crowbar_component')
+    @l3trend = get_trends :l3, nil
+
+    @pulltop = []
+    @allpulls.each do |donut_bite|
+      @pulltop << {label: donut_bite.label, value: donut_bite.open}
+    end
+    @pulltop = @pulltop.to_json
+    @bugtop = []
+    Product.all.each do |p|
+      @bugtop << {label: p.name, value: Bugreport.count(:product_name => p.name, :is_open => true)}
+    end
+    @bugtop = @bugtop.to_json
+
+    haml :index
+  end
+
+  Nailed::PRODUCTS["products"].each do |product|
+    get "/#{product.gsub(/ /,'_')}/bugzilla" do
+      @product = product
+      @products = Nailed::PRODUCTS["products"]
+      @components = components
+
+      @bugtrend = get_trends :bug, product
+      @allbugs = Bugreport.all(:product_name => product).to_json
+      @allopenbugs = (Bugreport.all(:product_name => product, :is_open => true) -
+                      Bugreport.all(:product_name => product, :whiteboard.like => "%openL3%", :is_open => true)).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
+      @allopenl3bugs = (Bugreport.all(:product_name => product, :is_open => true, :whiteboard.like => "%openL3%")).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
+      @bugprio = []
+      {"P1 - Urgent" => "p1",
+       "P2 - High" => "p2",
+       "P3 - Medium" => "p3",
+       "P4 - Low" => "p4",
+       "P5 - None" => "p5"}.each_pair do |key,val|
+         @bugprio << {"bugprio" => key, val => Bugreport.count(:product_name => product, :priority => key, :is_open => true)}
+      end
+      @bugprio = @bugprio.to_json
+      haml :bugzilla
+    end
+  end
+
+  components.each do |component|
+    get "/github/#{component}" do
+      @component = component
+      @products = Nailed::PRODUCTS["products"]
+      @components = components
+
+      @allpulls = Pullrequest.all(:crowbar_component => component).sort! {|a,b| b.pr_number <=> a.pr_number}
+      @pulltrend = get_trends :pull, component
+
+      haml :github
+    end
+  end
+
+  run! if app_file == $0
+end

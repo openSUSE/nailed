@@ -1,0 +1,63 @@
+!!!
+%section.main-section
+  .row
+    %h1.title
+      #{@component}
+  .row
+    %span Pull Request Trend
+    .large-12.columns
+      #pull_trend
+  .row
+    %span Pull Requests
+    .large-12.columns
+      %ul
+        - @allpulls.each do |pull|
+          %li
+            %a{:href => "#{pull.url}", :target => "_blank", :creation_time => "#{Time.parse(pull.created_at.to_s).to_i}"} #{pull.pr_number} -- #{pull.title}
+
+!= js :foundation
+!= js :morris
+
+:javascript
+  $(document).foundation();
+  $(document).ready(function(){
+    var colors = ['#B39DDB','#9FA8DA','#90CAF9','#81D4FA','#80DEEA','#80CBC4','#A5D6A7','#C5E1A5','#E6EE9C','#FFF59D','#FFE082','#FFCC80','#FFAB91','#BCAAA4','#EEEEEE'].reverse();
+    // GitHub
+    new Morris.Line({
+      element: 'pull_trend',
+      data: #{@pulltrend},
+      xkey: 'time',
+      ykeys: ['open'],
+      labels: ['Open'],
+      resize: true,
+      hideHover: true,
+      smooth: false,
+      continuousLine: true,
+      lineColors: ["#4CAF50"],
+      hoverCallback: function (index, options, content, row) {
+        return content;
+      }
+    }).on('click', function(i, row){
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
+        jQuery.noop();
+      else
+        window.open("https://github.com/crowbar/"+row.crowbar_component+"/pulls");
+    });
+    $("[creation_time]").each(function (index, value){
+      var one_week = 604800;
+      var two_weeks = 1209600;
+      var one_month = 2629743;
+      var now = Math.round((new Date()).getTime() / 1000);
+      var then = $(this).attr("creation_time");
+      var diff = now - then;
+      if (diff < one_week) {
+        $(value).css("color","#212121").attr('title', 'last change < one week');
+      } else if (diff < two_weeks) {
+        $(value).css("color","#E57373").attr('title', 'last change < two weeks');
+      } else if (diff < one_month) {
+        $(value).css("color","#C62828").attr('title', 'last change < one month');
+      } else {
+        $(value).css("color","#D50000").attr('title', 'last change > one month');
+      }
+    });
+  });

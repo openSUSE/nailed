@@ -1,11 +1,11 @@
 ## What is nailed?
 
-`nailed` is a back-end CLI for data collection and (soon to be) sinatra based web front-end for visualization of relevant development data of the SUSE Cloud Product.
+`nailed` consists of a back-end CLI for data collection and a sinatra based web front-end for visualization of relevant development data of the SUSE Cloud Product.
 
 ## Usage
 
 ```
-$ nailed -h
+$ ./bin/nailed -h
 Options:
       --migrate, -m:   Set database to pristine state
       --upgrade, -u:   Upgrade database
@@ -15,6 +15,7 @@ Options:
      --bugzilla, -b:   Refresh bugzilla database records
        --github, -g:   Refresh github database records
            --l3, -l:   Refresh l3 trend database records
+       --server, -s:   Start a dashboard webinterface
          --help, -h:   Show this message
 ```
 
@@ -30,7 +31,3 @@ machine api.github.com
   password <your OAuth Token>
 ```
 * run `nailed -m` to setup the database
-
-## TODO
-
-* add option to start sinatra app to serve data in interactive charts

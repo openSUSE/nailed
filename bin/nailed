@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require "trollop"
-require "nailed"
+require File.join(File.expand_path("..", File.dirname(__FILE__)),"lib","nailed")
 require File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
 
 bugzilla_client = Nailed::Bugzilla.new
@@ -16,6 +16,20 @@ opts = Trollop::options do
   opt :bugzilla, "Refresh bugzilla database records", :short => 'b'
   opt :github, "Refresh github database records", :short => 'g'
   opt :l3, "Refresh l3 trend database records", :short => 'l'
+  opt :server, "Start a dashboard webinterface", :short => 's'
+end
+
+if opts[:server_given]
+  if Nailed::PRODUCTS["products"].first.nil?
+    abort("Add some data, there is nothing to be shown")
+  else
+    begin
+      `#{File.join(File.expand_path("..", File.dirname(__FILE__)),"bin","app")}`
+    rescue Interrupt
+      sleep 2
+      exit
+    end
+  end
 end
 
 opts.each_pair do |key,val|

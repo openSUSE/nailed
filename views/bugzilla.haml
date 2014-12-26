@@ -1,0 +1,110 @@
+!!!
+%section.main-section
+  .row
+    %h1.title
+      #{@product}
+  .row
+    .large-12.columns
+      %h5 Bug Trends
+      #bug_trend
+  .row
+    %hr
+    %br
+  .row
+    .large-12.columns
+      %h5 Bug Priorities
+      #bug_prio
+  .row
+    %hr
+    %br
+  .row
+    .large-12.columns
+      %h5 L3 List
+      %ul{:id => "l3list"}
+        - @allopenl3bugs.each do |l3|
+          %li
+            %a{:href => "#{l3.url}", :target => "_blank", :creation_time => "#{Time.parse(l3.creation_time.to_s).to_i}", :last_change_time => "#{Time.parse(l3.last_change_time.to_s).to_i}"} #{l3.bug_id} -- #{l3.summary}
+    %hr
+    .large-12.columns
+      %h5 Bug List
+    .large-12.columns
+      %ul{:id => "buglist"}
+        - @allopenbugs.each do |ob|
+          %li
+            %a{:href => "#{ob.url}", :target => "_blank", :creation_time => "#{Time.parse(ob.creation_time.to_s).to_i}", :last_change_time => "#{Time.parse(ob.last_change_time.to_s).to_i}"} #{ob.bug_id} -- #{ob.summary}
+
+!= js :foundation
+!= js :morris
+
+:javascript
+  $(document).foundation();
+  $(document).ready(function(){
+    var colors = ['#B39DDB','#9FA8DA','#90CAF9','#81D4FA','#80DEEA','#80CBC4','#A5D6A7','#C5E1A5','#E6EE9C','#FFF59D','#FFE082','#FFCC80','#FFAB91','#BCAAA4','#EEEEEE'].reverse();
+    // BugZilla
+    new Morris.Area({
+      element: 'bug_trend',
+      data: #{@bugtrend},
+      xkey: 'time',
+      ykeys: ['open', 'fixed'],
+      labels: ['Open', 'Fixed'],
+      resize: true,
+      fillOpacity: 0.5,
+      smooth: false,
+      hideHover: true,
+      lineColors: ["#42A5F5", "#D4E157"],
+      hoverCallback: function (index, options, content, row) {
+        return content;
+      }
+    }).on('click', function(i, row){
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
+        jQuery.noop();
+      else
+        window.open("https://bugzilla.suse.com/buglist.cgi?product=#{@product}&query_format=advanced&resolution=---");
+    });
+    new Morris.Bar({
+      element: 'bug_prio',
+      data: #{@bugprio},
+      xkey: 'bugprio',
+      ykeys: ['p1', 'p2', 'p3', 'p4', 'p5'],
+      labels: ['P1 - Urgent', 'P2 - High', 'P3 - Medium', 'P4 - Low', 'P5 - None'],
+      resize: true,
+      stacked: true,
+      hideHover: true,
+      barColors: colors,
+      hoverCallback: function (index, options, content, row) {
+        var ret = '';
+        if (typeof row.p1 !== "undefined")
+          return row.p1;
+        else if (typeof row.p2 !== "undefined")
+          return row.p2;
+        else if (typeof row.p3 !== "undefined")
+          return row.p3;
+        else if (typeof row.p4 !== "undefined")
+          return row.p4;
+        else if (typeof row.p5 !== "undefined")
+          return row.p5;
+      }
+    }).on('click', function(i, row){
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
+        jQuery.noop();
+      else
+        window.open("https://bugzilla.suse.com/buglist.cgi?order=Importance&priority="+row.bugprio+"&product=#{@product}&query_format=advanced&resolution=---");
+    });
+    $("[last_change_time]").each(function (index, value){
+      var one_week = 604800;
+      var two_weeks = 1209600;
+      var one_month = 2629743;
+      var now = Math.round((new Date()).getTime() / 1000);
+      var then = $(this).attr("last_change_time");
+      var diff = now - then;
+      if (diff < one_week) {
+        $(value).css("color","#212121").attr('title', 'last change < one week');
+      } else if (diff < two_weeks) {
+        $(value).css("color","#E57373").attr('title', 'last change < two weeks');
+      } else if (diff < one_month) {
+        $(value).css("color","#C62828").attr('title', 'last change < one month');
+      } else {
+        $(value).css("color","#D50000").attr('title', 'last change > one month');
+      }
+    });
+  });

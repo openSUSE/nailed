@@ -128,7 +128,8 @@ module Nailed
     end
 
     def update_pull_states
-      Pullrequest.all.each do |db_pull|
+      pulls = Pullrequest.all
+      pulls.each do |db_pull|
         number = db_pull.pr_number
         component = db_pull.crowbar_component
         github_pull = @client.pull_request("crowbar/#{component}", number)
@@ -150,6 +151,7 @@ module Nailed
     end
   end
 
+  # Generic methods
   def Nailed.log(level,msg)
     if level == "error"
       Nailed::LOGGER.error(msg)
