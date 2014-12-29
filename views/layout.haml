@@ -30,9 +30,9 @@
                 %a{:href => "/#{product.gsub(/ /,'_')}/bugzilla"} #{product}
             %li
               %label GitHub
-            - @components.each do |component|
+            - @github_repos.each do |repo|
               %li
-                %a{:href => "/github/#{component}"} #{component}
+                %a{:href => "/github/#{repo}"} #{repo}
 
         %a.exit-off-canvas
         = yield

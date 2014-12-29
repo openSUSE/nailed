@@ -44,95 +44,95 @@ class App < Sinatra::Base
     css_compression :simple
   }
 
-  components = Pullrequest.all(:order => [:created_at.desc]).map(&:crowbar_component).uniq
+  before do
+    @products = Nailed::PRODUCTS["products"].map{|p,v| v["versions"]}.flatten
+    @product_query = @products.join('&product=')
+    @github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+  end
 
-  def get_trends(action, item)
-    case action
-    when :bug
-      trend = Bugtrend.all(:product_name => item)
-    when :pull
-      trend = Pulltrend.all(:crowbar_component => item)
-    when :l3
-      trend = L3Trend.all
-    end
-    trend_clone = trend.clone
-    begin
-      interval = (trend.length/20.0).round
-      last_iter_open = trend.first.open
-      trend.each do |bt|
-        if trend.index(bt) % interval != 0
-          if bt != trend.last
-            if bt.open == last_iter_open
-              trend_clone.delete(bt)
-            end
-          end
-        else
-          next
-        end
-        last_iter_open = bt.open
+  helpers do
+    def get_trends(action, item)
+      case action
+      when :bug
+        trend = Bugtrend.all(:product_name => item)
+      when :pull
+        trend = Pulltrend.all(:repository_rname => item)
+      when :l3
+        trend = L3Trend.all
       end
-    rescue ZeroDivisionError
+      trend_clone = trend.clone
+      begin
+        interval = (trend.length/20.0).round
+        last_iter_open = trend.first.open
+        trend.each do |bt|
+          if trend.index(bt) % interval != 0
+            if bt != trend.last
+              if bt.open == last_iter_open
+                trend_clone.delete(bt)
+              end
+            end
+          else
+            next
+          end
+          last_iter_open = bt.open
+        end
+      rescue ZeroDivisionError
+      end
+      trend_clone.to_json
     end
-    trend_clone.to_json
   end
 
   # define sinatra routes
   get '/' do
-    @products = Nailed::PRODUCTS["products"]
-    @product_query = Nailed::PRODUCTS["products"].join('&product=')
-    @components = components
-    @allpulls = repository(:default).adapter.select('SELECT COUNT(crowbar_component) AS open,
-                                                                  crowbar_component AS label
-                                                     FROM pullrequests
-                                                     GROUP BY crowbar_component')
-    @l3trend = get_trends :l3, nil
+    @l3trend = get_trends(:l3, nil)
 
-    @pulltop = []
-    @allpulls.each do |donut_bite|
-      @pulltop << {label: donut_bite.label, value: donut_bite.open}
-    end
-    @pulltop = @pulltop.to_json
     @bugtop = []
-    Product.all.each do |p|
-      @bugtop << {label: p.name, value: Bugreport.count(:product_name => p.name, :is_open => true)}
+    Nailed::PRODUCTS["products"].each do |product,values|
+      values["versions"].each do |version|
+        p = Product.get(version)
+        open = Bugreport.count(:product_name => p.name, :is_open => true)
+        @bugtop << {label: p.name, value: open} unless open == 0
+      end
     end
     @bugtop = @bugtop.to_json
 
     haml :index
   end
 
-  Nailed::PRODUCTS["products"].each do |product|
-    get "/#{product.gsub(/ /,'_')}/bugzilla" do
-      @product = product
-      @products = Nailed::PRODUCTS["products"]
-      @components = components
+  Nailed::PRODUCTS["products"].each do |product,values|
+    values["versions"].each do |version|
+      get "/#{version.gsub(/ /,'_')}/bugzilla" do
+        @product = version
 
-      @bugtrend = get_trends :bug, product
-      @allbugs = Bugreport.all(:product_name => product).to_json
-      @allopenbugs = (Bugreport.all(:product_name => product, :is_open => true) -
-                      Bugreport.all(:product_name => product, :whiteboard.like => "%openL3%", :is_open => true)).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
-      @allopenl3bugs = (Bugreport.all(:product_name => product, :is_open => true, :whiteboard.like => "%openL3%")).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
-      @bugprio = []
-      {"P1 - Urgent" => "p1",
-       "P2 - High" => "p2",
-       "P3 - Medium" => "p3",
-       "P4 - Low" => "p4",
-       "P5 - None" => "p5"}.each_pair do |key,val|
-         @bugprio << {"bugprio" => key, val => Bugreport.count(:product_name => product, :priority => key, :is_open => true)}
+        @bugtrend = get_trends(:bug, version)
+        @allbugs = Bugreport.all(:product_name => version).to_json
+        @allopenbugs = (Bugreport.all(:product_name => version, :is_open => true) -
+                        Bugreport.all(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
+        @allopenl3bugs = (Bugreport.all(:product_name => version, :is_open => true, :whiteboard.like => "%openL3%")).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
+        @bugprio = []
+        {"P1 - Urgent" => "p1",
+         "P2 - High" => "p2",
+         "P3 - Medium" => "p3",
+         "P4 - Low" => "p4",
+         "P5 - None" => "p5"}.each_pair do |key,val|
+           @bugprio << {"bugprio" => key, val => Bugreport.count(:product_name => version, :priority => key, :is_open => true)}
+        end
+        @bugprio = @bugprio.to_json
+
+        haml :bugzilla
       end
-      @bugprio = @bugprio.to_json
-      haml :bugzilla
     end
   end
 
-  components.each do |component|
-    get "/github/#{component}" do
-      @component = component
-      @products = Nailed::PRODUCTS["products"]
-      @components = components
+  @github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+  @github_repos.each do |repo|
+    get "/github/#{repo}" do
+      @repo = repo
+      @org = Repository.get(repo).organization_oname
+      @github_url_all_pulls = "https://github.com/#{@org}/#{@repo}/pulls"
 
-      @allpulls = Pullrequest.all(:crowbar_component => component).sort! {|a,b| b.pr_number <=> a.pr_number}
-      @pulltrend = get_trends :pull, component
+      @allpulls = Pullrequest.all(:repository_rname => repo).sort! {|a,b| b.pr_number <=> a.pr_number}
+      @pulltrend = get_trends(:pull, repo)
 
       haml :github
     end

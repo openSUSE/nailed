@@ -11,69 +11,51 @@ module Nailed
 
   class Bugzilla
     def initialize
-      Bicho.client = Bicho::Client.new('https://bugzilla.novell.com')
+      Bicho.client = Bicho::Client.new(Nailed::PRODUCTS["bugzilla"]["url"])
     end
 
-    def get_bugs(product)
-      Bicho::Bug.where(:product => product).each do |bug|
-        attributes = {
-          :bug_id => bug.id,
-          :summary => bug.summary,
-          :status => bug.status,
-          :is_open => bug.is_open,
-          :product_name => bug.product,
-          :component => bug.component,
-          :severity => bug.severity,
-          :priority => bug.priority,
-          :whiteboard => bug.whiteboard,
-          :assigned_to => bug.assigned_to,
-          :creation_time => "#{bug.creation_time.to_date}T#{bug.creation_time.hour}:#{bug.creation_time.min}:#{bug.creation_time.sec}+00:00",
-          :last_change_time => "#{bug.last_change_time.to_date}T#{bug.last_change_time.hour}:#{bug.last_change_time.min}:#{bug.last_change_time.sec}+00:00",
-          :url => bug.url.gsub(/novell.com\//,'suse.com/show_bug.cgi?id=')
-        }
+    def get_bugs
+      Nailed::PRODUCTS["products"].each do |product,values|
+        values["versions"].each do |version|
+          Bicho::Bug.where(:product => version).each do |bug|
+            attributes = {
+              :bug_id => bug.id,
+              :summary => bug.summary,
+              :status => bug.status,
+              :is_open => bug.is_open,
+              :product_name => bug.product,
+              :component => bug.component,
+              :severity => bug.severity,
+              :priority => bug.priority,
+              :whiteboard => bug.whiteboard,
+              :assigned_to => bug.assigned_to,
+              :creation_time => "#{bug.creation_time.to_date}T#{bug.creation_time.hour}:#{bug.creation_time.min}:#{bug.creation_time.sec}+00:00",
+              :last_change_time => "#{bug.last_change_time.to_date}T#{bug.last_change_time.hour}:#{bug.last_change_time.min}:#{bug.last_change_time.sec}+00:00",
+              :url => bug.url.gsub(/novell.com\//,'suse.com/show_bug.cgi?id=')
+            }
 
-        db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
+            db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
+          end
+        end
       end
     end
 
-    def get_product(product)
-      prod = Product.get(product)
-      abort "No such product in the database" if prod.nil?
-    end
+    def write_bug_trends
+      Nailed::PRODUCTS["products"].each do |product,values|
+        values["versions"].each do |version|
+          open = Bugreport.count(:is_open => true, :product_name => version)
+          fixed = Bugreport.count(:status => "VERIFIED", :product_name => version) + \
+                  Bugreport.count(:status => "RESOLVED", :product_name => version)
+          db_handler = Bugtrend.first_or_create(
+                       :time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                       :open => open,
+                       :fixed => fixed,
+                       :product_name => version
+                       )
 
-    def add_product(product)
-      if Nailed.config(:get, "products", product)
-        Nailed.config(:add, "products", product)
-        db_handler = Product.first_or_create(:name => product)
-        Nailed.log("info", "#{product} added to the database")
-      else
-        Nailed.log("error", "#{product} is already in the database")
-        abort "#{product} is already in the database"
+          Nailed.save_state(db_handler)
+        end
       end
-
-      Nailed.save_state(db_handler)
-    end
-
-    def remove_product(product)
-      Nailed.config(:delete, "products", product)
-      Bugreport.all(:product_name => product).destroy
-      Bugtrend.all(:product_name => product).destroy
-      Product.get(product).destroy
-      Nailed.log("info", "#{product} removed from the database")
-    end
-
-    def write_bug_trends(product)
-      open = Bugreport.count(:is_open => true, :product_name => product)
-      fixed = Bugreport.count(:status => "VERIFIED", :product_name => product) + \
-              Bugreport.count(:status => "RESOLVED", :product_name => product)
-      db_handler = Bugtrend.first_or_create(
-                   :time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                   :open => open,
-                   :fixed => fixed,
-                   :product_name => product
-                   )
-
-      Nailed.save_state(db_handler)
     end
 
     def write_l3_trends
@@ -88,42 +70,41 @@ module Nailed
   end
 
   class Github
+    attr_reader :client
+
     def initialize
-      @client = Octokit::Client.new(:netrc => true)
-    end
-
-    def get_components(repo)
-      repos = @client.org_repos(repo)
-      components = repos.map(&:name)
-      components
-    end
-
-    def fill_db_after_migration
-      barclamps = get_components("crowbar")
-      barclamps.each do |bc_name|
-        Nailed.config(:add, "crowbar", bc_name)
-        db_handler = Crowbar.first_or_create(:component => bc_name)
-
-        Nailed.save_state(db_handler)
+      if Nailed::PRODUCTS["github"].nil?
+        @client = Octokit::Client.new(:netrc => true)
+      else
+        @client = Oktokit::Client.new(:login => Nailed::PRODUCTS["github"]["user"],
+                                      :password => Nailed::PRODUCTS["github"]["password"])
       end
     end
 
-    def get_open_pulls(crowbar_components)
-      crowbar_components.each do |comp|
-        pulls = @client.pull_requests("crowbar/#{comp.component}")
-        pulls.each do |pr|
-          db_handler = Pullrequest.first_or_create(
-                       :pr_number => pr.number,
-                       :title => pr.title,
-                       :state => pr.state,
-                       :url => pr.html_url,
-                       :created_at => pr.created_at,
-                       :crowbar_component => comp.component
-                       )
+    def get_open_pulls
+      Nailed::PRODUCTS["products"].each do |product,values|
+        organization = values["organization"]
+        repos = values["repos"]
+        repos.each do |repo|
+          if organization.nil?
+            pulls = @client.pull_requests(repo)
+          else
+            pulls = @client.pull_requests("#{organization}/#{repo}")
+          end
+          pulls.each do |pr|
+            db_handler = Pullrequest.first_or_create(
+                         :pr_number => pr.number,
+                         :title => pr.title,
+                         :state => pr.state,
+                         :url => pr.html_url,
+                         :created_at => pr.created_at,
+                         :repository_rname => repo
+                         )
 
-          Nailed.save_state(db_handler)
-        end unless pulls.empty?
-        write_pull_trends(comp.component)
+            Nailed.save_state(db_handler)
+          end unless pulls.empty?
+          write_pull_trends(repo)
+        end unless repos.nil?
       end
     end
 
@@ -131,20 +112,21 @@ module Nailed
       pulls = Pullrequest.all
       pulls.each do |db_pull|
         number = db_pull.pr_number
-        component = db_pull.crowbar_component
-        github_pull = @client.pull_request("crowbar/#{component}", number)
+        repo = db_pull.repository_rname
+        org = Repository.get(repo).organization_oname
+        github_pull = @client.pull_request("#{org}/#{repo}", number)
         if github_pull.state == "closed"
           db_pull.destroy
         end
       end
     end
 
-    def write_pull_trends(component)
-      open = Pullrequest.count(:crowbar_component => component)
+    def write_pull_trends(repo)
+      open = Pullrequest.count(:repository_rname => repo)
       db_handler = Pulltrend.first_or_create(
                    :time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                    :open => open,
-                   :crowbar_component => component
+                   :repository_rname => repo
                    )
 
       Nailed.save_state(db_handler)
@@ -180,8 +162,37 @@ module Nailed
     File.open(Nailed::CONFIG_FILE, "w") {|f| f.write Nailed::PRODUCTS.to_yaml}
   end
 
+  def Nailed.get_org_repos(github_client, org)
+    all_repos = github_client.org_repos(org)
+    all_repos.map(&:name)
+  end
+
+  def Nailed.fill_db_after_migration(github_client)
+    Nailed::PRODUCTS["products"].each do |product,values|
+      values["versions"].each do |version|
+        db_handler = Product.first_or_create(:name => version)
+        Nailed.save_state(db_handler)
+      end unless values["versions"].nil?
+      if values["organization"].nil?
+        values["repos"].each do |repo|
+          db_handler = Repository.first_or_create(:repo => repo)
+          Nailed.save_state(db_handler)
+        end unless values["repos"].nil?
+      else
+        db_handler = Organization.first_or_create(:oname => values["organization"])
+        Nailed.save_state(db_handler)
+        org_repos = Nailed.get_org_repos(github_client, values["organization"])
+        org_repos.each do |org_repo|
+          db_handler = Repository.first_or_create(:rname => org_repo, :organization_oname => values["organization"])
+          Nailed.save_state(db_handler)
+        end
+      end
+    end
+  end
+
   def Nailed.save_state(db_handler)
     unless db_handler.save
+      puts("ERROR: see logfile")
       log("error", db_handler.errors.inspect)
     end
   end

@@ -10,9 +10,6 @@ github_client = Nailed::Github.new
 opts = Trollop::options do
   opt :migrate, "Set database to pristine state", :short => 'm'
   opt :upgrade, "Upgrade database", :short => 'u'
-  opt :product, "Specify a product", :short => 'p', :type => String
-  opt :add, "Add a new product to the database", :short => 'a'
-  opt :remove, "Remove a product from the database", :short => 'r'
   opt :bugzilla, "Refresh bugzilla database records", :short => 'b'
   opt :github, "Refresh github database records", :short => 'g'
   opt :l3, "Refresh l3 trend database records", :short => 'l'
@@ -20,11 +17,11 @@ opts = Trollop::options do
 end
 
 if opts[:server_given]
-  if Nailed::PRODUCTS["products"].first.nil?
+  if Nailed::PRODUCTS["products"].nil?
     abort("Add some data, there is nothing to be shown")
   else
     begin
-      `#{File.join(File.expand_path("..", File.dirname(__FILE__)),"bin","app")}`
+      `#{File.join("rerun ",File.expand_path("..", File.dirname(__FILE__)),"bin","app")}`
     rescue Interrupt
       sleep 2
       exit
@@ -42,12 +39,11 @@ opts.each_pair do |key,val|
         Bugreport.auto_migrate!
         Bugtrend.auto_migrate!
         L3Trend.auto_migrate!
-        Crowbar.auto_migrate!
+        Organization.auto_migrate!
+        Repository.auto_migrate!
         Pullrequest.auto_migrate!
         Pulltrend.auto_migrate!
-        Nailed.config(:cleanup, "crowbar", nil)
-        Nailed.config(:cleanup, "products", nil)
-        github_client.fill_db_after_migration
+        Nailed.fill_db_after_migration(github_client.client)
         Nailed.log("info", "Database migrated")
         abort "Database migrated"
       else
@@ -62,41 +58,24 @@ opts.each_pair do |key,val|
         Bugreport.auto_upgrade!
         Bugtrend.auto_upgrade!
         L3Trend.auto_upgrade!
-        Crowbar.auto_upgrade!
+        Organization.auto_upgrade!
+        Repository.auto_upgrade!
         Pullrequest.auto_upgrade!
         Pulltrend.auto_upgrade!
-        log("info", "Database upgraded")
+        Nailed.fill_db_after_migration(github_client.client)
+        Nailed.log("info", "Database upgraded")
         abort "Database upgraded"
       end
     end
-  when :product
-    unless val
-      unless opts[:github_given] || opts[:l3_given]
-        abort "Specify a product \n  or try #{__FILE__} -h"
-      end
-    end
-    unless opts[:add_given]
-      unless opts[:github_given] || opts[:l3_given]
-        bugzilla_client.get_product(val)
-      end
-    end
-  when :add
-    if val
-      bugzilla_client.add_product(opts[:product])
-    end
-  when :remove
-    if val
-      bugzilla_client.remove_product(opts[:product])
-    end
   when :bugzilla
     if val
-      bugzilla_client.get_bugs(opts[:product])
-      bugzilla_client.write_bug_trends(opts[:product])
+      bugzilla_client.get_bugs
+      bugzilla_client.write_bug_trends
     end
   when :github
     if val
       github_client.update_pull_states
-      github_client.get_open_pulls(Crowbar.all)
+      github_client.get_open_pulls
     end
   when :l3
     if val

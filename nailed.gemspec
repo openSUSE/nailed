@@ -21,4 +21,5 @@ Gem::Specification.new do |s|
   s.add_dependency("sinatra-base", ["1.4.0"])
   s.add_dependency("sinatra-assetpack", ["0.3.3"])
   s.add_dependency("haml", ["4.0.6"])
+  s.add_dependency("rerun", ["0.10.0"])
 end

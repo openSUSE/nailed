@@ -52,9 +52,16 @@ class L3Trend
 end
 
 # GitHub specific tables
-class Crowbar
+class Organization
   include DataMapper::Resource
-  property :component, String, :required => true, :key => true
+  property :oname, String, :required => true, :key => true
+end
+
+class Repository
+  include DataMapper::Resource
+  property :rname, String, :required => true, :key => true
+
+  belongs_to :organization, :required => false
 end
 
 class Pullrequest
@@ -66,7 +73,7 @@ class Pullrequest
   property :url, String
   property :created_at, DateTime
 
-  belongs_to :crowbar
+  belongs_to :repository
 end
 
 class Pulltrend
@@ -75,7 +82,7 @@ class Pulltrend
   property :time, String
   property :open, Integer
 
-  belongs_to :crowbar
+  belongs_to :repository
 end
 DataMapper.finalize
 

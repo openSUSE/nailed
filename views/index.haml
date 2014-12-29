@@ -1,14 +1,10 @@
 !!!
 %section.main-section
   .row
-    .large-6.columns
+    .large-12.columns
       %h1.title{:align => "center"}
         Open Bugs by Product
       #bug_top
-    .large-6.columns
-      %h1.title{:align => "center"}
-        Pullrequests by Component
-      #pull_top
     .large-12.columns
       %h1.title{:align => "center"}
         L3 Trend
@@ -20,22 +16,7 @@
 :javascript
   $(document).foundation();
   $(document).ready(function(){
-    // GitHub
     var colors = ['#B39DDB','#9FA8DA','#90CAF9','#81D4FA','#80DEEA','#80CBC4','#A5D6A7','#C5E1A5','#E6EE9C','#FFF59D','#FFE082','#FFCC80','#FFAB91','#BCAAA4','#EEEEEE'].reverse();
-    new Morris.Donut({
-      element: 'pull_top',
-      data: #{@pulltop},
-      colors: colors,
-      resize: true,
-      formatter: function(y, data){
-        return y;
-      }
-    }).on('click', function(i, row){
-      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
-        jQuery.noop();
-      else
-        window.open("/github/"+row.label,"_self");
-    });
     new Morris.Donut({
       element: 'bug_top',
       data: #{@bugtop},

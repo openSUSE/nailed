@@ -2,7 +2,7 @@
 %section.main-section
   .row
     %h1.title
-      #{@component}
+      #{@repo}
   .row
     %span Pull Request Trend
     .large-12.columns
@@ -41,7 +41,7 @@
       if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
         jQuery.noop();
       else
-        window.open("https://github.com/crowbar/"+row.crowbar_component+"/pulls");
+        window.open("#{@github_url_all_pulls}");
     });
     $("[creation_time]").each(function (index, value){
       var one_week = 604800;
