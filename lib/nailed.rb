@@ -73,12 +73,7 @@ module Nailed
     attr_reader :client
 
     def initialize
-      if Nailed::PRODUCTS["github"].nil?
-        @client = Octokit::Client.new(:netrc => true)
-      else
-        @client = Oktokit::Client.new(:login => Nailed::PRODUCTS["github"]["user"],
-                                      :password => Nailed::PRODUCTS["github"]["password"])
-      end
+      @client = Octokit::Client.new(:netrc => true)
     end
 
     def get_open_pulls

@@ -1,10 +1,6 @@
 ---
 bugzilla:
   url: https://bugzilla.novell.com
-github:
-  #username:
-  #password:
-  #otherwise ~/.netrc
 products:
   cloud:
     versions:
