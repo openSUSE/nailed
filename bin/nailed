@@ -16,6 +16,10 @@ opts = Trollop::options do
   opt :server, "Start a dashboard webinterface", :short => 's'
 end
 
+if opts.map{|k,v| v == false}
+  puts "try nailed -h"
+end
+
 if opts[:server_given]
   if Nailed::PRODUCTS["products"].nil?
     abort("Add some data, there is nothing to be shown")
