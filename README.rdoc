@@ -6,6 +6,9 @@
 +Be+ +aware+ that the bugzilla layout (metadata) is still SUSE specific, which may not be useful for everybody.
 e.g. it relies on bugs being tagged as L3. The plan is to make it optional in the future.
 
+== Installation
+   gem install 'nailed'
+
 == Usage
 
    $ nailed -h
