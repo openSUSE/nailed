@@ -1,6 +1,10 @@
 ## What is nailed?
 
-`nailed` consists of a back-end CLI for data collection and a sinatra based web front-end for visualization of relevant development data of SUSE Products.
+`nailed` consists of a back-end CLI for data collection and a sinatra based web front-end for visualization of relevant development data of Products that have their bugtracker on Bugzilla and (optionally) their codebase on GitHub.
+
+`Be aware` that the bugzilla layout (metadata) is still SUSE specific, which may not be useful for everybody.
+e.g. it relies on bugs being tagged as L3. The plan is to make it optional in the future.
+
 
 ## Usage
 
@@ -27,7 +31,10 @@ machine api.github.com
   login MaximilianMeister
   password <your OAuth Token>
 ```
-* run `nailed --migrate` to setup the database
+* to setup the database run
+```
+nailed --migrate
+```
 
 ## Configuration
 
@@ -51,7 +58,10 @@ products:
 
 ```
 
-* in production, after adding products run `nailed --upgrade` to upgrade the database with the new products/changes
+* in production, after adding products/changes, to upgrade the database with the new changes run
+```
+nailed --upgrade
+```
 
 ## Run
 

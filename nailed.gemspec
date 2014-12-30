@@ -3,7 +3,7 @@ Gem::Specification.new do |s|
   s.version                 = "0.0.3"
   s.date                    = Time.now.strftime("%Y-%m-%d")
   s.summary                 = "Nailed CLI and WebUI"
-  s.description             = "Collect and visualize SUSE Product related data from Bugzilla and Github"
+  s.description             = "Collect and visualize Product related data from Bugzilla and Github"
   s.authors                 = ["Maximilian Meister"]
   s.email                   = "mmeister@suse.de"
   s.files                   = `git ls-files`.split("\n")
