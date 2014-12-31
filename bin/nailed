@@ -16,9 +16,7 @@ opts = Trollop::options do
   opt :server, "Start a dashboard webinterface", :short => 's'
 end
 
-if opts.map{|k,v| v == false}
-  puts "try nailed -h"
-end
+opts.all? {|k,v| v.is_a?(FalseClass) ? abort("try nailed -h") : break}
 
 if opts[:server_given]
   if Nailed::PRODUCTS["products"].nil?
