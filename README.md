@@ -38,6 +38,17 @@ machine api.github.com
 ```
 nailed --migrate
 ```
+* it is recommended to increase the amount of inotify watchers by executing
+```
+echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+```
+This is necessary for automatic restart of the sinatra app, after certain changes in the fs (`rerun` gem is used to watch modifications in the configuration file `products.yml`).
+
+Otherwise you will have to restart the webui manually with
+```
+nailed --server
+```
+For technical details see https://github.com/guard/listen/wiki/Increasing-the-amount-of-inotify-watchers
 
 ## Configuration
 
