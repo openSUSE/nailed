@@ -19,12 +19,11 @@ end
 abort("try nailed -h") if opts.all?{|k,v| v.is_a?(FalseClass)}
 
 if opts[:server_given]
-  watch_dir = File.join(File.expand_path("..", File.dirname(__FILE__)),"config")
   if Nailed::PRODUCTS["products"].nil?
     abort("Add some data, there is nothing to be shown")
   else
     begin
-      `#{File.join("rerun --dir #{watch_dir} ",File.expand_path("..", File.dirname(__FILE__)),"bin","app")}`
+      `#{File.join(File.expand_path("..", File.dirname(__FILE__)),"bin","app")}`
     rescue Interrupt
       sleep 2
       exit

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name                    = "nailed"
-  s.version                 = "0.0.4"
+  s.version                 = "0.0.5"
   s.date                    = Time.now.strftime("%Y-%m-%d")
   s.summary                 = "Nailed CLI and WebUI"
   s.description             = "Collect and visualize Product related data from Bugzilla and Github"
@@ -21,5 +21,4 @@ Gem::Specification.new do |s|
   s.add_dependency("sinatra-base", ["1.4.0"])
   s.add_dependency("sinatra-assetpack", ["0.3.3"])
   s.add_dependency("haml", ["4.0.6"])
-  s.add_dependency("rerun", ["0.10.0"])
 end

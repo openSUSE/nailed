@@ -39,19 +39,6 @@ products:
     - barclamp-quantum
     - barclamp-clouderamanager
     - barclamp-ApacheHadoop
-  susemanager:
-    versions:
-    - SUSE Manager 2.1 Server
-    - SUSE Manager 2.1 Proxy
-    organization: SUSE
-    repos:
-    - spacewalk
-  scc:
-    versions:
-    - SUSE Customer Center
-    organization: SUSE
-    repos:
-    - happy-customer
   sles:
     versions:
     - SUSE Linux Enterprise Server 12 (SLES 12)
