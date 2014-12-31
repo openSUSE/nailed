@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name                    = "nailed"
-  s.version                 = "0.0.5"
+  s.version                 = "0.0.6"
   s.date                    = Time.now.strftime("%Y-%m-%d")
   s.summary                 = "Nailed CLI and WebUI"
   s.description             = "Collect and visualize Product related data from Bugzilla and Github"

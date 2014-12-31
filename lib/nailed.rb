@@ -137,26 +137,6 @@ module Nailed
     end
   end
 
-  def Nailed.config(action,section,item)
-    case action
-    when :add
-      if Nailed::PRODUCTS[section].first.nil?
-        Nailed::PRODUCTS[section] << item
-        Nailed::PRODUCTS[section].compact!
-      else
-        Nailed::PRODUCTS[section] << item
-      end
-    when :delete
-      Nailed::PRODUCTS[section].delete(item)
-    when :cleanup
-      Nailed::PRODUCTS[section].clear
-      Nailed::PRODUCTS[section] << nil
-    when :get
-      return false if Nailed::PRODUCTS[section].include? item
-    end
-    File.open(Nailed::CONFIG_FILE, "w") {|f| f.write Nailed::PRODUCTS.to_yaml}
-  end
-
   def Nailed.get_org_repos(github_client, org)
     all_repos = github_client.org_repos(org)
     all_repos.map(&:name)

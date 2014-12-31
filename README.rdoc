@@ -9,6 +9,8 @@ e.g. it relies on bugs being tagged as L3. The plan is to make it optional in th
 == Installation
    gem install 'nailed'
 
+Alternatively run it directly from the git directory
+
 == Usage
 
    $ nailed -h
