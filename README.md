@@ -33,6 +33,7 @@ machine api.github.com
   login MaximilianMeister
   password <your OAuth Token>
 ```
+* configure your `products.yml`
 * to setup the database run
 ```
 nailed --migrate
