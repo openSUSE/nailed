@@ -85,6 +85,7 @@ class App < Sinatra::Base
   # define sinatra routes
   get '/' do
     @l3trend = get_trends(:l3, nil)
+    @allpulls = repository(:default).adapter.select("SELECT COUNT(repository_rname) AS open, repository_rname AS label FROM pullrequests GROUP BY repository_rname")
 
     @bugtop = []
     Nailed::PRODUCTS["products"].each do |product,values|
@@ -92,9 +93,15 @@ class App < Sinatra::Base
         p = Product.get(version)
         open = Bugreport.count(:product_name => p.name, :is_open => true)
         @bugtop << {label: p.name, value: open} unless open == 0
-      end
+      end unless values["versions"].nil?
     end
     @bugtop = @bugtop.to_json
+
+    @pulltop = []
+    @allpulls.each do |donut_bite|
+      @pulltop << {label: donut_bite.label, value: donut_bite.open}
+    end
+    @pulltop = @pulltop.to_json
 
     haml :index
   end
