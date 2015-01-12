@@ -19,7 +19,7 @@ Options:
       --upgrade, -u:   Upgrade database
      --bugzilla, -b:   Refresh bugzilla database records
        --github, -g:   Refresh github database records
-           --l3, -l:   Refresh l3 trend database records
+     --list, -l <s>:   List github repositories within organization
        --server, -s:   Start a dashboard webinterface
          --help, -h:   Show this message
 ```
@@ -55,10 +55,9 @@ products:
     # Array of Bugzilla products (typically different versions of one product)
     # Exact names have to be given, as they appear in Bugzilla (can not be arbitrary)
     organization: # here goes the organization name (under which your repos are hosted) as it appears in GitHub
-    # just leave it blank if your repo isn't hosted under an organizational umbrella
     repos:
     # Array of GitHub repository names, as they appear in GitHub
-    # If there are no associated repos for the product, just leave it blank
+    # query available repos with nailed -l <organization>
   # continue adding more products here
 
 ```

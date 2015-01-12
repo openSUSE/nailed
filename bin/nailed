@@ -12,7 +12,7 @@ opts = Trollop::options do
   opt :upgrade, "Upgrade database", :short => 'u'
   opt :bugzilla, "Refresh bugzilla database records", :short => 'b'
   opt :github, "Refresh github database records", :short => 'g'
-  opt :l3, "Refresh l3 trend database records", :short => 'l'
+  opt :list, "List github repositories within organization", :type => :string, :short => 'l'
   opt :server, "Start a dashboard webinterface", :short => 's'
 end
 
@@ -73,15 +73,19 @@ opts.each_pair do |key,val|
     if val
       bugzilla_client.get_bugs
       bugzilla_client.write_bug_trends
+      bugzilla_client.write_l3_trends
     end
   when :github
     if val
       github_client.update_pull_states
       github_client.get_open_pulls
     end
-  when :l3
+  when :list
     if val
-      bugzilla_client.write_l3_trends
+      begin
+        Nailed.list_org_repos(github_client.client, val)
+      rescue
+      end
     end
   end
 end

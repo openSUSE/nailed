@@ -165,6 +165,11 @@ module Nailed
     end
   end
 
+  def Nailed.list_org_repos(github_client, org)
+    repos = Nailed.get_org_repos(github_client, org)
+    repos.each {|r| puts "- #{r}"}
+  end
+
   def Nailed.save_state(db_handler)
     unless db_handler.save
       puts("ERROR: see logfile")
