@@ -45,7 +45,7 @@ class App < Sinatra::Base
   }
 
   before do
-    @products = Nailed::PRODUCTS["products"].map{|p,v| v["versions"]}.flatten
+    @products = Nailed::PRODUCTS["products"].map{|p,v| v["versions"]}.flatten.compact
     @product_query = @products.join('&product=')
     @github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
   end
@@ -128,11 +128,11 @@ class App < Sinatra::Base
 
         haml :bugzilla
       end
-    end
+    end unless values["versions"].nil?
   end
 
-  @github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
-  @github_repos.each do |repo|
+  github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+  github_repos.each do |repo|
     get "/github/#{repo}" do
       @repo = repo
       @org = Repository.get(repo).organization_oname

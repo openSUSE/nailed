@@ -36,7 +36,7 @@ module Nailed
 
             db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
           end
-        end
+        end unless values["versions"].nil?
       end
     end
 
@@ -54,7 +54,7 @@ module Nailed
                        )
 
           Nailed.save_state(db_handler)
-        end
+        end unless values["versions"].nil?
       end
     end
 
@@ -81,11 +81,7 @@ module Nailed
         organization = values["organization"]
         repos = values["repos"]
         repos.each do |repo|
-          if organization.nil?
-            pulls = @client.pull_requests(repo)
-          else
-            pulls = @client.pull_requests("#{organization}/#{repo}")
-          end
+          pulls = @client.pull_requests("#{organization}/#{repo}")
           pulls.each do |pr|
             db_handler = Pullrequest.first_or_create(
                          :pr_number => pr.number,
@@ -144,22 +140,21 @@ module Nailed
 
   def Nailed.fill_db_after_migration(github_client)
     Nailed::PRODUCTS["products"].each do |product,values|
+      organization = values["organization"]
       values["versions"].each do |version|
         db_handler = Product.first_or_create(:name => version)
         Nailed.save_state(db_handler)
       end unless values["versions"].nil?
-      if values["organization"].nil?
-        values["repos"].each do |repo|
-          db_handler = Repository.first_or_create(:repo => repo)
-          Nailed.save_state(db_handler)
-        end unless values["repos"].nil?
-      else
-        db_handler = Organization.first_or_create(:oname => values["organization"])
+      unless organization.nil?
+        db_handler = Organization.first_or_create(:oname => organization)
         Nailed.save_state(db_handler)
-        org_repos = Nailed.get_org_repos(github_client, values["organization"])
-        org_repos.each do |org_repo|
-          db_handler = Repository.first_or_create(:rname => org_repo, :organization_oname => values["organization"])
-          Nailed.save_state(db_handler)
+        org_repos_github = Nailed.get_org_repos(github_client, organization)
+        org_repos_yml = values["repos"]
+        org_repos_yml.each do |org_repo|
+          if org_repos_github.include?(org_repo)
+            db_handler = Repository.first_or_create(:rname => org_repo, :organization_oname => organization)
+            Nailed.save_state(db_handler)
+          end
         end
       end
     end
