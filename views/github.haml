@@ -51,13 +51,13 @@
       var then = $(this).attr("creation_time");
       var diff = now - then;
       if (diff < one_week) {
-        $(value).css("color","#212121").attr('title', 'last change < one week');
+        $(value).css("color","#212121").attr('title', 'opened < one week ago');
       } else if (diff < two_weeks) {
-        $(value).css("color","#E57373").attr('title', 'last change < two weeks');
+        $(value).css("color","#E57373").attr('title', 'opened < two weeks ago');
       } else if (diff < one_month) {
-        $(value).css("color","#C62828").attr('title', 'last change < one month');
+        $(value).css("color","#C62828").attr('title', 'opened < one month ago');
       } else {
-        $(value).css("color","#D50000").attr('title', 'last change > one month');
+        $(value).css("color","#D50000").attr('title', 'opened > one month ago');
       }
     });
   });
