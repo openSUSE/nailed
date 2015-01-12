@@ -63,7 +63,6 @@ All configuration is read from +config/products.yml+
 * make sure to fetch new data with
    nailed --bugzilla
    nailed --github
-   nailed --l3
 * restart the webserver
 
 == Run

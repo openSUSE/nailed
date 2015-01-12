@@ -72,7 +72,6 @@ nailed --upgrade
 ```
 nailed --bugzilla
 nailed --github
-nailed --l3
 ```
 * restart the webserver
 
