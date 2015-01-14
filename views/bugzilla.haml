@@ -46,6 +46,7 @@
       data: #{@bugtrend},
       xkey: 'time',
       ykeys: ['open', 'fixed'],
+      yLabelFormat: function(y){return y != Math.round(y)?'':y;},
       labels: ['Open', 'Fixed'],
       resize: true,
       fillOpacity: 0.5,

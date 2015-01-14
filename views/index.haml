@@ -51,6 +51,7 @@
       data: #{@l3trend},
       xkey: 'time',
       ykeys: ['open'],
+      yLabelFormat: function(y){return y != Math.round(y)?'':y;},
       labels: ['Open'],
       resize: true,
       hideHover: true,
