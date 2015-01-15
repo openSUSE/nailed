@@ -73,6 +73,7 @@ module Nailed
     attr_reader :client
 
     def initialize
+      Octokit.auto_paginate = true
       @client = Octokit::Client.new(:netrc => true)
     end
 
