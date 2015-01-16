@@ -47,7 +47,6 @@ class App < Sinatra::Base
   before do
     @products = Nailed::PRODUCTS["products"].map{|p,v| v["versions"]}.flatten.compact
     @product_query = @products.join('&product=')
-    @github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
   end
 
   helpers do
@@ -84,6 +83,7 @@ class App < Sinatra::Base
 
   # define sinatra routes
   get '/' do
+    @github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
     @l3trend = get_trends(:l3, nil)
     @allpulls = repository(:default).adapter.select("SELECT COUNT(repository_rname) AS open, repository_rname AS label FROM pullrequests GROUP BY repository_rname")
 
@@ -109,6 +109,7 @@ class App < Sinatra::Base
   Nailed::PRODUCTS["products"].each do |product,values|
     values["versions"].each do |version|
       get "/#{version.gsub(/ /,'_')}/bugzilla" do
+        @github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
         @product = version
 
         @bugtrend = get_trends(:bug, version)
@@ -134,6 +135,7 @@ class App < Sinatra::Base
   github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
   github_repos.each do |repo|
     get "/github/#{repo}" do
+      @github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
       @repo = repo
       @org = Repository.get(repo).organization_oname
       @github_url_all_pulls = "https://github.com/#{@org}/#{@repo}/pulls"
