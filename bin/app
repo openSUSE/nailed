@@ -62,18 +62,12 @@ class App < Sinatra::Base
       trend_clone = trend.clone
       begin
         interval = (trend.length/20.0).round
-        last_iter_open = trend.first.open
         trend.each do |bt|
           if trend.index(bt) % interval != 0
             if bt != trend.last
-              if bt.open == last_iter_open
-                trend_clone.delete(bt)
-              end
+              trend_clone.delete(bt)
             end
-          else
-            next
           end
-          last_iter_open = bt.open
         end
       rescue ZeroDivisionError
       end
