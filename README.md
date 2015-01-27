@@ -5,10 +5,15 @@
 `Be aware` that the bugzilla layout (metadata) is still SUSE specific, which may not be useful for everybody.
 e.g. it relies on bugs being tagged as L3. The plan is to make it optional in the future.
 
-## Installation
+## Installation using gem
 `gem install 'nailed'`
 
-Alternatively run it directly from the git directory
+## Installation using git
+### SUSE
+```
+zypper in libxml2-devel sqlite3-devel gcc make ruby-devel
+bundle install
+```
 
 ## Usage
 
