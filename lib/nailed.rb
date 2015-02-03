@@ -17,24 +17,28 @@ module Nailed
     def get_bugs
       Nailed::PRODUCTS["products"].each do |product,values|
         values["versions"].each do |version|
-          Bicho::Bug.where(:product => version).each do |bug|
-            attributes = {
-              :bug_id => bug.id,
-              :summary => bug.summary,
-              :status => bug.status,
-              :is_open => bug.is_open,
-              :product_name => bug.product,
-              :component => bug.component,
-              :severity => bug.severity,
-              :priority => bug.priority,
-              :whiteboard => bug.whiteboard,
-              :assigned_to => bug.assigned_to,
-              :creation_time => "#{bug.creation_time.to_date}T#{bug.creation_time.hour}:#{bug.creation_time.min}:#{bug.creation_time.sec}+00:00",
-              :last_change_time => "#{bug.last_change_time.to_date}T#{bug.last_change_time.hour}:#{bug.last_change_time.min}:#{bug.last_change_time.sec}+00:00",
-              :url => bug.url.gsub(/novell.com\//,'suse.com/show_bug.cgi?id=')
-            }
+          begin
+            Bicho::Bug.where(:product => version).each do |bug|
+              attributes = {
+                :bug_id => bug.id,
+                :summary => bug.summary,
+                :status => bug.status,
+                :is_open => bug.is_open,
+                :product_name => bug.product,
+                :component => bug.component,
+                :severity => bug.severity,
+                :priority => bug.priority,
+                :whiteboard => bug.whiteboard,
+                :assigned_to => bug.assigned_to,
+                :creation_time => "#{bug.creation_time.to_date}T#{bug.creation_time.hour}:#{bug.creation_time.min}:#{bug.creation_time.sec}+00:00",
+                :last_change_time => "#{bug.last_change_time.to_date}T#{bug.last_change_time.hour}:#{bug.last_change_time.min}:#{bug.last_change_time.sec}+00:00",
+                :url => bug.url.gsub(/novell.com\//,'suse.com/show_bug.cgi?id=')
+              }
 
-            db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
+              db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
+            end
+          rescue
+            Nailed.log("error","Could not fetch Bugs for #{version}.")
           end
         end unless values["versions"].nil?
       end
