@@ -59,7 +59,12 @@ module Nailed
     end
 
     def write_l3_trends
-      open = Bugreport.count(:whiteboard.like => "%openL3%", :is_open => true)
+      open = 0
+      Nailed::PRODUCTS["products"].each do |product,values|
+        values["versions"].each do |version|
+          open += Bugreport.count(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)
+        end unless values["versions"].nil?
+      end
       db_handler = L3Trend.first_or_create(
                    :time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                    :open => open
