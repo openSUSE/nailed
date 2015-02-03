@@ -14,6 +14,7 @@ class App < Sinatra::Base
   set :public_folder, File.join(ROOT_PATH, "public")
   set :views, File.join(ROOT_PATH, "views")
   set :bind, '0.0.0.0'
+  set :port, Nailed::PRODUCTS["port"] || 4567
 
   register Sinatra::AssetPack
 
@@ -45,6 +46,7 @@ class App < Sinatra::Base
   }
 
   before do
+    @title = Nailed::PRODUCTS["title"] || "Dashboard"
     @products = Nailed::PRODUCTS["products"].map{|p,v| v["versions"]}.flatten.compact
     @product_query = @products.join('&product=')
   end
