@@ -6,16 +6,14 @@ require  File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database
 
 module Nailed
   LOGGER = Logger.new(File.join(File.expand_path("..", File.dirname(__FILE__)),"log","nailed.log"))
-  CONFIG_FILE =  File.join(File.expand_path("..", File.dirname(__FILE__)),"config","config.yml")
-  CONFIG = YAML.load_file(CONFIG_FILE)
 
   class Bugzilla
     def initialize
-      Bicho.client = Bicho::Client.new(Nailed::CONFIG["bugzilla"]["url"])
+      Bicho.client = Bicho::Client.new(Nailed.get_config["bugzilla"]["url"])
     end
 
     def get_bugs
-      Nailed::CONFIG["products"].each do |product,values|
+      Nailed.get_config["products"].each do |product,values|
         values["versions"].each do |version|
           begin
             Bicho::Bug.where(:product => version).each do |bug|
@@ -45,7 +43,7 @@ module Nailed
     end
 
     def write_bug_trends
-      Nailed::CONFIG["products"].each do |product,values|
+      Nailed.get_config["products"].each do |product,values|
         values["versions"].each do |version|
           open = Bugreport.count(:is_open => true, :product_name => version)
           fixed = Bugreport.count(:status => "VERIFIED", :product_name => version) + \
@@ -64,7 +62,7 @@ module Nailed
 
     def write_l3_trends
       open = 0
-      Nailed::CONFIG["products"].each do |product,values|
+      Nailed.get_config["products"].each do |product,values|
         values["versions"].each do |version|
           open += Bugreport.count(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)
         end unless values["versions"].nil?
@@ -87,7 +85,7 @@ module Nailed
     end
 
     def get_open_pulls
-      Nailed::CONFIG["products"].each do |product,values|
+      Nailed.get_config["products"].each do |product,values|
         organization = values["organization"]
         repos = values["repos"]
         repos.each do |repo|
@@ -144,13 +142,18 @@ module Nailed
     end
   end
 
+  def get_config
+    conf = File.join(File.expand_path("..", File.dirname(__FILE__)),"config","config.yml")
+    YAML.load_file(conf)
+  end
+
   def get_org_repos(github_client, org)
     all_repos = github_client.org_repos(org)
     all_repos.map(&:name)
   end
 
   def fill_db_after_migration(github_client)
-    CONFIG["products"].each do |product,values|
+    get_config["products"].each do |product,values|
       organization = values["organization"]
       values["versions"].each do |version|
         db_handler = Product.first_or_create(:name => version)

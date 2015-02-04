@@ -14,7 +14,7 @@ class App < Sinatra::Base
   set :public_folder, File.join(ROOT_PATH, "public")
   set :views, File.join(ROOT_PATH, "views")
   set :bind, '0.0.0.0'
-  set :port, Nailed::CONFIG["port"] || 4567
+  set :port, Nailed.get_config["port"] || 4567
 
   register Sinatra::AssetPack
 
@@ -46,16 +46,12 @@ class App < Sinatra::Base
   }
 
   before do
-    @title = Nailed::CONFIG["title"] || "Dashboard"
-    @products = Nailed::CONFIG["products"].map{|p,v| v["versions"]}.flatten.compact
+    @title = Nailed.get_config["title"] || "Dashboard"
+    @products = Nailed.get_config["products"].map{|p,v| v["versions"]}.flatten.compact
     @product_query = @products.join('&product=')
   end
 
   helpers do
-    def get_config
-       Nailed::CONFIG
-    end
-
     def get_github_repos
       Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
     end
@@ -87,13 +83,12 @@ class App < Sinatra::Base
 
   # define sinatra routes
   get '/' do
-    config = get_config
     @github_repos = get_github_repos
     @l3trend = get_trends(:l3, nil)
     @allpulls = repository(:default).adapter.select("SELECT COUNT(repository_rname) AS open, repository_rname AS label FROM pullrequests GROUP BY repository_rname")
 
     @bugtop = []
-    config["products"].each do |product,values|
+    Nailed.get_config["products"].each do |product,values|
       values["versions"].each do |version|
         p = Product.get(version)
         open = Bugreport.count(:product_name => p.name, :is_open => true)
@@ -111,7 +106,7 @@ class App < Sinatra::Base
     haml :index
   end
 
-  config["products"].each do |product,values|
+  Nailed.get_config["products"].each do |product,values|
     values["versions"].each do |version|
       get "/#{version.gsub(/ /,'_')}/bugzilla" do
         @github_repos = get_github_repos
@@ -146,7 +141,8 @@ class App < Sinatra::Base
     end unless values["versions"].nil?
   end
 
-  get_github_repos.each do |repo|
+  github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+  github_repos.each do |repo|
     get "/github/#{repo}" do
       @github_repos = get_github_repos
       @repo = repo
