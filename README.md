@@ -9,6 +9,7 @@ e.g. it relies on bugs being tagged as L3. The plan is to make it optional in th
 `gem install 'nailed'`
 
 ## Installation using git
+You can use nailed directly from a git checkout as well. Make sure to fetch the dependencies and call `nailed` from the `bin` directory.
 ### SUSE
 ```
 zypper in libxml2-devel sqlite3-devel gcc make ruby-devel
