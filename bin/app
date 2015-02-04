@@ -123,6 +123,15 @@ class App < Sinatra::Base
         end
         @bugprio = @bugprio.to_json
 
+        @top5_components = []
+        @components = repository(:default).adapter.select("SELECT component AS label, COUNT(component) AS value FROM bugreports WHERE product_name = '#{version}' AND is_open = 't' GROUP BY component ORDER BY COUNT(component) DESC LIMIT 5")
+        @components.each do |bar|
+          @top5_components << {label: bar.label, value: bar.value}
+        end
+        @component_labels = @top5_components.map{|a| a.values[0]}
+        @component_values = @top5_components.map{|a| a.values[1]}
+        @top5_components = @top5_components.to_json
+
         haml :bugzilla
       end
     end unless values["versions"].nil?

@@ -11,9 +11,12 @@
     %hr
     %br
   .row
-    .large-12.columns
+    .large-6.columns
       %h5 Bug Priorities
       #bug_prio
+    .large-6.columns
+      %h5 Top 5 Components
+      #top_components
   .row
     %hr
     %br
@@ -90,6 +93,20 @@
         jQuery.noop();
       else
         window.open("https://bugzilla.suse.com/buglist.cgi?order=Importance&priority="+row.bugprio+"&product=#{@product}&query_format=advanced&resolution=---");
+    });
+    new Morris.Donut({
+      element: 'top_components',
+      data: #{@top5_components},
+      colors: colors,
+      resize: true,
+      formatter: function(y, data){
+        return y;
+      }
+    }).on('click', function(i, row){
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
+        jQuery.noop();
+      else
+        window.open("https://bugzilla.suse.com/buglist.cgi?order=Importance&component="+row.label+"&product=#{@product}&query_format=advanced&resolution=---");
     });
     $("[last_change_time]").each(function (index, value){
       var one_week = 604800;
