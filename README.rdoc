@@ -37,7 +37,7 @@ e.g. it relies on bugs being tagged as L3. The plan is to make it optional in th
      login MaximilianMeister
      password <your OAuth Token>
 
-* configure your +products.yml+
+* configure your +config.yml+
 * to setup the database run
    nailed --migrate
 

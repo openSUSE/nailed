@@ -6,8 +6,8 @@ require  File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database
 
 module Nailed
   LOGGER = Logger.new(File.join(File.expand_path("..", File.dirname(__FILE__)),"log","nailed.log"))
-  CONFIG_FILE =  File.join(File.expand_path("..", File.dirname(__FILE__)),"config","products.yml")
-  PRODUCTS = YAML.load_file(CONFIG_FILE)
+  CONFIG_FILE =  File.join(File.expand_path("..", File.dirname(__FILE__)),"config","config.yml")
+  CONFIG = YAML.load_file(CONFIG_FILE)
 
   class Bugzilla
     def initialize

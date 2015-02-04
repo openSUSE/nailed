@@ -48,7 +48,7 @@ nailed --migrate
 
 ## Configuration
 
-All configuration is read from `config/products.yml`
+All configuration is read from `config/config.yml`
 
 ``` yaml
 ---
