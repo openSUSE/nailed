@@ -11,11 +11,11 @@ module Nailed
 
   class Bugzilla
     def initialize
-      Bicho.client = Bicho::Client.new(Nailed::PRODUCTS["bugzilla"]["url"])
+      Bicho.client = Bicho::Client.new(Nailed::CONFIG["bugzilla"]["url"])
     end
 
     def get_bugs
-      Nailed::PRODUCTS["products"].each do |product,values|
+      Nailed::CONFIG["products"].each do |product,values|
         values["versions"].each do |version|
           begin
             Bicho::Bug.where(:product => version).each do |bug|
@@ -45,7 +45,7 @@ module Nailed
     end
 
     def write_bug_trends
-      Nailed::PRODUCTS["products"].each do |product,values|
+      Nailed::CONFIG["products"].each do |product,values|
         values["versions"].each do |version|
           open = Bugreport.count(:is_open => true, :product_name => version)
           fixed = Bugreport.count(:status => "VERIFIED", :product_name => version) + \
@@ -64,7 +64,7 @@ module Nailed
 
     def write_l3_trends
       open = 0
-      Nailed::PRODUCTS["products"].each do |product,values|
+      Nailed::CONFIG["products"].each do |product,values|
         values["versions"].each do |version|
           open += Bugreport.count(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)
         end unless values["versions"].nil?
@@ -87,7 +87,7 @@ module Nailed
     end
 
     def get_open_pulls
-      Nailed::PRODUCTS["products"].each do |product,values|
+      Nailed::CONFIG["products"].each do |product,values|
         organization = values["organization"]
         repos = values["repos"]
         repos.each do |repo|
@@ -134,48 +134,49 @@ module Nailed
     end
   end
 
+  extend self
   # Generic methods
-  def Nailed.log(level,msg)
+  def log(level,msg)
     if level == "error"
-      Nailed::LOGGER.error(msg)
+      LOGGER.error(msg)
     else
-      Nailed::LOGGER.info(msg)
+      LOGGER.info(msg)
     end
   end
 
-  def Nailed.get_org_repos(github_client, org)
+  def get_org_repos(github_client, org)
     all_repos = github_client.org_repos(org)
     all_repos.map(&:name)
   end
 
-  def Nailed.fill_db_after_migration(github_client)
-    Nailed::PRODUCTS["products"].each do |product,values|
+  def fill_db_after_migration(github_client)
+    CONFIG["products"].each do |product,values|
       organization = values["organization"]
       values["versions"].each do |version|
         db_handler = Product.first_or_create(:name => version)
-        Nailed.save_state(db_handler)
+        save_state(db_handler)
       end unless values["versions"].nil?
       unless organization.nil?
         db_handler = Organization.first_or_create(:oname => organization)
-        Nailed.save_state(db_handler)
-        org_repos_github = Nailed.get_org_repos(github_client, organization)
+        save_state(db_handler)
+        org_repos_github = get_org_repos(github_client, organization)
         org_repos_yml = values["repos"]
         org_repos_yml.each do |org_repo|
           if org_repos_github.include?(org_repo)
             db_handler = Repository.first_or_create(:rname => org_repo, :organization_oname => organization)
-            Nailed.save_state(db_handler)
+            save_state(db_handler)
           end
         end
       end
     end
   end
 
-  def Nailed.list_org_repos(github_client, org)
-    repos = Nailed.get_org_repos(github_client, org)
+  def list_org_repos(github_client, org)
+    repos = get_org_repos(github_client, org)
     repos.each {|r| puts "- #{r}"}
   end
 
-  def Nailed.save_state(db_handler)
+  def save_state(db_handler)
     unless db_handler.save
       puts("ERROR: see logfile")
       log("error", db_handler.errors.inspect)

@@ -52,6 +52,14 @@ class App < Sinatra::Base
   end
 
   helpers do
+    def get_config
+       Nailed::CONFIG
+    end
+
+    def get_github_repos
+      Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+    end
+
     def get_trends(action, item)
       case action
       when :bug
@@ -79,12 +87,13 @@ class App < Sinatra::Base
 
   # define sinatra routes
   get '/' do
-    @github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+    config = get_config
+    @github_repos = get_github_repos
     @l3trend = get_trends(:l3, nil)
     @allpulls = repository(:default).adapter.select("SELECT COUNT(repository_rname) AS open, repository_rname AS label FROM pullrequests GROUP BY repository_rname")
 
     @bugtop = []
-    Nailed::PRODUCTS["products"].each do |product,values|
+    config["products"].each do |product,values|
       values["versions"].each do |version|
         p = Product.get(version)
         open = Bugreport.count(:product_name => p.name, :is_open => true)
@@ -102,17 +111,17 @@ class App < Sinatra::Base
     haml :index
   end
 
-  Nailed::PRODUCTS["products"].each do |product,values|
+  config["products"].each do |product,values|
     values["versions"].each do |version|
       get "/#{version.gsub(/ /,'_')}/bugzilla" do
-        @github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+        @github_repos = get_github_repos
         @product = version
 
         @bugtrend = get_trends(:bug, version)
-        @allbugs = Bugreport.all(:product_name => version).to_json
         @allopenbugs = (Bugreport.all(:product_name => version, :is_open => true) -
                         Bugreport.all(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
         @allopenl3bugs = (Bugreport.all(:product_name => version, :is_open => true, :whiteboard.like => "%openL3%")).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
+
         @bugprio = []
         {"P1 - Urgent" => "p1",
          "P2 - High" => "p2",
@@ -124,8 +133,8 @@ class App < Sinatra::Base
         @bugprio = @bugprio.to_json
 
         @top5_components = []
-        @components = repository(:default).adapter.select("SELECT component AS label, COUNT(component) AS value FROM bugreports WHERE product_name = '#{version}' AND is_open = 't' GROUP BY component ORDER BY COUNT(component) DESC LIMIT 5")
-        @components.each do |bar|
+        components = repository(:default).adapter.select("SELECT component AS label, COUNT(component) AS value FROM bugreports WHERE product_name = '#{version}' AND is_open = 't' GROUP BY component ORDER BY COUNT(component) DESC LIMIT 5")
+        components.each do |bar|
           @top5_components << {label: bar.label, value: bar.value}
         end
         @component_labels = @top5_components.map{|a| a.values[0]}
@@ -137,13 +146,12 @@ class App < Sinatra::Base
     end unless values["versions"].nil?
   end
 
-  github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
-  github_repos.each do |repo|
+  get_github_repos.each do |repo|
     get "/github/#{repo}" do
-      @github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+      @github_repos = get_github_repos
       @repo = repo
-      @org = Repository.get(repo).organization_oname
-      @github_url_all_pulls = "https://github.com/#{@org}/#{@repo}/pulls"
+      org = Repository.get(repo).organization_oname
+      @github_url_all_pulls = "https://github.com/#{org}/#{repo}/pulls"
 
       @allpulls = Pullrequest.all(:repository_rname => repo).sort! {|a,b| b.pr_number <=> a.pr_number}
       @pulltrend = get_trends(:pull, repo)
