@@ -46,6 +46,8 @@ e.g. it relies on bugs being tagged as L3. The plan is to make it optional in th
 All configuration is read from +config/products.yml+
 
    ---
+   title: # Give me a name, or (default) call me Dashboard
+   port: # Specify a port where you can reach the webinterface, or (default) 4567
    bugzilla:
      url: # Url of your Bugzilla instance
    products:

@@ -52,6 +52,8 @@ All configuration is read from `config/products.yml`
 
 ``` yaml
 ---
+title: # Give me a name, or (default) call me Dashboard
+port: # Specify a port where you can reach the webinterface, or (default) 4567
 bugzilla:
   url: # Url of your Bugzilla instance
 products:
