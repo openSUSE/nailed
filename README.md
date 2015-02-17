@@ -1,3 +1,4 @@
+[![Code Climate](https://codeclimate.com/github/MaximilianMeister/nailed/badges/gpa.svg)](https://codeclimate.com/github/MaximilianMeister/nailed)
 ## What is nailed?
 
 `nailed` consists of a back-end CLI for data collection and a sinatra based web front-end for visualization of relevant development data of Products that have their bugtracker on Bugzilla and (optionally) their codebase on GitHub.
