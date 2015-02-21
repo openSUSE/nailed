@@ -54,6 +54,7 @@ All configuration is read from `config/config.yml`
 
 ``` yaml
 ---
+debug: # true for debugging
 title: # Give me a name, or (default) call me Dashboard
 port: # Specify a port where you can reach the webinterface, or (default) 4567
 bugzilla:
