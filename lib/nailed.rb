@@ -51,12 +51,12 @@ module Nailed
           open = Bugreport.count(:is_open => true, :product_name => version)
           fixed = Bugreport.count(:status => "VERIFIED", :product_name => version) + \
                   Bugreport.count(:status => "RESOLVED", :product_name => version)
-          db_handler = Bugtrend.first_or_create(
-                       :time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                       :open => open,
-                       :fixed => fixed,
-                       :product_name => version
-                       )
+          attributes = {:time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                        :open => open,
+                        :fixed => fixed,
+                        :product_name => version}
+
+          db_handler = Bugtrend.first_or_create(attributes)
 
           Nailed.save_state(db_handler)
           Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
@@ -72,10 +72,10 @@ module Nailed
           open += Bugreport.count(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)
         end unless values["versions"].nil?
       end
-      db_handler = L3Trend.first_or_create(
-                   :time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                   :open => open
-                   )
+      attributes = {:time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                    :open => open}
+
+      db_handler = L3Trend.first_or_create(attributes)
 
       Nailed.save_state(db_handler)
       Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
@@ -134,11 +134,11 @@ module Nailed
     def write_pull_trends(repo)
       Nailed.log("info", "#{__method__}: Writing pull trends for #{repo}")
       open = Pullrequest.count(:repository_rname => repo)
-      db_handler = Pulltrend.first_or_create(
-                   :time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                   :open => open,
-                   :repository_rname => repo
-                   )
+      attributes = {:time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                    :open => open,
+                    :repository_rname => repo}
+
+      db_handler = Pulltrend.first_or_create(attributes)
 
       Nailed.save_state(db_handler)
       Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
