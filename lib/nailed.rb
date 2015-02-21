@@ -15,6 +15,7 @@ module Nailed
     def get_bugs
       Nailed.get_config["products"].each do |product,values|
         values["versions"].each do |version|
+          Nailed.log("info", "#{__method__}: Fetching bugs for #{version}")
           begin
             Bicho::Bug.where(:product => version).each do |bug|
               attributes = {
@@ -34,6 +35,7 @@ module Nailed
               }
 
               db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
+              Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
             end
           rescue
             Nailed.log("error","Could not fetch Bugs for #{version}.")
@@ -45,6 +47,7 @@ module Nailed
     def write_bug_trends
       Nailed.get_config["products"].each do |product,values|
         values["versions"].each do |version|
+          Nailed.log("info", "#{__method__}: Writing bug trends for #{version}")
           open = Bugreport.count(:is_open => true, :product_name => version)
           fixed = Bugreport.count(:status => "VERIFIED", :product_name => version) + \
                   Bugreport.count(:status => "RESOLVED", :product_name => version)
@@ -56,6 +59,7 @@ module Nailed
                        )
 
           Nailed.save_state(db_handler)
+          Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
         end unless values["versions"].nil?
       end
     end
@@ -64,6 +68,7 @@ module Nailed
       open = 0
       Nailed.get_config["products"].each do |product,values|
         values["versions"].each do |version|
+          Nailed.log("info", "#{__method__}: Aggregating l3 trends for #{version}")
           open += Bugreport.count(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)
         end unless values["versions"].nil?
       end
@@ -73,6 +78,7 @@ module Nailed
                    )
 
       Nailed.save_state(db_handler)
+      Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
     end
   end
 
@@ -89,6 +95,7 @@ module Nailed
         organization = values["organization"]
         repos = values["repos"]
         repos.each do |repo|
+          Nailed.log("info", "#{__method__}: Getting open pullrequests for #{organization}/#{repo}")
           pulls = @client.pull_requests("#{organization}/#{repo}")
           pulls.each do |pr|
             attributes = {:pr_number => pr.number,
@@ -104,16 +111,20 @@ module Nailed
               if pr.state == "closed"
                 # delete record if pr.state changed to "closed"
                 pull_to_update.destroy
+                Nailed.log("info", "#{__method__}: Destroyed closed pullrequest #{pr.repo} ##{pr.number}")
               else
                 # update saves the state, so we dont need a db_handler
                 # TODO check return code for true if saved correctly
                 pull_to_update.update(attributes)
+                Nailed.log("info", "#{__method__}: Updated #{pr.repo} ##{pr.number} with #{attributes.inspect}")
               end
             else
               db_handler = Pullrequest.first_or_create(attributes)
+              Nailed.log("info", "#{__method__}: Created new pullrequest #{pr.repo} ##{pr.number} with #{attributes.inspect}")
             end
 
             Nailed.save_state(db_handler) unless defined? db_handler
+            Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
           end unless pulls.empty?
           write_pull_trends(repo)
         end unless repos.nil?
@@ -121,6 +132,7 @@ module Nailed
     end
 
     def write_pull_trends(repo)
+      Nailed.log("info", "#{__method__}: Writing pull trends for #{repo}")
       open = Pullrequest.count(:repository_rname => repo)
       db_handler = Pulltrend.first_or_create(
                    :time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
@@ -129,16 +141,16 @@ module Nailed
                    )
 
       Nailed.save_state(db_handler)
+      Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
     end
   end
 
   extend self
   # Generic methods
   def log(level,msg)
-    if level == "error"
-      LOGGER.error(msg)
-    else
-      LOGGER.info(msg)
+    if get_config["debug"]
+      LOGGER.error(msg) if level == "error"
+      LOGGER.info(msg) if level == "info"
     end
   end
 
@@ -181,8 +193,8 @@ module Nailed
 
   def save_state(db_handler)
     unless db_handler.save
-      puts("ERROR: see logfile")
-      log("error", db_handler.errors.inspect)
+      puts("ERROR: #{__method__}: see logfile")
+      log("error", "#{__method__}: #{db_handler.errors.inspect}")
     end
   end
 end
