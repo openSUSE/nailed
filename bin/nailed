@@ -77,7 +77,6 @@ opts.each_pair do |key,val|
     end
   when :github
     if val
-      github_client.update_pull_states
       github_client.get_open_pulls
     end
   when :list
