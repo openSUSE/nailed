@@ -91,32 +91,32 @@ module Nailed
         repos.each do |repo|
           pulls = @client.pull_requests("#{organization}/#{repo}")
           pulls.each do |pr|
-            db_handler = Pullrequest.first_or_create(
-                         :pr_number => pr.number,
+            attributes = {:pr_number => pr.number,
                          :title => pr.title,
                          :state => pr.state,
                          :url => pr.html_url,
                          :created_at => pr.created_at,
-                         :repository_rname => repo
-                         )
+                         :repository_rname => repo}
 
-            Nailed.save_state(db_handler)
+            # if pr exists dont create a new record
+            pull_to_update = Pullrequest.all(:pr_number => pr.number, :repository_rname => repo)
+            if pull_to_update
+              if pr.state == "closed"
+                # delete record if pr.state changed to "closed"
+                pull_to_update.destroy
+              else
+                # update saves the state, so we dont need a db_handler
+                # TODO check return code for true if saved correctly
+                pull_to_update.update(attributes)
+              end
+            else
+              db_handler = Pullrequest.first_or_create(attributes)
+            end
+
+            Nailed.save_state(db_handler) unless defined? db_handler
           end unless pulls.empty?
           write_pull_trends(repo)
         end unless repos.nil?
-      end
-    end
-
-    def update_pull_states
-      pulls = Pullrequest.all
-      pulls.each do |db_pull|
-        number = db_pull.pr_number
-        repo = db_pull.repository_rname
-        org = Repository.get(repo).organization_oname
-        github_pull = @client.pull_request("#{org}/#{repo}", number)
-        if github_pull.state == "closed"
-          db_pull.destroy
-        end
       end
     end
 
