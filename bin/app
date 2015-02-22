@@ -39,8 +39,7 @@ class App < Sinatra::Base
     ]
 
     css :bootstrap, '/css/bootstrap/bootstrap.min.css', [
-      '/css/bootstrap/bootstrap.css',
-      '/css/bootstrap/bootstrap-theme.css'
+      '/css/bootstrap/bootstrap.css'
     ]
     css :morris, '/css/morris/morris.min.js', [
       '/css/morris/morris.css'
