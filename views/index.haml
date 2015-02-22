@@ -1,24 +1,26 @@
 !!!
-%section.main-section
-  .row
-    .large-6.columns
-      %h1.title{:align => "center"}
-        Open Bugs by Product
-      #bug_top
-    .large-6.columns
-      %h1.title{:align => "center"}
-        Open Pullrequests by Repo
-      #pull_top
-    .large-12.columns
-      %h1.title{:align => "center"}
-        L3 Trend
-      #l3_trend
+.container
+  %div.col-sm-9.col-md-10.main
+    .row
+      .col-xs-12.col-sm-6
+        %h3.title{:align => "center"}
+          Open Bugs by Product
+        #bug_top
+      .col-xs-12.col-sm-6
+        %h3.title{:align => "center"}
+          Open Pullrequests by Repo
+        #pull_top
+      .col-xs-12.col-sm-12
+        %h3.title{:align => "center"}
+          L3 Trend
+        #l3_trend
 
-!= js :foundation
+!= js :jquery
+!= js :jqueryplugin
+!= js :bootstrap
 != js :morris
 
 :javascript
-  $(document).foundation();
   $(document).ready(function(){
     var colors = ['#FFCDD2','#E1BEE7','#D1C4E9','#C5CAE9','#BBDEFB','#B3E5FC','#B2EBF2','#B2DFDB','#C8E6C9','#DCEDC8','#F0F4C3','#FFF9C4','#FFECB3','#FFE0B2','#FFCCBC','#D7CCC8','#F5F5F5','#CFD8DC','#EF9A9A','#CE93D8','#B39DDB','#9FA8DA','#90CAF9','#81D4FA','#80DEEA','#80CBC4','#A5D6A7','#C5E1A5','#E6EE9C','#FFF59D','#FFE082','#FFCC80','#FFAB91','#BCAAA4','#EEEEEE','#B0BEC5'].reverse();//sort(function() { return 0.5 - Math.random() });
     new Morris.Donut({

@@ -1,46 +1,48 @@
 !!!
-%section.main-section
-  .row
-    %h1.title
-      #{@product}
-  .row
-    .large-12.columns
-      %h5 Bug Trends
-      #bug_trend
-  .row
-    %hr
-    %br
-  .row
-    .large-6.columns
-      %h5 Bug Priorities
-      #bug_prio
-    .large-6.columns
-      %h5 Top 5 Components
-      #top_components
-  .row
-    %hr
-    %br
-  .row
-    .large-12.columns
-      %h5 L3 List
-      %ul{:id => "l3list"}
-        - @allopenl3bugs.each do |l3|
-          %li
-            %a{:href => "#{l3.url}", :target => "_blank", :creation_time => "#{Time.parse(l3.creation_time.to_s).to_i}", :last_change_time => "#{Time.parse(l3.last_change_time.to_s).to_i}"} #{l3.bug_id} -- #{l3.summary}
-    %hr
-    .large-12.columns
-      %h5 Bug List
-    .large-12.columns
-      %ul{:id => "buglist"}
-        - @allopenbugs.each do |ob|
-          %li
-            %a{:href => "#{ob.url}", :target => "_blank", :creation_time => "#{Time.parse(ob.creation_time.to_s).to_i}", :last_change_time => "#{Time.parse(ob.last_change_time.to_s).to_i}"} #{ob.bug_id} -- #{ob.summary}
+.container
+  %div.col-sm-9.col-md-10.main
+    .row
+      %h1.page-header
+        #{@product}
+    .row
+      .col-xs-12.col-sm-12
+        %h5 Bug Trends
+        #bug_trend
+    .row
+      %hr
+      %br
+    .row
+      .col-xs-12.col-sm-6
+        %h5 Bug Priorities
+        #bug_prio
+      .col-xs-12.col-sm-6
+        %h5 Top 5 Components
+        #top_components
+    .row
+      %hr
+      %br
+    .row
+      .col-xs-12.col-sm-12
+        %h5 L3 List
+        %ul{:id => "l3list"}
+          - @allopenl3bugs.each do |l3|
+            %li
+              %a{:href => "#{l3.url}", :target => "_blank", :creation_time => "#{Time.parse(l3.creation_time.to_s).to_i}", :last_change_time => "#{Time.parse(l3.last_change_time.to_s).to_i}"} #{l3.bug_id} -- #{l3.summary}
+      %hr
+      .col-xs-12.col-sm-12
+        %h5 Bug List
+      .col-xs-12.col-sm-12
+        %ul{:id => "buglist"}
+          - @allopenbugs.each do |ob|
+            %li
+              %a{:href => "#{ob.url}", :target => "_blank", :creation_time => "#{Time.parse(ob.creation_time.to_s).to_i}", :last_change_time => "#{Time.parse(ob.last_change_time.to_s).to_i}"} #{ob.bug_id} -- #{ob.summary}
 
-!= js :foundation
+!= js :jquery
+!= js :jqueryplugin
+!= js :bootstrap
 != js :morris
 
 :javascript
-  $(document).foundation();
   $(document).ready(function(){
     var colors = ['#B39DDB','#9FA8DA','#90CAF9','#81D4FA','#80DEEA','#80CBC4','#A5D6A7','#C5E1A5','#E6EE9C','#FFF59D','#FFE082','#FFCC80','#FFAB91','#BCAAA4','#EEEEEE'].reverse();
     // BugZilla
@@ -125,4 +127,8 @@
         $(value).css("color","#D50000").attr('title', 'last change > one month');
       }
     });
+  });
+  $(document).ready(function(){
+    $('#searchfilter').quickfilter('#buglist li');
+    $('#searchfilter').quickfilter('#l3list li');
   });

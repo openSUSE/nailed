@@ -1,25 +1,26 @@
 !!!
-%section.main-section
-  .row
-    %h1.title
-      #{@repo}
-  .row
-    %span Pull Request Trend
-    .large-12.columns
-      #pull_trend
-  .row
-    %span Pull Requests
-    .large-12.columns
-      %ul
-        - @allpulls.each do |pull|
-          %li
-            %a{:href => "#{pull.url}", :target => "_blank", :creation_time => "#{Time.parse(pull.created_at.to_s).to_i}"} #{pull.pr_number} -- #{pull.title}
+.container
+  %div.col-sm-9.col-md-10.main
+    .row
+      %h1.title
+        #{@repo}
+      %span Pull Request Trend
+      .col-xs-12.col-sm-12
+        #pull_trend
+    .row
+      %span Pull Requests
+      .col-xs-12.col-sm-12
+        %ul
+          - @allpulls.each do |pull|
+            %li
+              %a{:href => "#{pull.url}", :target => "_blank", :creation_time => "#{Time.parse(pull.created_at.to_s).to_i}"} #{pull.pr_number} -- #{pull.title}
 
-!= js :foundation
+!= js :jquery
+!= js :jqueryplugin
+!= js :bootstrap
 != js :morris
 
 :javascript
-  $(document).foundation();
   $(document).ready(function(){
     var colors = ['#B39DDB','#9FA8DA','#90CAF9','#81D4FA','#80DEEA','#80CBC4','#A5D6A7','#C5E1A5','#E6EE9C','#FFF59D','#FFE082','#FFCC80','#FFAB91','#BCAAA4','#EEEEEE'].reverse();
     // GitHub

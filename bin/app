@@ -19,26 +19,34 @@ class App < Sinatra::Base
   register Sinatra::AssetPack
 
   assets {
-    serve '/js',     from: '../public/vendor/js'
-    serve '/css',    from: '../public/vendor/css'
-    serve '/images', from: '../public/images'
+    serve '/js',        from: '../public/vendor/js'
+    serve '/css',       from: '../public/vendor/css'
+    serve '/customcss', from: '../public/css'
+    serve '/images',    from: '../public/images'
 
-    js :foundation, '/js/foundation.min.js', [
-      '/js/external/*.js',
-      '/js/foundation/foundation.js',
-      '/js/foundation/*.js'
+    js :jquery, '/js/external/jquery-1.11.2.min.js', [
+      '/js/external/jquery-1.11.2.js'
     ]
-    js :morris, '/js/morris.min.js', [
+    js :jqueryplugin, [
+      '/js/external/jquery.quickfilter.js'
+    ]
+    js :bootstrap, '/js/bootstrap/bootstrap.min.js', [
+      '/js/bootstrap/bootstrap.js'
+    ]
+    js :morris, '/js/morris/morris.min.js', [
       '/js/morris/morris.js',
       '/js/morris/raphael.js'
     ]
 
-    css :foundation, '/css/foundation.min.css', [
-      '/css/foundation.css',
-      '/css/normalize.css'
+    css :bootstrap, '/css/bootstrap/bootstrap.min.css', [
+      '/css/bootstrap/bootstrap.css',
+      '/css/bootstrap/bootstrap-theme.css'
     ]
-    css :morris, '/css/morris.min.js', [
-      '/css/morris.css'
+    css :morris, '/css/morris/morris.min.js', [
+      '/css/morris/morris.css'
+    ]
+    css :customcss, [
+      '/customcss/navbar.css'
     ]
 
     js_compression  :jsmin
