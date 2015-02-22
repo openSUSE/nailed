@@ -22,9 +22,11 @@ $.extend($.fn,{
                 if(query.replace(/\s/g,"") != ""){
                     $(el+':exists("' + query.toString() + '")').show();
                     $(el+':missing("' + query.toString() + '")').hide();
+                    $('.row').not('.no-hide').hide();
                 }
                 else {
                     $(el).show();
+                    $('.row').not('.no-hide').show();
                 }
             });
         });

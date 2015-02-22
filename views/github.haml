@@ -7,10 +7,10 @@
       %span Pull Request Trend
       .col-xs-12.col-sm-12
         #pull_trend
-    .row
+    .row.no-hide
       %span Pull Requests
       .col-xs-12.col-sm-12
-        %ul
+        %ul{:id => 'prlist'}
           - @allpulls.each do |pull|
             %li
               %a{:href => "#{pull.url}", :target => "_blank", :creation_time => "#{Time.parse(pull.created_at.to_s).to_i}"} #{pull.pr_number} -- #{pull.title}
@@ -62,4 +62,7 @@
         $(value).css("color","#D50000").attr('title', 'opened > one month ago');
       }
     });
+  });
+  $(document).ready(function(){
+    $('#searchfilter').quickfilter('#prlist li');
   });
