@@ -4,9 +4,6 @@ require "trollop"
 require File.join(File.expand_path("..", File.dirname(__FILE__)),"lib","nailed")
 require File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
 
-bugzilla_client = Nailed::Bugzilla.new
-github_client = Nailed::Github.new
-
 opts = Trollop::options do
   opt :migrate, "Set database to pristine state", :short => 'm'
   opt :upgrade, "Upgrade database", :short => 'u'
@@ -71,17 +68,20 @@ opts.each_pair do |key,val|
     end
   when :bugzilla
     if val
+      bugzilla_client = Nailed::Bugzilla.new
       bugzilla_client.get_bugs
       bugzilla_client.write_bug_trends
       bugzilla_client.write_l3_trends
     end
   when :github
     if val
+      github_client = Nailed::Github.new
       github_client.get_open_pulls
     end
   when :list
     if val
       begin
+        github_client = Nailed::Github.new
         Nailed.list_org_repos(github_client.client, val)
       rescue
       end
