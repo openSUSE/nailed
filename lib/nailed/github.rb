@@ -49,9 +49,9 @@ module Nailed
         repo = db_pull.repository_rname
         org = Repository.get(repo).organization_oname
         github_pull = @client.pull_request("#{org}/#{repo}", number)
-        Nailed.log("info", "#{__method__}: Checking state of pullrequest #{number} from #{organization}/#{repo}")
+        Nailed.log("info", "#{__method__}: Checking state of pullrequest #{number} from #{org}/#{repo}")
         if github_pull.state == "closed"
-          Nailed.log("info", "#{__method__}: Deleting closed pullrequest #{number} from #{organization}/#{repo}")
+          Nailed.log("info", "#{__method__}: Deleting closed pullrequest #{number} from #{org}/#{repo}")
           db_pull.destroy
         end
       end
