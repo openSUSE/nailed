@@ -24,10 +24,10 @@ module Nailed
 
             # if pr exists dont create a new record
             pull_to_update = Pullrequest.all(:pr_number => pr.number, :repository_rname => repo)
-            if pull_to_update
+            unless pull_to_update.empty?
               # update saves the state, so we dont need a db_handler
               # TODO check return code for true if saved correctly
-              pull_to_update.update(attributes)
+              pull_to_update[0].update(attributes)
               Nailed.log("info", "#{__method__}: Updated #{pr.repo} ##{pr.number} with #{attributes.inspect}")
             else
               db_handler = Pullrequest.first_or_create(attributes)
