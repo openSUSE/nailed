@@ -93,6 +93,9 @@ class App < Sinatra::Base
     @github_repos = get_github_repos
     @l3trend = get_trends(:l3, nil)
     @allpulls = repository(:default).adapter.select("SELECT COUNT(repository_rname) AS open, repository_rname AS label FROM pullrequests GROUP BY repository_rname")
+    @allopenl3bugs = (Bugreport.all(:is_open => true, :whiteboard.like => "%openL3%")).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
+    @allopenbugs = (Bugreport.all(:is_open => true) -
+                    Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true)).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
 
     @bugtop = []
     Nailed.get_config["products"].each do |product,values|
