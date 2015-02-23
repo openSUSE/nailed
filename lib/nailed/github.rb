@@ -48,6 +48,21 @@ module Nailed
       end
     end
 
+    def update_pull_states
+      pulls = Pullrequest.all
+      pulls.each do |db_pull|
+        number = db_pull.pr_number
+        repo = db_pull.repository_rname
+        org = Repository.get(repo).organization_oname
+        github_pull = @client.pull_request("#{org}/#{repo}", number)
+        Nailed.log("info", "#{__method__}: Checking state of pullrequest #{number} from #{organization}/#{repo}")
+        if github_pull.state == "closed"
+          Nailed.log("info", "#{__method__}: Deleting closed pullrequest #{number} from #{organization}/#{repo}")
+          db_pull.destroy
+        end
+      end
+    end
+
     def write_pull_trends(repo)
       Nailed.log("info", "#{__method__}: Writing pull trends for #{repo}")
       open = Pullrequest.count(:repository_rname => repo)
