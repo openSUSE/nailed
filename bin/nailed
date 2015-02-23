@@ -42,6 +42,7 @@ opts.each_pair do |key,val|
         Repository.auto_migrate!
         Pullrequest.auto_migrate!
         Pulltrend.auto_migrate!
+        github_client = Nailed::Github.new
         Nailed.fill_db_after_migration(github_client.client)
         Nailed.log("info", "Database migrated")
         abort "Database migrated"
@@ -61,6 +62,7 @@ opts.each_pair do |key,val|
         Repository.auto_upgrade!
         Pullrequest.auto_upgrade!
         Pulltrend.auto_upgrade!
+        github_client = Nailed::Github.new
         Nailed.fill_db_after_migration(github_client.client)
         Nailed.log("info", "Database upgraded")
         abort "Database upgraded"
