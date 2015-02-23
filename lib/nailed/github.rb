@@ -25,16 +25,10 @@ module Nailed
             # if pr exists dont create a new record
             pull_to_update = Pullrequest.all(:pr_number => pr.number, :repository_rname => repo)
             if pull_to_update
-              if pr.state == "closed"
-                # delete record if pr.state changed to "closed"
-                pull_to_update.destroy
-                Nailed.log("info", "#{__method__}: Destroyed closed pullrequest #{pr.repo} ##{pr.number}")
-              else
-                # update saves the state, so we dont need a db_handler
-                # TODO check return code for true if saved correctly
-                pull_to_update.update(attributes)
-                Nailed.log("info", "#{__method__}: Updated #{pr.repo} ##{pr.number} with #{attributes.inspect}")
-              end
+              # update saves the state, so we dont need a db_handler
+              # TODO check return code for true if saved correctly
+              pull_to_update.update(attributes)
+              Nailed.log("info", "#{__method__}: Updated #{pr.repo} ##{pr.number} with #{attributes.inspect}")
             else
               db_handler = Pullrequest.first_or_create(attributes)
               Nailed.log("info", "#{__method__}: Created new pullrequest #{pr.repo} ##{pr.number} with #{attributes.inspect}")
