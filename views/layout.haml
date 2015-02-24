@@ -27,13 +27,13 @@
                   %span.caret
                 %ul.dropdown-menu{:role => 'menu'}
                   %li.dropdown-header
-                  Bugzilla
+                    Bugzilla
                   - @products.each do |product|
                     %li
                       %a{:href => "/#{product.gsub(/ /,'_')}/bugzilla"} #{product}
                   %li.divider
                   %li.dropdown-header
-                  GitHub
+                    GitHub
                   - @github_repos.each do |repo|
                     %li
                       %a{:href => "/github/#{repo}"} #{repo}
