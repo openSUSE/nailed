@@ -4,12 +4,13 @@
     .row
       %h1.title
         #{@repo}
-      %span Pull Request Trend
+    .row
       .col-xs-12.col-sm-12
+        %h5 Pull Request Trend
         #pull_trend
     .row.no-hide
-      %span Pull Requests
       .col-xs-12.col-sm-12
+        %h5 Pull Requests
         %ul{:id => 'prlist'}
           - @allpulls.each do |pull|
             %li
