@@ -8,8 +8,9 @@ e.g. it relies on bugs being tagged as L3. The plan is to make it optional in th
 
 ## Installation using gem
 `gem install 'nailed'`
+Note that this is always a bit outdated.
 
-## Installation using git
+## Installation using git (recommended)
 You can use nailed directly from a git checkout as well. Make sure to fetch the dependencies and call `nailed` from the `bin` directory.
 ### SUSE
 ```
