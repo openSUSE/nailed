@@ -57,6 +57,7 @@ All configuration is read from `config/config.yml`
 ---
 debug: # true for debugging
 title: # Give me a name, or (default) call me Dashboard
+theme: # One of cerulean cosmo cyborg darkly flatly journal lumen paper readable sandstone simplex slate spacelab superhero united yeti (see http://bootswatch.com). Leave empty for default
 port: # Specify a port where you can reach the webinterface, or (default) 4567
 bugzilla:
   url: # Url of your Bugzilla instance

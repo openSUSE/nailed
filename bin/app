@@ -15,6 +15,7 @@ class App < Sinatra::Base
   set :views, File.join(ROOT_PATH, "views")
   set :bind, "0.0.0.0"
   set :port, Nailed.get_config["port"] || 4567
+  theme = Nailed.get_config["theme"] || "default"
 
   register Sinatra::AssetPack
 
@@ -38,8 +39,8 @@ class App < Sinatra::Base
       "/js/morris/raphael.js"
     ]
 
-    css :bootstrap, '/css/bootstrap/bootstrap.min.css', [
-      '/css/bootstrap/bootstrap.css'
+    css :bootstrap, "/css/bootstrap/#{theme}/bootstrap.min.css", [
+      "/css/bootstrap/#{theme}/bootstrap.css"
     ]
     css :morris, "/css/morris/morris.min.js", [
       "/css/morris/morris.css"
