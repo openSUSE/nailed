@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
-require 'sinatra/base'
-require 'sinatra/assetpack'
-require 'haml'
-require 'json'
-require 'time'
+require "sinatra/base"
+require "sinatra/assetpack"
+require "haml"
+require "json"
+require "time"
 require File.join(File.expand_path("..", File.dirname(__FILE__)),"lib","nailed")
 require  File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
 
@@ -13,39 +13,39 @@ class App < Sinatra::Base
   self.set :root, File.join(ROOT_PATH, "lib")
   set :public_folder, File.join(ROOT_PATH, "public")
   set :views, File.join(ROOT_PATH, "views")
-  set :bind, '0.0.0.0'
+  set :bind, "0.0.0.0"
   set :port, Nailed.get_config["port"] || 4567
 
   register Sinatra::AssetPack
 
   assets {
-    serve '/js',        from: '../public/vendor/js'
-    serve '/css',       from: '../public/vendor/css'
-    serve '/customcss', from: '../public/css'
-    serve '/images',    from: '../public/images'
+    serve "/js",        from: "../public/vendor/js"
+    serve "/css",       from: "../public/vendor/css"
+    serve "/customcss", from: "../public/css"
+    serve "/images",    from: "../public/images"
 
-    js :jquery, '/js/external/jquery-1.11.2.min.js', [
-      '/js/external/jquery-1.11.2.js'
+    js :jquery, "/js/external/jquery-1.11.2.min.js", [
+      "/js/external/jquery-1.11.2.js"
     ]
     js :jqueryplugin, [
-      '/js/external/jquery.quickfilter.js'
+      "/js/external/jquery.quickfilter.js"
     ]
-    js :bootstrap, '/js/bootstrap/bootstrap.min.js', [
-      '/js/bootstrap/bootstrap.js'
+    js :bootstrap, "/js/bootstrap/bootstrap.min.js", [
+      "/js/bootstrap/bootstrap.js"
     ]
-    js :morris, '/js/morris/morris.min.js', [
-      '/js/morris/morris.js',
-      '/js/morris/raphael.js'
+    js :morris, "/js/morris/morris.min.js", [
+      "/js/morris/morris.js",
+      "/js/morris/raphael.js"
     ]
 
     css :bootstrap, '/css/bootstrap/bootstrap.min.css', [
       '/css/bootstrap/bootstrap.css'
     ]
-    css :morris, '/css/morris/morris.min.js', [
-      '/css/morris/morris.css'
+    css :morris, "/css/morris/morris.min.js", [
+      "/css/morris/morris.css"
     ]
     css :customcss, [
-      '/customcss/navbar.css'
+      "/customcss/navbar.css"
     ]
 
     js_compression  :jsmin
@@ -55,7 +55,7 @@ class App < Sinatra::Base
   before do
     @title = Nailed.get_config["title"] || "Dashboard"
     @products = Nailed.get_config["products"].map{|p,v| v["versions"]}.flatten.compact
-    @product_query = @products.join('&product=')
+    @product_query = @products.join("&product=")
   end
 
   helpers do
@@ -89,7 +89,7 @@ class App < Sinatra::Base
   end
 
   # define sinatra routes
-  get '/' do
+  get "/" do
     @github_repos = get_github_repos
     @l3trend = get_trends(:l3, nil)
     @allpulls = repository(:default).adapter.select("SELECT COUNT(repository_rname) AS open, repository_rname AS label FROM pullrequests GROUP BY repository_rname")
