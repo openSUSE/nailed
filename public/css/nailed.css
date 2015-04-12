@@ -5,3 +5,7 @@ body {
 .navbar-static-top {
   margin-bottom: 19px;
 }
+
+.table th, .table td {
+     border-top: none !important;
+}

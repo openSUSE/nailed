@@ -26,6 +26,12 @@
                 %span.caret
               %ul.dropdown-menu{:role => 'menu'}
                 %li.dropdown-header
+                  Jenkins
+                - @jenkins_jobs.each do |job|
+                  %li
+                    %a{:href => "/jenkins/#{job}"} #{job}
+                %li.divider
+                %li.dropdown-header
                   Bugzilla
                 - @products.each do |product|
                   %li

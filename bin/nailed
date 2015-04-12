@@ -9,6 +9,7 @@ opts = Trollop::options do
   opt :upgrade, "Upgrade database", :short => 'u'
   opt :bugzilla, "Refresh bugzilla database records", :short => 'b'
   opt :github, "Refresh github database records", :short => 'g'
+  opt :jenkins, "Refresh jenkins database records", :short => 'j'
   opt :list, "List github repositories within organization", :type => :string, :short => 'l'
   opt :server, "Start a dashboard webinterface", :short => 's'
 end
@@ -42,6 +43,9 @@ opts.each_pair do |key,val|
         Repository.auto_migrate!
         Pullrequest.auto_migrate!
         Pulltrend.auto_migrate!
+        JenkinsParameter.auto_migrate!
+        JenkinsParameterValue.auto_migrate!
+        JenkinsBuild.auto_migrate!
         github_client = Nailed::Github.new
         Nailed.fill_db_after_migration(github_client.client)
         Nailed.log("info", "Database migrated")
@@ -62,6 +66,9 @@ opts.each_pair do |key,val|
         Repository.auto_upgrade!
         Pullrequest.auto_upgrade!
         Pulltrend.auto_upgrade!
+        JenkinsParameter.auto_upgrade!
+        JenkinsParameterValue.auto_upgrade!
+        JenkinsBuild.auto_upgrade!
         github_client = Nailed::Github.new
         Nailed.fill_db_after_migration(github_client.client)
         Nailed.log("info", "Database upgraded")
@@ -80,6 +87,13 @@ opts.each_pair do |key,val|
       github_client = Nailed::Github.new
       github_client.update_pull_states
       github_client.get_open_pulls
+    end
+  when :jenkins
+    if val
+      jenkins_client = Nailed::Jenkins.new
+      jenkins_client.update_parameters
+      jenkins_client.update_build_numbers
+      jenkins_client.update_build_details
     end
   when :list
     if val

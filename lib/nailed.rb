@@ -2,8 +2,10 @@ require 'logger'
 require 'yaml'
 require "octokit"
 require "bicho"
+require "jenkins_api_client"
 require_relative "nailed/bugzilla"
 require_relative "nailed/github"
+require_relative "nailed/jenkins"
 require_relative "nailed/version"
 require  File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
 
@@ -57,7 +59,7 @@ module Nailed
 
   def save_state(db_handler)
     unless db_handler.save
-      puts("ERROR: #{__method__}: see logfile")
+      puts("ERROR: #{__method__}: set debug true and see logfile")
       log("error", "#{__method__}: #{db_handler.errors.inspect}")
     end
   end
