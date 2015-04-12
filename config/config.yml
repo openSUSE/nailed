@@ -5,6 +5,12 @@ theme: # One of cerulean cosmo cyborg darkly flatly journal lumen paper readable
 port: # Specify a port where you can reach the webinterface, or (default) 4567
 bugzilla:
   url: # Url of your Bugzilla instance
+jenkins:
+  server_ip: # Server IP of your Jenkins instace
+  username: # Username of your Jenkins instance
+  api_token: # API Token of your Jenkins instance
+  jobs:
+  # Array of Jenkins jobs/workers as they appear in Jenkins
 products:
   example_product: # Just a a short key/name for the product (can be arbitrary)
     versions:

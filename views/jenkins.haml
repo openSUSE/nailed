@@ -1,0 +1,40 @@
+!!!
+.container
+  %div.col-md-12
+    .row.no-hide
+      %h1.title #{@job}
+    .row.no-hide
+    - @view_object.each do |table_name, table_data|
+      .col-md-12
+        %h5.title #{table_name}
+        %table.table
+          - table_data.each do |parameter_name, build_data|
+            - parameter_name.empty? && parameter_name = "undefined"
+            %tr{:id => "parametercolumn-#{table_name}-#{parameter_name}"}
+              %td.col-md-2{:align => "right"}
+                #{parameter_name}
+              - build_data.each do |build_number, build_details|
+                - if build_details[:build_result] == "SUCCESS"
+                  %td
+                    %a.btn-sm.btn-success{:id => "successful-#{build_number}", :href => "#{build_details[:build_url]}", :target => "_blank", :data => {:container => "body", :content => "#{build_details[:build_parameters]}", :toggle => "popover", :trigger => "hover"}}
+                      #{build_number}
+                - if build_details[:build_result] == "FAILURE"
+                  %td
+                    %a.btn-sm.btn-danger{:id => "failed-#{build_number}", :href => "#{build_details[:build_url]}", :target => "_blank", :data => {:container => "body", :content => "#{build_details[:build_parameters]}", :toggle => "popover", :trigger => "hover"}}
+                      #{build_number}
+          %hr
+
+!= js :jquery
+!= js :jqueryplugin
+!= js :bootstrap
+!= js :morris
+
+:javascript
+  $(function () {
+      $("[data-toggle='popover']").popover();
+  });
+  $(document).ready(function(){
+    $('#searchfilter').quickfilter('[id^=parametercolumn]');
+    $('#searchfilter').quickfilter('[id^=successful]');
+    $('#searchfilter').quickfilter('[id^=failed]');
+  });
