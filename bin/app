@@ -110,7 +110,7 @@ class App < Sinatra::Base
 
     # find equal jenkins builds
     def get_equal_builds(job, build_number)
-      JenkinsBuild.all(:job => job, :number => build_number).map(&:equal_builds)
+      JenkinsBuild.all(:job => job, :number => build_number).map(&:equal_builds)[0].split(",").take(10)
     end
 
     # generates a view object for a specific build parameter within a job

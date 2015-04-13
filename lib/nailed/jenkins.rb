@@ -122,7 +122,7 @@ module Nailed
         end
       end
       build_to_update = JenkinsBuild.all(:job => job, :number => build_number)
-      build_to_update.update(:equal_builds => equal_builds.to_json)
+      build_to_update.update(:equal_builds => equal_builds.join(","))
     end
   end
 end
