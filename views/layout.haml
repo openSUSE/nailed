@@ -12,38 +12,35 @@
     %nav.navbar.navbar-default.navbar-static-top{:role => 'navigation'}
       .container
         .navbar-header
-          -#%button.navbar-toggle.collapsed{:type => 'button', :data => {:toggle => 'collapse'}, :data => {:target => '.navbar-collapse'}}
-            %span.sr-only
-            %span.icon-bar
-            %span.icon-bar
-            %span.icon-bar
           %a.navbar-brand{:href => '/'} #{@title}
         #navbar.navbar-collapse.collapse
+          %form.navbar-form.navbar-right
+            %input.form-control{:type => 'text', :placeholder => 'Filter', :id => 'searchfilter'}
           %ul.nav.navbar-nav.pull-right
             %li.dropdown
               %a.dropdown-toggle{:role => 'button', :data => {:toggle => 'dropdown'}, :href => '/'}
-                Menu
+                Jenkins
                 %span.caret
               %ul.dropdown-menu{:role => 'menu'}
-                %li.dropdown-header
-                  Jenkins
                 - @jenkins_jobs.each do |job|
                   %li
                     %a{:href => "/jenkins/#{job}"} #{job}
-                %li.divider
-                %li.dropdown-header
-                  Bugzilla
+            %li.dropdown
+              %a.dropdown-toggle{:role => 'button', :data => {:toggle => 'dropdown'}, :href => '/'}
+                Bugzilla
+                %span.caret
+              %ul.dropdown-menu{:role => 'menu'}
                 - @products.each do |product|
                   %li
                     %a{:href => "/#{product.gsub(/ /,'_')}/bugzilla"} #{product}
-                %li.divider
-                %li.dropdown-header
-                  GitHub
+            %li.dropdown
+              %a.dropdown-toggle{:role => 'button', :data => {:toggle => 'dropdown'}, :href => '/'}
+                Github
+                %span.caret
+              %ul.dropdown-menu{:role => 'menu'}
                 - @github_repos.each do |repo|
                   %li
                     %a{:href => "/github/#{repo}"} #{repo}
-          %form.navbar-form.navbar-right
-            %input.form-control{:type => 'text', :placeholder => 'Filter', :id => 'searchfilter'}
     = yield
     :javascript
       $('.collapse').collapse();
