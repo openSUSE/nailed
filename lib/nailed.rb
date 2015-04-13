@@ -13,6 +13,7 @@ module Nailed
   LOGGER = Logger.new(File.join(File.expand_path("..", File.dirname(__FILE__)),"log","nailed.log"))
 
   extend self
+  # generic helpers
   def log(level,msg)
     if get_config["debug"]
       LOGGER.error(msg) if level == "error"
@@ -25,6 +26,15 @@ module Nailed
     YAML.load_file(conf)
   end
 
+  # database helpers
+  def save_state(db_handler)
+    unless db_handler.save
+      puts("ERROR: #{__method__}: set debug true and see logfile")
+      log("error", "#{__method__}: #{db_handler.errors.inspect}")
+    end
+  end
+
+  # github helpers
   def get_org_repos(github_client, org)
     all_repos = github_client.org_repos(org)
     all_repos.map(&:name)
@@ -57,10 +67,14 @@ module Nailed
     repos.each {|r| puts "- #{r}"}
   end
 
-  def save_state(db_handler)
-    unless db_handler.save
-      puts("ERROR: #{__method__}: set debug true and see logfile")
-      log("error", "#{__method__}: #{db_handler.errors.inspect}")
+  # jenkins helpers
+  def get_jenkins_jobs_from_yaml
+    jobs = []
+    get_config["products"].each do |product,values|
+      values["jobs"].each do |job|
+        jobs << job
+      end unless values["jobs"].nil?
     end
+    jobs
   end
 end
