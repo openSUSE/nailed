@@ -21,6 +21,7 @@ class App < Sinatra::Base
 
   assets {
     serve "/js",        from: "../public/vendor/js"
+    serve "/customjs",  from: "../public/js"
     serve "/css",       from: "../public/vendor/css"
     serve "/customcss", from: "../public/css"
     serve "/images",    from: "../public/images"
@@ -37,6 +38,12 @@ class App < Sinatra::Base
     js :morris, "/js/morris/morris.min.js", [
       "/js/morris/morris.js",
       "/js/morris/raphael.js"
+    ]
+    js :customjs, [
+      "/customjs/bugzilla.js",
+      "/customjs/jenkins.js",
+      "/customjs/github.js",
+      "/customjs/index.js"
     ]
 
     css :bootstrap, "/css/bootstrap/#{theme}/bootstrap.min.css", [
