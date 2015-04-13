@@ -29,8 +29,8 @@ module Nailed
     end
 
     def update_parameters
-      Nailed.get_config["jenkins"]["jobs"].each do |job|
-        Nailed.log("info", "#{__method__}: Updating paramters for #{job}")
+      Nailed.get_jenkins_jobs_from_yaml.each do |job|
+        Nailed.log("info", "#{__method__}: Updating parameters for #{job}")
         parameters = get_build_params(job)
         parameters.each do |parameter|
           attributes = {
@@ -48,7 +48,7 @@ module Nailed
     end
 
     def update_build_numbers
-      Nailed.get_config["jenkins"]["jobs"].each do |job|
+      Nailed.get_jenkins_jobs_from_yaml.each do |job|
         Nailed.log("info", "#{__method__}: Updating builds for #{job}")
         builds = get_builds(job)
         builds.each do |build|
@@ -66,7 +66,7 @@ module Nailed
     end
 
     def update_build_details
-      Nailed.get_config["jenkins"]["jobs"].each do |job|
+      Nailed.get_jenkins_jobs_from_yaml.each do |job|
         Nailed.log("info", "#{__method__}: Updating build details for #{job}")
         builds = get_builds(job)
         builds.each do |build|

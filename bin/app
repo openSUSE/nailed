@@ -95,7 +95,7 @@ class App < Sinatra::Base
     ### jenkins helpers
 
     def get_jenkins_jobs
-      Nailed.get_config["jenkins"]["jobs"]
+      Nailed.get_jenkins_jobs_from_yaml
     end
 
     # returns a formatted string with all build parameters for the popover
@@ -216,7 +216,7 @@ class App < Sinatra::Base
     end
   end
 
-  Nailed.get_config["jenkins"]["jobs"].each do |job|
+  Nailed.get_jenkins_jobs_from_yaml.each do |job|
     get "/jenkins/#{job}" do
       @github_repos = get_github_repos
       @jenkins_jobs = get_jenkins_jobs
