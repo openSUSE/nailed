@@ -66,8 +66,6 @@ jenkins:
   server_ip: # Server IP of your Jenkins instace
   username: # Username of your Jenkins instance
   api_token: # API Token of your Jenkins instance
-  jobs:
-  # Array of Jenkins jobs/workers as they appear in Jenkins
 products:
   example_product: # Just a a short key/name for the product (can be arbitrary)
     versions:
@@ -77,7 +75,9 @@ products:
     repos:
     # Array of GitHub repository names, as they appear in GitHub
     # query available repos with nailed -l <organization>
-  # continue adding more products here
+    jobs:
+    # Array of Jenkins jobs/workers as they appear in Jenkins
+    # continue adding more products here
 
 ```
 
