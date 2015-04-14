@@ -14,7 +14,10 @@
         %ul{:id => 'prlist'}
           - @allpulls.each do |pull|
             %li
-              %a{:href => "#{pull.url}", :target => "_blank", :creation_time => "#{Time.parse(pull.created_at.to_s).to_i}"} #{pull.pr_number} -- #{pull.title}
+              %a{:href => "#{pull.url}",
+                 :target => "_blank",
+                 :creation_time => "#{Time.parse(pull.created_at.to_s).to_i}"}
+                #{pull.pr_number} -- #{pull.title}
 
 != js :jquery
 != js :jqueryplugin
@@ -24,6 +27,7 @@
 
 :javascript
   $(document).ready(function(){
-    github(#{@pulltrend},'#{@github_url_all_pulls}');
+    github(#{@pulltrend},'#{@github_url_all_pulls}',#{@colors.to_json});
+    githubCreationTime("#{@theme_type}", #{@colors.to_json});
     $('#searchfilter').quickfilter('#prlist li');
   });

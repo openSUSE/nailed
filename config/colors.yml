@@ -1,0 +1,79 @@
+---
+line:
+  red: "#E57373"
+  orange: "#FFB74D"
+  yellow: "#FFF176"
+  green: "#81C784"
+  blue: "#64B5F6"
+bar:
+  red: "#E57373"
+  orange: "#FFB74D"
+  yellow: "#FFF176"
+  green: "#81C784"
+  blue: "#64B5F6"
+pie:
+  red: "#E57373"
+  orange: "#FFB74D"
+  yellow: "#FFF176"
+  green: "#81C784"
+  blue: "#64B5F6"
+grey:
+  young:
+    text: "mdc-text-grey-600"
+    bg:   "mdc-bg-grey-600"
+  adult:
+    text: "mdc-text-grey-300"
+    bg:   "mdc-bg-grey-300"
+  old:
+    text: "mdc-text-grey-100"
+    bg:   "mdc-bg-grey-100"
+red:
+  young:
+    text: "mdc-text-red-600"
+    bg:   "mdc-bg-red-600"
+  adult:
+    text: "mdc-text-red-300"
+    bg:   "mdc-bg-red-300"
+  old:
+    text: "mdc-text-red-100"
+    bg:   "mdc-bg-red-100"
+orange:
+  young:
+    text: "mdc-text-orange-500"
+    bg:   "mdc-bg-orange-500"
+  adult:
+    text: "mdc-text-orange-300"
+    bg:   "mdc-bg-orange-300"
+  old:
+    text: "mdc-text-orange-100"
+    bg:   "mdc-bg-orange-100"
+yellow:
+  young:
+    text: "mdc-text-yellow-400"
+    bg:   "mdc-bg-yellow-400"
+  adult:
+    text: "mdc-text-yellow-300"
+    bg:   "mdc-bg-yellow-300"
+  old:
+    text: "mdc-text-yellow-100"
+    bg:   "mdc-bg-yellow-100"
+green:
+  young:
+    text: "mdc-text-green-600"
+    bg:   "mdc-bg-green-600"
+  adult:
+    text: "mdc-text-green-300"
+    bg:   "mdc-bg-green-300"
+  old:
+    text: "mdc-text-green-100"
+    bg:   "mdc-bg-green-100"
+blue:
+  young:
+    text: "mdc-text-blue-600"
+    bg:   "mdc-bg-blue-600"
+  adult:
+    text: "mdc-text-blue-300"
+    bg:   "mdc-bg-blue-300"
+  old:
+    text: "mdc-text-blue-100"
+    bg:   "mdc-bg-blue-100"

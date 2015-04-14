@@ -26,6 +26,11 @@ module Nailed
     YAML.load_file(conf)
   end
 
+  def get_colors
+    conf = File.join(File.expand_path("..", File.dirname(__FILE__)),"config","colors.yml")
+    YAML.load_file(conf)
+  end
+
   # database helpers
   def save_state(db_handler)
     unless db_handler.save

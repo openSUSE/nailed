@@ -1,5 +1,4 @@
-function bugzilla(product, bugtrend, bugprio, top5_components){
-  var colors = ['#B39DDB','#9FA8DA','#90CAF9','#81D4FA','#80DEEA','#80CBC4','#A5D6A7','#C5E1A5','#E6EE9C','#FFF59D','#FFE082','#FFCC80','#FFAB91','#BCAAA4','#EEEEEE'].reverse();
+function bugzilla(product, bugtrend, bugprio, top5_components, colors){
   // BugZilla
   new Morris.Line({
     element: 'bug_trend',
@@ -12,7 +11,9 @@ function bugzilla(product, bugtrend, bugprio, top5_components){
     fillOpacity: 0.5,
     smooth: false,
     hideHover: true,
-    lineColors: ["#42A5F5", "#D4E157"],
+    lineColors: [ colors["line"]["red"],
+                  colors["line"]["green"]
+                ],
     hoverCallback: function (index, options, content, row) {
       return content;
     }
@@ -31,7 +32,12 @@ function bugzilla(product, bugtrend, bugprio, top5_components){
     resize: true,
     stacked: true,
     hideHover: true,
-    barColors: colors,
+    barColors: [ colors["bar"]["red"],
+                 colors["bar"]["orange"],
+                 colors["bar"]["yellow"],
+                 colors["bar"]["green"],
+                 colors["bar"]["blue"]
+               ],
     hoverCallback: function (index, options, content, row) {
       var ret = '';
       if (typeof row.p1 !== "undefined")
@@ -54,7 +60,12 @@ function bugzilla(product, bugtrend, bugprio, top5_components){
   new Morris.Donut({
     element: 'top_components',
     data: top5_components,
-    colors: colors,
+    colors: [ colors["pie"]["red"],
+              colors["pie"]["orange"],
+              colors["pie"]["yellow"],
+              colors["pie"]["green"],
+              colors["pie"]["blue"]
+            ],
     resize: true,
     formatter: function(y, data){
       return y;
@@ -65,22 +76,4 @@ function bugzilla(product, bugtrend, bugprio, top5_components){
     else
       window.open("https://bugzilla.suse.com/buglist.cgi?order=Importance&component="+row.label+"&product="+product+"&query_format=advanced&resolution=---");
   });
-  $("[last_change_time]").each(function (index, value){
-    var one_week = 604800;
-    var two_weeks = 1209600;
-    var one_month = 2629743;
-    var now = Math.round((new Date()).getTime() / 1000);
-    var then = $(this).attr("last_change_time");
-    var diff = now - then;
-    if (diff < one_week) {
-      $(value).css("color","#212121").attr('title', 'last change < one week');
-    } else if (diff < two_weeks) {
-      $(value).css("color","#E57373").attr('title', 'last change < two weeks');
-    } else if (diff < one_month) {
-      $(value).css("color","#C62828").attr('title', 'last change < one month');
-    } else {
-      $(value).css("color","#D50000").attr('title', 'last change > one month');
-    }
-  });
 }
-
