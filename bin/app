@@ -43,14 +43,18 @@ class App < Sinatra::Base
       "/customjs/bugzilla.js",
       "/customjs/jenkins.js",
       "/customjs/github.js",
-      "/customjs/index.js"
+      "/customjs/index.js",
+      "/customjs/color.js"
     ]
 
     css :bootstrap, "/css/bootstrap/#{theme}/bootstrap.min.css", [
       "/css/bootstrap/#{theme}/bootstrap.css"
     ]
-    css :morris, "/css/morris/morris.min.js", [
+    css :morris, [
       "/css/morris/morris.css"
+    ]
+    css :material, "/css/material/material.min.css", [
+      "/css/material/material.css"
     ]
     css :customcss, [
       "/customcss/nailed.css"
@@ -64,6 +68,8 @@ class App < Sinatra::Base
     @title = Nailed.get_config["title"] || "Dashboard"
     @products = Nailed.get_config["products"].map{|p,v| v["versions"]}.flatten.compact
     @product_query = @products.join("&product=")
+    @theme_type = get_theme_type
+    @colors = Nailed.get_colors
   end
 
   helpers do
@@ -91,6 +97,15 @@ class App < Sinatra::Base
       rescue ZeroDivisionError
       end
       trend_clone.to_json
+    end
+
+    def get_theme_type
+      theme = Nailed.get_config["theme"] || "default"
+      if ["cyborg", "darkly", "slate", "superhero"].include? theme
+        "dark"
+      else
+        "light"
+      end
     end
 
     ### github helpers
