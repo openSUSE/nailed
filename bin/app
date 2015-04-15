@@ -29,11 +29,11 @@ class App < Sinatra::Base
     js :jquery, "/js/external/jquery-1.11.2.min.js", [
       "/js/external/jquery-1.11.2.js"
     ]
-    js :jqueryplugin, [
-      "/js/external/jquery.quickfilter.js"
-    ]
     js :bootstrap, "/js/bootstrap/bootstrap.min.js", [
       "/js/bootstrap/bootstrap.js"
+    ]
+    js :bootstrap_table, "/js/bootstrap/bootstrap-table.min.js", [
+      "/js/bootstrap/bootstrap-table.js"
     ]
     js :morris, "/js/morris/morris.min.js", [
       "/js/morris/morris.js",
@@ -44,11 +44,14 @@ class App < Sinatra::Base
       "/customjs/jenkins.js",
       "/customjs/github.js",
       "/customjs/index.js",
-      "/customjs/color.js"
+      "/customjs/nailed.js"
     ]
 
     css :bootstrap, "/css/bootstrap/#{theme}/bootstrap.min.css", [
       "/css/bootstrap/#{theme}/bootstrap.css"
+    ]
+    css :bootstrap_table, "/css/bootstrap/bootstrap-table.min.css", [
+      "/css/bootstrap/bootstrap-table.css"
     ]
     css :morris, [
       "/css/morris/morris.css"
@@ -111,7 +114,7 @@ class App < Sinatra::Base
     ### github helpers
 
     def get_github_repos
-      Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+      Nailed.get_github_repos_from_yaml
     end
 
     ### jenkins helpers
@@ -155,70 +158,181 @@ class App < Sinatra::Base
   end
 
   # define sinatra routes
-  get "/" do
-    @github_repos = get_github_repos
-    @jenkins_jobs = get_jenkins_jobs
 
-    @l3trend = get_trends(:l3, nil)
-    @allpulls = repository(:default).adapter.select("SELECT COUNT(repository_rname) AS open, repository_rname AS label FROM pullrequests GROUP BY repository_rname")
-    @allopenl3bugs = (Bugreport.all(:is_open => true, :whiteboard.like => "%openL3%")).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
-    @allopenbugs = (Bugreport.all(:is_open => true) -
-                    Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true)).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
-
-    @bugtop = []
-    Nailed.get_config["products"].each do |product,values|
-      values["versions"].each do |version|
-        p = Product.get(version)
-        open = Bugreport.count(:product_name => p.name, :is_open => true)
-        @bugtop << {label: p.name, value: open} unless open == 0
-      end unless values["versions"].nil?
-    end
-    @bugtop = @bugtop.to_json
-
-    @pulltop = []
-    @allpulls.each do |donut_bite|
-      @pulltop << {label: donut_bite.label, value: donut_bite.open}
-    end
-    @pulltop = @pulltop.to_json
-
-    haml :index
-  end
-
+  # bar
   Nailed.get_config["products"].each do |product,values|
-    values["versions"].each do |version|
-      get "/#{version.gsub(/ /,'_')}/bugzilla" do
-        @github_repos = get_github_repos
-        @jenkins_jobs = get_jenkins_jobs
-
-        @product = version
-
-        @bugtrend = get_trends(:bug, version)
-        @allopenbugs = (Bugreport.all(:product_name => version, :is_open => true) -
-                        Bugreport.all(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
-        @allopenl3bugs = (Bugreport.all(:product_name => version, :is_open => true, :whiteboard.like => "%openL3%")).sort! {|a,b| Time.parse(b.last_change_time.to_s).to_i <=> Time.parse(a.last_change_time.to_s).to_i}
-
-        @bugprio = []
+    versions = values["versions"]
+    versions.each do |version|
+      get "/json/bugzilla/#{version.gsub(/ /,'_')}/bar/priority" do
+        bugprio = []
         {"P1 - Urgent" => "p1",
          "P2 - High" => "p2",
          "P3 - Medium" => "p3",
          "P4 - Low" => "p4",
          "P5 - None" => "p5"}.each_pair do |key,val|
-           @bugprio << {"bugprio" => key, val => Bugreport.count(:product_name => version, :priority => key, :is_open => true)}
+           bugprio << {"bugprio" => key, val => Bugreport.count(:product_name => version, :priority => key, :is_open => true)}
         end
-        @bugprio = @bugprio.to_json
+        bugprio.to_json
+      end
+    end unless versions.nil?
+  end
 
-        @top5_components = []
+  # BUGZILLA
+
+  #
+  # trends
+  #
+  Nailed.get_config["products"].each do |product,values|
+    versions = values["versions"]
+    versions.each do |version|
+      get "/json/bugzilla/#{version.gsub(/ /,'_')}/trend/open" do
+        get_trends(:bug, version)
+      end
+    end unless versions.nil?
+  end
+
+  get "/json/bugzilla/trend/allopenl3" do
+    get_trends(:l3, nil)
+  end
+
+  #
+  # donut
+  #
+  Nailed.get_config["products"].each do |product,values|
+    versions = values["versions"]
+    versions.each do |version|
+      get "/json/bugzilla/#{version.gsub(/ /,'_')}/donut/component" do
+        top5_components = []
         components = repository(:default).adapter.select("SELECT component AS label, COUNT(component) AS value FROM bugreports WHERE product_name = '#{version}' AND is_open = 't' GROUP BY component ORDER BY COUNT(component) DESC LIMIT 5")
         components.each do |bar|
-          @top5_components << {label: bar.label, value: bar.value}
+          top5_components << {label: bar.label, value: bar.value}
         end
-        @component_labels = @top5_components.map{|a| a.values[0]}
-        @component_values = @top5_components.map{|a| a.values[1]}
-        @top5_components = @top5_components.to_json
+        component_labels = top5_components.map{|a| a.values[0]}
+        component_values = top5_components.map{|a| a.values[1]}
+        top5_components.to_json
+      end
+    end unless versions.nil?
+  end
+
+  get "/json/bugzilla/donut/allbugs" do
+    bugtop = []
+    Nailed.get_config["products"].each do |product,values|
+      versions = values["versions"]
+      versions.each do |version|
+        p = Product.get(version)
+        open = Bugreport.count(:product_name => p.name, :is_open => true)
+        bugtop << {label: p.name, value: open} unless open == 0
+      end unless versions.nil?
+    end
+    bugtop.to_json
+  end
+
+  #
+  # tables
+  #
+
+  # allopenwithoutl3
+  get "/json/bugzilla/allopenwithoutl3" do
+    (Bugreport.all(:is_open => true) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true)).to_json
+  end
+
+  # allopenl3
+  get "/json/bugzilla/allopenl3" do
+    Bugreport.all(:is_open => true, :whiteboard.like => "%openL3%").to_json
+  end
+
+  # product -> openwithoutl3
+  Nailed.get_config["products"].each do |product,values|
+    versions = values["versions"]
+    versions.each do |version|
+      get "/json/bugzilla/#{version.gsub(/ /,'_')}/openwithoutl3" do
+        (Bugreport.all(:is_open => true, :product_name => version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true, :product_name => version)).to_json
+      end
+    end unless versions.nil?
+  end
+
+  # product -> openl3
+  Nailed.get_config["products"].each do |product,values|
+    versions = values["versions"]
+    versions.each do |version|
+      get "/json/bugzilla/#{version.gsub(/ /,'_')}/openl3" do
+        Bugreport.all(:is_open => true, :product_name => version, :whiteboard.like => "%openL3%").to_json
+      end
+    end unless versions.nil?
+  end
+
+  # product -> closedwithoutl3
+  Nailed.get_config["products"].each do |product,values|
+    versions = values["versions"]
+    versions.each do |version|
+      get "/json/bugzilla/#{version.gsub(/ /,'_')}/closedwithoutl3" do
+        (Bugreport.all(:is_open => false, :product_name => version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => false, :product_name => version)).to_json
+      end
+    end unless versions.nil?
+  end
+
+  # product -> closedl3
+  Nailed.get_config["products"].each do |product,values|
+    versions = values["versions"]
+    versions.each do |version|
+      get "/json/bugzilla/#{version.gsub(/ /,'_')}/closedl3" do
+        Bugreport.all(:is_open => false, :product_name => version, :whiteboard.like => "%openL3%").to_json
+      end
+    end unless versions.nil?
+  end
+
+  # GITHUB
+
+  #
+  # trends
+  #
+  github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+  github_repos.each do |repo|
+    get "/json/github/#{repo}/trend/open" do
+      get_trends(:pull, repo)
+    end
+  end
+
+  #
+  # donut
+  #
+  get "/json/github/allpulls" do
+    pulltop = []
+    allpulls = Pullrequest.aggregate(:repository_rname, :all.count)
+    allpulls.each do |donut_bite|
+      pulltop << {label: donut_bite[0], value: donut_bite[1]}
+    end
+    pulltop.to_json
+  end
+
+  # all open pull requests
+  github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+  github_repos.each do |repo|
+    get "/json/github/#{repo}/open" do
+      Pullrequest.all(:repository_rname => repo).to_json
+    end
+  end
+
+  get "/" do
+    @github_repos = get_github_repos
+    @jenkins_jobs = get_jenkins_jobs
+
+    haml :index
+  end
+
+  Nailed.get_config["products"].each do |product,values|
+    versions = values["versions"]
+    versions.each do |version|
+      get "/#{version.gsub(/ /,'_')}/bugzilla" do
+        @github_repos = get_github_repos
+        @jenkins_jobs = get_jenkins_jobs
+
+        @product = version
+        @product_ = version.gsub(/ /,'_')
 
         haml :bugzilla
       end
-    end unless values["versions"].nil?
+    end unless versions.nil?
   end
 
   github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
@@ -228,11 +342,8 @@ class App < Sinatra::Base
       @jenkins_jobs = get_jenkins_jobs
 
       @repo = repo
-      org = Repository.get(repo).organization_oname
-      @github_url_all_pulls = "https://github.com/#{org}/#{repo}/pulls"
-
-      @allpulls = Pullrequest.all(:repository_rname => repo).sort! {|a,b| b.pr_number <=> a.pr_number}
-      @pulltrend = get_trends(:pull, repo)
+      @org = Repository.get(repo).organization_oname
+      @github_url_all_pulls = "https://github.com/#{@org}/#{repo}/pulls"
 
       haml :github
     end

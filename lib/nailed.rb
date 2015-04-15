@@ -7,7 +7,7 @@ require_relative "nailed/bugzilla"
 require_relative "nailed/github"
 require_relative "nailed/jenkins"
 require_relative "nailed/version"
-require  File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
+require File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
 
 module Nailed
   LOGGER = Logger.new(File.join(File.expand_path("..", File.dirname(__FILE__)),"log","nailed.log"))
@@ -70,6 +70,16 @@ module Nailed
   def list_org_repos(github_client, org)
     repos = get_org_repos(github_client, org)
     repos.each {|r| puts "- #{r}"}
+  end
+
+  def get_github_repos_from_yaml
+    repos = []
+    get_config["products"].each do |product,values|
+      values["repos"].each do |repo|
+        repos << repo
+      end unless values["repos"].nil?
+    end
+    repos
   end
 
   # jenkins helpers

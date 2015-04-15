@@ -2,6 +2,7 @@
 %html
   %head
     != css :bootstrap, :media => 'screen'
+    != css :bootstrap_table, :media => 'screen'
     != css :morris, :media => 'screen'
     != css :material, :media => 'screen'
     != css :customcss, :media => 'screen'
@@ -15,8 +16,6 @@
         .navbar-header
           %a.navbar-brand{:href => '/'} #{@title}
         #navbar.navbar-collapse.collapse
-          %form.navbar-form.navbar-right
-            %input.form-control{:type => 'text', :placeholder => 'Filter', :id => 'searchfilter'}
           %ul.nav.navbar-nav.pull-right
             %li.dropdown
               %a.dropdown-toggle{:role => 'button', :data => {:toggle => 'dropdown'}, :href => '/'}

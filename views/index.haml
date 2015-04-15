@@ -1,56 +1,62 @@
 !!!
 .container
-  %div.col-sm-9.col-md-10.main
+  %div.col-md-12
     .row
-      .col-xs-12.col-sm-6
+      .col-md-6
         %h3.title{:align => "center"}
           Open Bugs by Product
         #bug_top
-      .col-xs-12.col-sm-6
+      .col-md-6
         %h3.title{:align => "center"}
           Open Pullrequests by Repo
         #pull_top
     .row
-      .col-xs-12.col-sm-12
+      .col-md-12
         %h3.title{:align => "center"}
           L3 Trend
         #l3_trend
+    %br
     .row.no-hide
-      .col-xs-12.col-sm-12
+      .col-md-12
         %h5 L3 List
-        %ul{:id => "l3list"}
-          - @allopenl3bugs.each do |l3|
-            %li
-              %a{:href => "#{l3.url}",
-                 :target => "_blank",
-                 :priority => "#{l3.priority}",
-                 :creation_time => "#{Time.parse(l3.creation_time.to_s).to_i}",
-                 :last_change_time => "#{Time.parse(l3.last_change_time.to_s).to_i}"}
-                #{l3.bug_id} -- #{l3.summary}
-      .col-xs-12.col-sm-12
-        %h5 Bug List
-      .col-xs-12.col-sm-12
-        %ul{:id => "buglist"}
-          - @allopenbugs.each do |ob|
-            %li
-              %a{:href => "#{ob.url}",
-                 :target => "_blank",
-                 :priority => "#{ob.priority}",
-                 :creation_time => "#{Time.parse(ob.creation_time.to_s).to_i}",
-                 :last_change_time => "#{Time.parse(ob.last_change_time.to_s).to_i}"}
-                #{ob.bug_id} -- #{ob.summary}
+        %table{:data => {:toggle => "table", :url => "/json/bugzilla/allopenl3", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+          %thead
+            %tr
+              %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
+                Bug Id
+              %th{:data => {:field => "summary", :sortable => "true"}}
+                Summary
+              %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
+                Priority
+              %th{:data => {:field => "creation_time", :sortable => "true"}}
+                Creation Time
+              %th{:data => {:field => "last_change_time", :sortable => "true"}}
+                Last Change Time
+      .col-md-12
+        %h5 Bugs
+        %hr
+        %table{:data => {:toggle => "table", :url => "/json/bugzilla/allopenwithoutl3", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+          %thead
+            %tr
+              %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
+                Bug Id
+              %th{:data => {:field => "summary", :sortable => "true"}}
+                Summary
+              %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
+                Priority
+              %th{:data => {:field => "creation_time", :sortable => "true"}}
+                Creation Time
+              %th{:data => {:field => "last_change_time", :sortable => "true"}}
+                Last Change Time
 
 != js :jquery
 != js :jqueryplugin
 != js :bootstrap
+!= js :bootstrap_table
 != js :morris
 != js :customjs
 
 :javascript
   $(document).ready(function(){
-    index(#{@pulltop},#{@bugtop},#{@l3trend},'#{@product_query}',#{@colors.to_json})
-    bugzillaPriority("#{@theme_type}", #{@colors.to_json});
-    bugzillaLastChangeTime("#{@theme_type}", #{@colors.to_json});
-    $('#searchfilter').quickfilter('#buglist li');
-    $('#searchfilter').quickfilter('#l3list li');
+    index(#{@colors.to_json}, "#{@product_query}");
   });

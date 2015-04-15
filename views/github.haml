@@ -11,23 +11,24 @@
     .row.no-hide
       .col-xs-12.col-sm-12
         %h5 Pull Requests
-        %ul{:id => 'prlist'}
-          - @allpulls.each do |pull|
-            %li
-              %a{:href => "#{pull.url}",
-                 :target => "_blank",
-                 :creation_time => "#{Time.parse(pull.created_at.to_s).to_i}"}
-                #{pull.pr_number} -- #{pull.title}
+        %table{:data => {:toggle => "table", :url => "/json/github/#{@repo}/open", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+          %thead
+            %tr
+              %th{:data => {:field => "url", :sortable => "true", :formatter => "githubFromLink"}}
+                Number
+              %th{:data => {:field => "title", :sortable => "true"}}
+                Summary
+              %th{:data => {:field => "created_at", :sortable => "true"}}
+                Creation Time
 
 != js :jquery
 != js :jqueryplugin
 != js :bootstrap
+!= js :bootstrap_table
 != js :morris
 != js :customjs
 
 :javascript
   $(document).ready(function(){
-    github(#{@pulltrend},'#{@github_url_all_pulls}',#{@colors.to_json});
-    githubCreationTime("#{@theme_type}", #{@colors.to_json});
-    $('#searchfilter').quickfilter('#prlist li');
+    github(#{@colors.to_json}, "#{@org}", "#{@repo}");
   });
