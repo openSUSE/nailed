@@ -25,3 +25,7 @@ function bugzillaFromLink(url, row) {
 function githubFromLink(url, row) {
   return '<a href="' + url + '" target="_blank">' + row.pr_number + '</a>';
 }
+
+function routeUrl(url) {
+  return '<a href="' + url + '" target="_blank">' + url + '</a>';
+}

@@ -1,15 +1,15 @@
 !!!
 .container
-  %div.col-sm-9.col-md-10.main
+  %div.col-md-12.main
     .row
       %h1.title
         #{@repo}
     .row
-      .col-xs-12.col-sm-12
+      .col-md-12
         %h5 Pull Request Trend
         #pull_trend
     .row.no-hide
-      .col-xs-12.col-sm-12
+      .col-md-12
         %h5 Pull Requests
         %table{:data => {:toggle => "table", :url => "/json/github/#{@repo}/open", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
           %thead

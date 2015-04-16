@@ -2,6 +2,7 @@
 
 require "sinatra/base"
 require "sinatra/assetpack"
+require "sinatra/advanced_routes"
 require "haml"
 require "json"
 require "time"
@@ -9,6 +10,8 @@ require File.join(File.expand_path("..", File.dirname(__FILE__)),"lib","nailed")
 require  File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
 
 class App < Sinatra::Base
+  register Sinatra::AdvancedRoutes
+
   ROOT_PATH = File.join(File.expand_path("..", File.dirname(__FILE__)))
   self.set :root, File.join(ROOT_PATH, "lib")
   set :public_folder, File.join(ROOT_PATH, "public")
@@ -281,7 +284,9 @@ class App < Sinatra::Base
     end unless versions.nil?
   end
 
-  # GITHUB
+  #
+  # GITHUB Routes
+  #
 
   #
   # trends
@@ -367,6 +372,21 @@ class App < Sinatra::Base
 
       haml :jenkins
     end
+  end
+
+  get "/json/help" do
+    routes = []
+    App.each_route do |route|
+      routes << {:route => route.path} if route.path.is_a? String
+    end
+    routes.uniq.to_json
+  end
+
+  get "/help" do
+    @github_repos = get_github_repos
+    @jenkins_jobs = get_jenkins_jobs
+
+    haml :help
   end
 
   run! if app_file == $0

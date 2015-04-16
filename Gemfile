@@ -11,4 +11,5 @@ gem "jenkins_api_client", "1.3.0"
 # front-end
 gem "sinatra-base", "1.4.0"
 gem "sinatra-assetpack", "0.3.3"
+gem "sinatra-advanced-routes", "0.5.3"
 gem "haml", "4.0.6"
