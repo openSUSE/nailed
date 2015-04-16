@@ -13,14 +13,12 @@ function bugzillaPriority(priority) {
   }
 }
 
-function bugzillaFromLink(url) {
-  arr = url.split("=");
-  bugId = arr[arr.length - 1];
-  return '<a href="' + url + '" target="_blank">' + bugId + '</a>';
+function bugzillaFromLink(url, row) {
+console.log(row);
+  return '<a href="' + url + '" target="_blank">' + row.bug_id + '</a>';
 }
 
-function githubFromLink(url) {
-  arr = url.split("/");
-  pullNr = arr[arr.length - 1];
-  return '<a href="' + url + '" target="_blank">' + pullNr + '</a>';
+function githubFromLink(url, row) {
+console.log(row);
+  return '<a href="' + url + '" target="_blank">' + row.pr_number + '</a>';
 }
