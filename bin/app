@@ -155,9 +155,13 @@ class App < Sinatra::Base
     end
   end
 
-  # define sinatra routes
+  #
+  # BUGZILLA Routes
+  #
 
+  #
   # bar
+  #
   Nailed.get_config["products"].each do |product,values|
     versions = values["versions"]
     versions.each do |version|
@@ -174,8 +178,6 @@ class App < Sinatra::Base
       end
     end unless versions.nil?
   end
-
-  # BUGZILLA
 
   #
   # trends
@@ -310,6 +312,10 @@ class App < Sinatra::Base
       Pullrequest.all(:repository_rname => repo).to_json
     end
   end
+
+  #
+  # MAIN Routes
+  #
 
   get "/" do
     @github_repos = get_github_repos
