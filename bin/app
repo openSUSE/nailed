@@ -79,27 +79,25 @@ class App < Sinatra::Base
     ### generic helpers
 
     def get_trends(action, item)
+      json = []
       case action
       when :bug
-        trend = Bugtrend.all(:product_name => item)
-      when :pull
-        trend = Pulltrend.all(:repository_rname => item)
-      when :l3
-        trend = L3Trend.all
-      end
-      trend_clone = trend.clone
-      begin
-        interval = (trend.length/20.0).round
-        trend.each do |bt|
-          if trend.index(bt) % interval != 0
-            if bt != trend.last
-              trend_clone.delete(bt)
-            end
-          end
+        trends = Bugtrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM bugtrends t1 WHERE t1.id <= t2.id AND product_name = '#{item}') AS tmp_id, time, open, fixed, product_name FROM bugtrends AS t2 WHERE product_name = '#{item}' AND (tmp_id % ((SELECT COUNT(*) FROM bugtrends WHERE product_name = '#{item}')/20) = 0) ORDER BY id")
+        trends.each do |col|
+          json << {time: col.time, open: col.open, fixed: col.fixed}
         end
-      rescue ZeroDivisionError
+      when :pull
+        trends = Pulltrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM pulltrends t1 WHERE t1.id <= t2.id AND repository_rname = '#{item}') AS tmp_id, time, open, fixed, product_name FROM pulltrends AS t2 WHERE repository_rname = '#{item}' AND (tmp_id % ((SELECT COUNT(*) FROM pulltrends WHERE repository_rname = '#{item}')/20) = 0) ORDER BY id")
+        trends.each do |col|
+          json << {time: col.time, open: col.open}
+        end
+      when :l3
+        trends = L3Trend.repository(:default).adapter.select("SELECT * FROM l3_trends WHERE (id % ((SELECT COUNT(*) FROM l3_trends)/20) = 0)")
+        trends.each do |col|
+          json << {time: col.time, open: col.open}
+        end
       end
-      trend_clone.to_json
+      json.to_json
     end
 
     def get_theme_type
