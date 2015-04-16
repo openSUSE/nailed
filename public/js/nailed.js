@@ -13,12 +13,15 @@ function bugzillaPriority(priority) {
   }
 }
 
+function timestampReduce(timestamp) {
+  arr = timestamp.split("T");
+  return arr[0];
+}
+
 function bugzillaFromLink(url, row) {
-console.log(row);
   return '<a href="' + url + '" target="_blank">' + row.bug_id + '</a>';
 }
 
 function githubFromLink(url, row) {
-console.log(row);
   return '<a href="' + url + '" target="_blank">' + row.pr_number + '</a>';
 }

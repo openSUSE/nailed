@@ -28,9 +28,9 @@
                 Summary
               %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
                 Priority
-              %th{:data => {:field => "creation_time", :sortable => "true"}}
+              %th{:data => {:field => "creation_time", :sortable => "true", :formatter => "timestampReduce"}}
                 Creation Time
-              %th{:data => {:field => "last_change_time", :sortable => "true"}}
+              %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
                 Last Change Time
       .col-md-12
         %h5 Bugs
@@ -44,9 +44,9 @@
                 Summary
               %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
                 Priority
-              %th{:data => {:field => "creation_time", :sortable => "true"}}
+              %th{:data => {:field => "creation_time", :sortable => "true", :formatter => "timestampReduce"}}
                 Creation Time
-              %th{:data => {:field => "last_change_time", :sortable => "true"}}
+              %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
                 Last Change Time
 
 != js :jquery

@@ -18,7 +18,7 @@
                 Number
               %th{:data => {:field => "title", :sortable => "true"}}
                 Summary
-              %th{:data => {:field => "created_at", :sortable => "true"}}
+              %th{:data => {:field => "created_at", :sortable => "true", :formatter => "timestampReduce"}}
                 Creation Time
 
 != js :jquery
