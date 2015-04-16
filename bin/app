@@ -87,7 +87,7 @@ class App < Sinatra::Base
           json << {time: col.time, open: col.open, fixed: col.fixed}
         end
       when :pull
-        trends = Pulltrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM pulltrends t1 WHERE t1.id <= t2.id AND repository_rname = '#{item}') AS tmp_id, time, open, product_name FROM pulltrends AS t2 WHERE repository_rname = '#{item}' AND (tmp_id % ((SELECT COUNT(*) FROM pulltrends WHERE repository_rname = '#{item}')/20) = 0) ORDER BY id")
+        trends = Pulltrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM pulltrends t1 WHERE t1.id <= t2.id AND repository_rname = '#{item}') AS tmp_id, time, open, repository_rname FROM pulltrends AS t2 WHERE repository_rname = '#{item}' AND (tmp_id % ((SELECT COUNT(*) FROM pulltrends WHERE repository_rname = '#{item}')/20) = 0) ORDER BY id")
         trends.each do |col|
           json << {time: col.time, open: col.open}
         end
@@ -112,7 +112,7 @@ class App < Sinatra::Base
     ### github helpers
 
     def get_github_repos
-      Nailed.get_github_repos_from_yaml
+      Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
     end
 
     ### jenkins helpers
