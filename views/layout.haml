@@ -41,6 +41,9 @@
                 - @github_repos.each do |repo|
                   %li
                     %a{:href => "/github/#{repo}"} #{repo}
+            %li
+              %a.dropdown-toggle{:role => 'button', :href => '/help'}
+                Help
     = yield
     :javascript
       $('.collapse').collapse();
