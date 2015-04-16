@@ -1,0 +1,25 @@
+!!!
+.container
+  %div.col-md-12.main
+    .row
+      %h1.title
+        Help
+    .row
+      .col-md-12
+        %h5 JSON Routes
+        %table{:data => {:toggle => "table", :url => "/json/help", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+          %thead
+            %tr
+              %th{:data => {:field => "route", :sortable => "true", :formatter => "routeUrl"}}
+                Route
+
+!= js :jquery
+!= js :jqueryplugin
+!= js :bootstrap
+!= js :bootstrap_table
+!= js :morris
+!= js :customjs
+
+:javascript
+  $(document).ready(function(){
+  });
