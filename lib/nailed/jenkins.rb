@@ -30,6 +30,14 @@ module Nailed
 
     def update_parameters
       Nailed.get_jenkins_jobs_from_yaml.each do |job|
+        # first delete all old parameters
+        db_parameters = JenkinsParameter.all(:job => job).map(&:name)
+        jenkinsapi_parameters = get_build_params(job).map {|p| p[:name]}.uniq
+        (db_parameters - jenkinsapi_parameters).each do |param_delete|
+          JenkinsParameter.get(param_delete, job).destroy
+          Nailed.log("info", "#{__method__}: Destroyed #{param_delete} parameter for #{job}")
+        end
+        # second updating parameters
         Nailed.log("info", "#{__method__}: Updating parameters for #{job}")
         parameters = get_build_params(job)
         parameters.each do |parameter|
