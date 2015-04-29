@@ -1,5 +1,5 @@
 function index(colors, product_query){
-  $.getJSON("/json/github/allpulls", function (json) {
+  $.getJSON("/json/github/donut/allpulls", function (json) {
     new Morris.Donut({
       element: 'pull_top',
       data: json,

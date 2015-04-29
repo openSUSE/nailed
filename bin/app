@@ -353,7 +353,7 @@ class App < Sinatra::Base
   #
   # donut
   #
-  get "/json/github/allpulls" do
+  get "/json/github/donut/allpulls" do
     pulltop = []
     allpulls = Pullrequest.aggregate(:repository_rname, :all.count)
     allpulls.each do |donut_bite|
