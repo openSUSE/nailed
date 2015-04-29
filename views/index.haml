@@ -11,13 +11,23 @@
           Open Pullrequests by Repo
         #pull_top
     .row
+      .col-md-6
+        %h3.title{:align => "center"}
+          All Bugs
+        #allbugs_trend
+      .col-md-6
+        %h3.title{:align => "center"}
+          All Pullrequests
+        #allpulls_trend
+    .row
       .col-md-12
         %h3.title{:align => "center"}
-          L3 Trend
+          All L3 Bugs
         #l3_trend
     %br
-    .row.no-hide
-      .col-md-12
+    .row
+      .col-md-6
+        %hr
         %h5 L3 List
         %table{:data => {:toggle => "table", :url => "/json/bugzilla/allopenl3", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
           %thead
@@ -29,12 +39,11 @@
               %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
                 Priority
               %th{:data => {:field => "creation_time", :sortable => "true", :formatter => "timestampReduce"}}
-                Creation Time
+                Created at
               %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
-                Last Change Time
-      .col-md-12
-        %h5 Bugs
+                Changed at
         %hr
+        %h5 Bugs
         %table{:data => {:toggle => "table", :url => "/json/bugzilla/allopenwithoutl3", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
           %thead
             %tr
@@ -45,9 +54,23 @@
               %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
                 Priority
               %th{:data => {:field => "creation_time", :sortable => "true", :formatter => "timestampReduce"}}
-                Creation Time
+                Created at
               %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
-                Last Change Time
+                Changed at
+      .col-md-6
+        %hr
+        %h5 Open Pull Requests
+        %table{:data => {:toggle => "table", :url => "/json/github/allopenpulls", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+          %thead
+            %tr
+              %th{:data => {:field => "url", :sortable => "true", :formatter => "githubFromLink"}}
+                Number
+              %th{:data => {:field => "title", :sortable => "true"}}
+                Summary
+              %th{:data => {:field => "repository_rname", :sortable => "true"}}
+                Repository
+              %th{:data => {:field => "created_at", :sortable => "true", :formatter => "timestampReduce"}}
+                Created at
 
 != js :jquery
 != js :jqueryplugin

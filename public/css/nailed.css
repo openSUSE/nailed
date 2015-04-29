@@ -7,5 +7,10 @@ body {
 }
 
 .table th, .table td {
-     border-top: none !important;
+  border-top: none !important;
+}
+
+.label-yellow {
+  background-color: #FFF176;
+  color: black;
 }

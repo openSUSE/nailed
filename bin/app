@@ -85,17 +85,55 @@ class App < Sinatra::Base
       json = []
       case action
       when :bug
-        trends = Bugtrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM bugtrends t1 WHERE t1.id <= t2.id AND product_name = '#{item}') AS tmp_id, time, open, fixed, product_name FROM bugtrends AS t2 WHERE product_name = '#{item}' AND (tmp_id % ((SELECT COUNT(*) FROM bugtrends WHERE product_name = '#{item}')/20) = 0) ORDER BY id")
+        table = "bugtrends"
+        trends = if Bugtrend.count(:product_name => item) > 20
+          Bugtrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM #{table} t1 WHERE t1.id <= t2.id AND product_name = '#{item}') AS tmp_id, time, open, fixed, product_name FROM #{table} AS t2 WHERE product_name = '#{item}' AND (tmp_id % ((SELECT COUNT(*) FROM #{table} WHERE product_name = '#{item}')/20) = 0) ORDER BY id")
+        else
+          Bugtrend.repository(:default).adapter.select("SELECT time, open, fixed FROM #{table} WHERE product_name = '#{item}'")
+        end
         trends.each do |col|
           json << {time: col.time, open: col.open, fixed: col.fixed}
         end
       when :pull
-        trends = Pulltrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM pulltrends t1 WHERE t1.id <= t2.id AND repository_rname = '#{item}') AS tmp_id, time, open, repository_rname FROM pulltrends AS t2 WHERE repository_rname = '#{item}' AND (tmp_id % ((SELECT COUNT(*) FROM pulltrends WHERE repository_rname = '#{item}')/20) = 0) ORDER BY id")
+        table = "pulltrends"
+        trends = if Pulltrend.count(:repository_rname => item) > 20
+          Pulltrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM #{table} t1 WHERE t1.id <= t2.id AND repository_rname = '#{item}') AS tmp_id, time, open, repository_rname FROM #{table} AS t2 WHERE repository_rname = '#{item}' AND (tmp_id % ((SELECT COUNT(*) FROM #{table} WHERE repository_rname = '#{item}')/20) = 0) ORDER BY id")
+        else
+          Pulltrend.repository(:default).adapter.select("SELECT time, open FROM #{table} WHERE repository_rname = '#{item}'")
+        end
+        trends.each do |col|
+          json << {time: col.time, open: col.open}
+        end
+      when :allpulls
+        table = "allpull_trends"
+        filter = if AllpullTrend.count > 20
+          "WHERE (id % ((SELECT COUNT(*) FROM #{table})/20) = 0)"
+        else
+          ""
+        end
+        trends = AllbugTrend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
+        trends.each do |col|
+          json << {time: col.time, open: col.open}
+        end
+      when :allbugs
+        table = "allbug_trends"
+        filter = if AllbugTrend.count > 20
+          "WHERE (id % ((SELECT COUNT(*) FROM #{table})/20) = 0)"
+        else
+          ""
+        end
+        trends = AllbugTrend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
         trends.each do |col|
           json << {time: col.time, open: col.open}
         end
       when :l3
-        trends = L3Trend.repository(:default).adapter.select("SELECT * FROM l3_trends WHERE (id % ((SELECT COUNT(*) FROM l3_trends)/20) = 0)")
+        table = "l3_trends"
+        filter = if L3Trend.count > 20
+          "WHERE (id % ((SELECT COUNT(*) FROM #{table})/20) = 0)"
+        else
+          ""
+        end
+        trends = L3Trend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
         trends.each do |col|
           json << {time: col.time, open: col.open}
         end
@@ -198,6 +236,10 @@ class App < Sinatra::Base
     get_trends(:l3, nil)
   end
 
+  get "/json/bugzilla/trend/allbugs" do
+    get_trends(:allbugs, nil)
+  end
+
   #
   # donut
   #
@@ -233,6 +275,11 @@ class App < Sinatra::Base
   #
   # tables
   #
+
+  # allopen
+  get "/json/bugzilla/allopen" do
+    Bugreport.all(:is_open => true).to_json
+  end
 
   # allopenwithoutl3
   get "/json/bugzilla/allopenwithoutl3" do
@@ -298,10 +345,15 @@ class App < Sinatra::Base
     end
   end
 
+  # all open pull requests
+  get "/json/github/trend/allpulls" do
+    get_trends(:allpulls, nil)
+  end
+
   #
   # donut
   #
-  get "/json/github/allpulls" do
+  get "/json/github/donut/allpulls" do
     pulltop = []
     allpulls = Pullrequest.aggregate(:repository_rname, :all.count)
     allpulls.each do |donut_bite|
@@ -310,7 +362,16 @@ class App < Sinatra::Base
     pulltop.to_json
   end
 
-  # all open pull requests
+  #
+  # tables
+  #
+
+  # allopenpulls
+  get "/json/github/allopenpulls" do
+    Pullrequest.all(:state => "open").to_json
+  end
+
+  # all open pull requests for repo
   github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
   github_repos.each do |repo|
     get "/json/github/#{repo}/open" do

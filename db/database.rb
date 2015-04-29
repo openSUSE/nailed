@@ -44,6 +44,13 @@ class Bugtrend
   belongs_to :product
 end
 
+class AllbugTrend
+  include DataMapper::Resource
+  property :id, Serial, :key => true
+  property :time, String
+  property :open, Integer
+end
+
 class L3Trend
   include DataMapper::Resource
   property :id, Serial, :key => true
@@ -85,6 +92,13 @@ class Pulltrend
   property :open, Integer
 
   belongs_to :repository
+end
+
+class AllpullTrend
+  include DataMapper::Resource
+  property :id, Serial, :key => true
+  property :time, String
+  property :open, Integer
 end
 
 # TODO Jenkins specific tables

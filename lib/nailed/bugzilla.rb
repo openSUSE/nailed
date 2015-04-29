@@ -56,6 +56,19 @@ module Nailed
       end
     end
 
+    def write_allbug_trends
+      Nailed.log("info", "#{__method__}: Aggregating all bug trends for all products")
+      open = Bugreport.count(:is_open => true)
+
+      attributes = {:time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                    :open => open}
+
+      db_handler = AllbugTrend.first_or_create(attributes)
+
+      Nailed.save_state(db_handler)
+      Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
+    end
+
     def write_l3_trends
       open = 0
       Nailed.get_config["products"].each do |product,values|
