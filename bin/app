@@ -276,6 +276,11 @@ class App < Sinatra::Base
   # tables
   #
 
+  # allopen
+  get "/json/bugzilla/allopen" do
+    Bugreport.all(:is_open => true).to_json
+  end
+
   # allopenwithoutl3
   get "/json/bugzilla/allopenwithoutl3" do
     (Bugreport.all(:is_open => true) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true)).to_json
@@ -358,6 +363,10 @@ class App < Sinatra::Base
   end
 
   # all open pull requests
+  # allopenpulls
+  get "/json/github/allopenpulls" do
+    Pullrequest.all(:state => "open").to_json
+  end
   github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
   github_repos.each do |repo|
     get "/json/github/#{repo}/open" do
