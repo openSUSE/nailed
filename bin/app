@@ -236,6 +236,10 @@ class App < Sinatra::Base
     get_trends(:l3, nil)
   end
 
+  get "/json/bugzilla/trend/allbugs" do
+    get_trends(:allbugs, nil)
+  end
+
   #
   # donut
   #
@@ -334,6 +338,11 @@ class App < Sinatra::Base
     get "/json/github/#{repo}/trend/open" do
       get_trends(:pull, repo)
     end
+  end
+
+  # all open pull requests
+  get "/json/github/trend/allpulls" do
+    get_trends(:allpulls, nil)
   end
 
   #
