@@ -362,11 +362,16 @@ class App < Sinatra::Base
     pulltop.to_json
   end
 
-  # all open pull requests
+  #
+  # tables
+  #
+
   # allopenpulls
   get "/json/github/allopenpulls" do
     Pullrequest.all(:state => "open").to_json
   end
+
+  # all open pull requests for repo
   github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
   github_repos.each do |repo|
     get "/json/github/#{repo}/open" do
