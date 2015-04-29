@@ -8,7 +8,7 @@
       .col-md-12
         %h5 Pull Request Trend
         #pull_trend
-    .row.no-hide
+    .row
       .col-md-12
         %h5 Pull Requests
         %table{:data => {:toggle => "table", :url => "/json/github/#{@repo}/open", :search => "true", :show => {:refresh => "true", :columns => "true"}}}

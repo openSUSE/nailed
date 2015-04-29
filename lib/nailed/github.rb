@@ -69,5 +69,17 @@ module Nailed
       Nailed.save_state(db_handler)
       Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
     end
+
+    def write_allpull_trends
+      Nailed.log("info", "#{__method__}: Writing pull trends for all repos")
+      open = Pullrequest.count(:state => "open")
+      attributes = {:time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                    :open => open}
+
+      db_handler = AllpullTrend.first_or_create(attributes)
+
+      Nailed.save_state(db_handler)
+      Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
+    end
   end
 end

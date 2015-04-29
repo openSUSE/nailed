@@ -63,4 +63,56 @@ function index(colors, product_query){
         window.open("https://bugzilla.suse.com/buglist.cgi?product="+product_query+"&status_whiteboard=openL3&status_whiteboard_type=allwordssubstr&query_format=advanced&resolution=---");
     });
   });
+  $.getJSON("/json/bugzilla/trend/allbugs", function (json) {
+    new Morris.Line({
+      element: 'allbugs_trend',
+      data: json,
+      xkey: 'time',
+      ykeys: ['open'],
+      yLabelFormat: function(y){return y != Math.round(y)?'':y;},
+      labels: ['Open'],
+      resize: true,
+      hideHover: true,
+      lineColors: [ colors["line"]["red"],
+                    colors["line"]["green"]
+                  ],
+      smooth: false,
+      continuousLine: true,
+      hoverCallback: function (index, options, content, row) {
+        return content;
+      }
+    }).on('click', function(i, row){
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
+        jQuery.noop();
+      else
+        window.open("https://bugzilla.suse.com/buglist.cgi?product="+product_query+"&query_format=advanced&resolution=---");
+    });
+  });
+  $.getJSON("/json/github/trend/allpulls", function (json) {
+    new Morris.Line({
+      element: 'allpulls_trend',
+      data: json,
+      xkey: 'time',
+      ykeys: ['open'],
+      yLabelFormat: function(y){return y != Math.round(y)?'':y;},
+      labels: ['Open'],
+      resize: true,
+      hideHover: true,
+      lineColors: [ colors["line"]["red"],
+                    colors["line"]["green"]
+                  ],
+      smooth: false,
+      continuousLine: true,
+      hoverCallback: function (index, options, content, row) {
+        return content;
+      }
+    }).on('click', function(i, row){
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
+        jQuery.noop();
+      else
+        jQuery.noop();
+        // TODO find the link which lists all open PR's in github.com
+        //window.open("")
+    });
+  });
 }

@@ -38,11 +38,13 @@ opts.each_pair do |key,val|
         Product.auto_migrate!
         Bugreport.auto_migrate!
         Bugtrend.auto_migrate!
+        AllbugTrend.auto_migrate!
         L3Trend.auto_migrate!
         Organization.auto_migrate!
         Repository.auto_migrate!
         Pullrequest.auto_migrate!
         Pulltrend.auto_migrate!
+        AllpullTrend.auto_migrate!
         JenkinsParameter.auto_migrate!
         JenkinsParameterValue.auto_migrate!
         JenkinsBuild.auto_migrate!
@@ -61,11 +63,13 @@ opts.each_pair do |key,val|
         Product.auto_upgrade!
         Bugreport.auto_upgrade!
         Bugtrend.auto_upgrade!
+        AllbugTrend.auto_upgrade!
         L3Trend.auto_upgrade!
         Organization.auto_upgrade!
         Repository.auto_upgrade!
         Pullrequest.auto_upgrade!
         Pulltrend.auto_upgrade!
+        AllpullTrend.auto_upgrade!
         JenkinsParameter.auto_upgrade!
         JenkinsParameterValue.auto_upgrade!
         JenkinsBuild.auto_upgrade!
@@ -80,6 +84,7 @@ opts.each_pair do |key,val|
       bugzilla_client = Nailed::Bugzilla.new
       bugzilla_client.get_bugs
       bugzilla_client.write_bug_trends
+      bugzilla_client.write_allbug_trends
       bugzilla_client.write_l3_trends
     end
   when :github
@@ -87,6 +92,7 @@ opts.each_pair do |key,val|
       github_client = Nailed::Github.new
       github_client.update_pull_states
       github_client.get_open_pulls
+      github_client.write_allpull_trends
     end
   when :jenkins
     if val
