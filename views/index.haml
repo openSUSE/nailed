@@ -34,7 +34,7 @@
             %tr
               %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
                 Bug Id
-              %th{:data => {:field => "summary", :sortable => "true"}}
+              %th{:data => {:field => "summary", :sortable => "true", :class => "summary"}}
                 Summary
               %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
                 Priority
@@ -49,7 +49,7 @@
             %tr
               %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
                 Bug Id
-              %th{:data => {:field => "summary", :sortable => "true"}}
+              %th{:data => {:field => "summary", :sortable => "true", :class => "summary"}}
                 Summary
               %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
                 Priority
@@ -65,7 +65,7 @@
             %tr
               %th{:data => {:field => "url", :sortable => "true", :formatter => "githubFromLink"}}
                 Number
-              %th{:data => {:field => "title", :sortable => "true"}}
+              %th{:data => {:field => "title", :sortable => "true", :class => "summary"}}
                 Summary
               %th{:data => {:field => "repository_rname", :sortable => "true"}}
                 Repository
