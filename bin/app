@@ -208,7 +208,8 @@ class App < Sinatra::Base
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /,'_')}/bar/priority" do
         bugprio = []
-        {"P1 - Urgent" => "p1",
+        {"P0 - Crit Sit" => "p0",
+         "P1 - Urgent" => "p1",
          "P2 - High" => "p2",
          "P3 - Medium" => "p3",
          "P4 - Low" => "p4",
