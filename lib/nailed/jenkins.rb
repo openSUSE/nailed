@@ -85,7 +85,8 @@ module Nailed
           # update JenkinsBuild table with the result
           attributes = {
             :result => build_details["result"],
-            :built_on => build_details["builtOn"]
+            :built_on => build_details["builtOn"],
+            :description => build_details["description"]
           }
           db_handler = JenkinsBuild.all(:job => job, :number => build_number).update(attributes)
           Nailed.log("info", "#{__method__}: Updated #{attributes.inspect} on Jenkins build ##{build_number}")

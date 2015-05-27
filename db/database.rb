@@ -116,6 +116,7 @@ class JenkinsBuild
   include DataMapper::Resource
   property :number, Integer, :key => true
   property :job, String, :key => true
+  property :description, String
   property :url, String
   property :result, String
   property :built_on, String

@@ -165,11 +165,12 @@ class App < Sinatra::Base
     # returns a formatted string with all build parameters for the popover
     def get_jenkins_build_parameters(job, build_number)
       all_build_parameters = JenkinsParameterValue.all(:jenkins_build_job => job, :jenkins_build_number => build_number)
+      description = JenkinsBuild.all(:number => build_number, :job => job).map(&:description)[0] || ""
       ret = ""
       all_build_parameters.each do |bp|
         ret += bp.jenkins_parameter_name + "=" + bp.value + "\n" unless bp.value.empty?
       end
-      ret + "\nequal_builds:" + get_equal_builds(job, build_number).to_s
+      ret + "\nequal_builds:" + get_equal_builds(job, build_number).to_s + "\ndescription: " + description.split("/").to_s
     end
 
     # find equal jenkins builds
