@@ -189,7 +189,7 @@ class App < Sinatra::Base
           build_number = build.jenkins_build_number
           build_details = JenkinsBuild.all(:job => job, :number => build_number)
           build_details.each do |build_detail|
-            view_object[parameter_name][build_number] = {:build_url => build_detail.url, :build_result => build_detail.result, :build_parameters => get_jenkins_build_parameters(job, build_number), :equal_builds => get_equal_builds(job, build_number)}
+            view_object[parameter_name][build_number] = {:build_url => build_detail.url, :build_result => build_detail.result, :build_parameters => get_jenkins_build_parameters(job, build_number)}
           end
         end
       end
