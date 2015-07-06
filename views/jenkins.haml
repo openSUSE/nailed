@@ -9,7 +9,7 @@
         %h5.title #{table_name}
         %table.table
           - table_data.each do |parameter_name, build_data|
-            - parameter_name.empty? && parameter_name = "undefined"
+            - parameter_name.empty? && next #parameter_name = "undefined"
             %tr{:id => "parametercolumn-#{table_name}-#{parameter_name}"}
               %td.col-md-2{:align => "right"}
                 #{parameter_name}
