@@ -181,7 +181,7 @@ class App < Sinatra::Base
     # generates a view object for a specific build parameter within a job
     def get_jenkins_view_object(job, parameter)
       view_object = {}
-      all_parameters = JenkinsParameterValue.all(:jenkins_parameter_name => parameter, :jenkins_parameter_job => job).map(&:value).uniq
+      all_parameters = JenkinsParameterValue.all(:jenkins_parameter_name => parameter, :jenkins_parameter_job => job).map(&:value).uniq.sort
       all_parameters.each do |parameter_name|
         view_object[parameter_name] = {}
         all_builds_with_parameter = JenkinsParameterValue.all(:jenkins_parameter_name => parameter, :jenkins_parameter_job => job, :value => parameter_name, :limit => 15, :order => :jenkins_build_number.desc)
