@@ -427,9 +427,10 @@ class App < Sinatra::Base
 
       @job = job
       @view_object = {}
+      blacklist = Nailed.get_config["jenkins"]["blacklist"]["parameter"]
       all_parameters = JenkinsParameter.all(:job => job).map(&:name).sort_by {|m| m.downcase}
       all_parameters.each do |parameter|
-        @view_object[parameter] = get_jenkins_view_object(job, parameter)
+        @view_object[parameter] = get_jenkins_view_object(job, parameter) unless blacklist.include? parameter
       end
 
       haml :jenkins

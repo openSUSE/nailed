@@ -9,6 +9,9 @@ jenkins:
   server_ip: # Server IP of your Jenkins instace
   username: # Username of your Jenkins instance
   api_token: # API Token of your Jenkins instance
+  blacklist: # hide parameters in the jenkins view
+    parameter:
+    # Array of parameter names
 products:
   example_product: # Just a a short key/name for the product (can be arbitrary)
     versions:
