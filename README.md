@@ -72,3 +72,7 @@ nailed --jenkins
 
 * create a `cronjob` for automated data collection with `nailed`
 * start the webserver with `nailed --server`
+
+## Credits
+
+* [Duncan Mac-Vicar P.](https://github.com/dmacvicar) for the awesome [Bicho](https://github.com/dmacvicar/bicho) gem.
