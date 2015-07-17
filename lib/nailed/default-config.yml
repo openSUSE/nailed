@@ -1,0 +1,29 @@
+---
+debug: false
+title: "Nailed Example Mozilla Dashboard"
+theme: flatly # One of cerulean cosmo cyborg darkly flatly journal lumen paper readable sandstone simplex slate spacelab superhero united yeti (see http://bootswatch.com). Leave empty for default
+port: 4567 # Specify a port where you can reach the webinterface
+bugzilla:
+  url: https://bugzilla.mozilla.org
+jenkins:
+  server_ip: jenkins.mozilla.org
+#  username: # Username of your Jenkins instance
+#  api_token: # API Token of your Jenkins instance
+#  blacklist: # hide parameters in the jenkins view
+#    parameter:
+    # Array of parameter names
+products:
+  example_product: # Just a a short key/name for the product (can be arbitrary)
+    versions:
+      - mozilla.org
+    # Array of Bugzilla products (typically different versions of one product)
+    # Exact names have to be given, as they appear in Bugzilla (can not be arbitrary)
+    organization: mozilla # here goes the organization name (under which your repos are hosted) as it appears in GitHub
+    repos:
+      - forums.mozilla.org
+    # Array of GitHub repository names, as they appear in GitHub
+    # query available repos with nailed -l <organization>
+    jobs:
+      - forums.mozilla.org
+    # Array of Jenkins jobs/workers as they appear in Jenkins
+  # continue adding more products here
