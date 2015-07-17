@@ -24,8 +24,7 @@ bundle install
 ```
 $ nailed -h
 Options:
-      --migrate, -m:   Set database to pristine state
-      --upgrade, -u:   Upgrade database
+      --migrate, -m:   Migrate/Upgrade database
      --bugzilla, -b:   Refresh bugzilla database records
        --github, -g:   Refresh github database records
       --jenkins, -j:   Refresh jenkins database records
@@ -59,7 +58,7 @@ All configuration is read from [config/config.yml](./config/config.yml)
 
 * in production, after adding products/changes, to upgrade the database with the new changes run
 ```
-nailed --upgrade
+nailed --migrate
 ```
 * make sure to fetch new data with
 ```

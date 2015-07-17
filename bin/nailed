@@ -5,8 +5,7 @@ require File.join(File.expand_path("..", File.dirname(__FILE__)),"lib","nailed")
 require File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
 
 opts = Trollop::options do
-  opt :migrate, "Set database to pristine state", :short => 'm'
-  opt :upgrade, "Upgrade database", :short => 'u'
+  opt :migrate, "Migrate/Upgrade database", :short => 'm'
   opt :bugzilla, "Refresh bugzilla database records", :short => 'b'
   opt :github, "Refresh github database records", :short => 'g'
   opt :jenkins, "Refresh jenkins database records", :short => 'j'
@@ -33,31 +32,6 @@ opts.each_pair do |key,val|
   case key
   when :migrate
     if val
-      print("Are you sure? This will delete all data from the database. (y/n) ")
-      if gets.strip == "y"
-        Product.auto_migrate!
-        Bugreport.auto_migrate!
-        Bugtrend.auto_migrate!
-        AllbugTrend.auto_migrate!
-        L3Trend.auto_migrate!
-        Organization.auto_migrate!
-        Repository.auto_migrate!
-        Pullrequest.auto_migrate!
-        Pulltrend.auto_migrate!
-        AllpullTrend.auto_migrate!
-        JenkinsParameter.auto_migrate!
-        JenkinsParameterValue.auto_migrate!
-        JenkinsBuild.auto_migrate!
-        github_client = Nailed::Github.new
-        Nailed.fill_db_after_migration(github_client.client)
-        Nailed.log("info", "Database migrated")
-        abort "Database migrated"
-      else
-        abort "Aborting..."
-      end
-    end
-  when :upgrade
-    if val
       print "Are you sure? This will create new tables, new columns, but not change anything existing. (y/n) "
       if gets.strip == "y"
         Product.auto_upgrade!
@@ -75,8 +49,8 @@ opts.each_pair do |key,val|
         JenkinsBuild.auto_upgrade!
         github_client = Nailed::Github.new
         Nailed.fill_db_after_migration(github_client.client)
-        Nailed.log("info", "Database upgraded")
-        abort "Database upgraded"
+        Nailed.log("info", "Database migrated")
+        abort "Database migrated"
       end
     end
   when :bugzilla
