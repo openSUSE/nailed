@@ -97,10 +97,10 @@ class App < Sinatra::Base
         end
       when :pull
         table = "pulltrends"
-        trends = if Pulltrend.count(:repository_rname => item) > 20
-          Pulltrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM #{table} t1 WHERE t1.id <= t2.id AND repository_rname = '#{item}') AS tmp_id, time, open, repository_rname FROM #{table} AS t2 WHERE repository_rname = '#{item}' AND (tmp_id % ((SELECT COUNT(*) FROM #{table} WHERE repository_rname = '#{item}')/20) = 0) ORDER BY id")
+        trends = if Pulltrend.count(:repository_organization_oname => item[0], :repository_rname => item[1]) > 20
+          Pulltrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM #{table} t1 WHERE t1.id <= t2.id AND repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}') AS tmp_id, time, open, repository_rname FROM #{table} AS t2 WHERE repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}' AND (tmp_id % ((SELECT COUNT(*) FROM #{table} WHERE repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}')/20) = 0) ORDER BY id")
         else
-          Pulltrend.repository(:default).adapter.select("SELECT time, open FROM #{table} WHERE repository_rname = '#{item}'")
+          Pulltrend.repository(:default).adapter.select("SELECT time, open FROM #{table} WHERE repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}'")
         end
         trends.each do |col|
           json << {time: col.time, open: col.open}
@@ -340,9 +340,12 @@ class App < Sinatra::Base
   #
   # trends
   #
-  github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+  github_repos = Pullrequest.all(:order => [:created_at.desc]).map do |row|
+    [row.repository_organization_oname, row.repository_rname]
+  end.uniq
+
   github_repos.each do |repo|
-    get "/json/github/#{repo}/trend/open" do
+    get "/json/github/#{repo[0]}/#{repo[1]}/trend/open" do
       get_trends(:pull, repo)
     end
   end
@@ -357,9 +360,9 @@ class App < Sinatra::Base
   #
   get "/json/github/donut/allpulls" do
     pulltop = []
-    allpulls = Pullrequest.aggregate(:repository_rname, :all.count)
+    allpulls = Pullrequest.aggregate(:repository_organization_oname, :repository_rname, :all.count)
     allpulls.each do |donut_bite|
-      pulltop << {label: donut_bite[0], value: donut_bite[1]}
+      pulltop << {label: "#{donut_bite[0]}/#{donut_bite[1]}", value: donut_bite[2]}
     end
     pulltop.to_json
   end
@@ -374,10 +377,15 @@ class App < Sinatra::Base
   end
 
   # all open pull requests for repo
-  github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+  github_repos = Pullrequest.all(:order => [:created_at.desc]).map do |row|
+    [row.repository_organization_oname, row.repository_rname]
+  end.uniq
+
   github_repos.each do |repo|
-    get "/json/github/#{repo}/open" do
-      Pullrequest.all(:repository_rname => repo).to_json
+    get "/json/github/#{repo[0]}/#{repo[1]}/open" do
+      Pullrequest.all(
+        :repository_rname => repo[1],
+        :repository_organization_oname => repo[0]).to_json
     end
   end
 
@@ -407,14 +415,17 @@ class App < Sinatra::Base
     end unless versions.nil?
   end
 
-  github_repos = Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+  github_repos = Pullrequest.all(:order => [:created_at.desc]).map do |row|
+    [row.repository_organization_oname, row.repository_rname]
+  end.uniq
+
   github_repos.each do |repo|
-    get "/github/#{repo}" do
+    get "/github/#{repo[0]}/#{repo[1]}" do
       @github_repos = get_github_repos
       @jenkins_jobs = get_jenkins_jobs
 
-      @repo = repo
-      @org = Repository.get(repo).organization_oname
+      @repo = repo[1]
+      @org = repo[0]
       @github_url_all_pulls = "https://github.com/#{@org}/#{repo}/pulls"
 
       haml :github

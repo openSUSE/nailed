@@ -1,6 +1,6 @@
 function github(colors, org, repo){
   // GitHub
-  $.getJSON("/json/github/" + repo + "/trend/open", function (json) {
+  $.getJSON("/json/github/" + org + "/" + repo + "/trend/open", function (json) {
     new Morris.Line({
       element: 'pull_trend',
       data: json,
