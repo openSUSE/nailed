@@ -3,7 +3,7 @@
   %div.col-md-12.main
     .row
       %h1.title
-        #{@repo}
+        #{@org}/#{@repo}
     .row
       .col-md-12
         %h5 Pull Request Trend
@@ -11,7 +11,7 @@
     .row
       .col-md-12
         %h5 Pull Requests
-        %table{:data => {:toggle => "table", :url => "/json/github/#{@repo}/open", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+        %table{:data => {:toggle => "table", :url => "/json/github/#{@org}/#{@repo}/open", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
           %thead
             %tr
               %th{:data => {:field => "url", :sortable => "true", :formatter => "githubFromLink"}}
