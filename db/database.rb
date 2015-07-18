@@ -68,9 +68,9 @@ end
 
 class Repository
   include DataMapper::Resource
-  property :rname, String, :required => true, :key => true
+  property :rname, String, :required => true, :key => true, :unique_index => false
 
-  belongs_to :organization, :required => false
+  belongs_to :organization, :required => false, :key => true
 end
 
 class Pullrequest
