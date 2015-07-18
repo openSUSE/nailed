@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
 require "trollop"
-require File.join(File.expand_path("..", File.dirname(__FILE__)),"lib","nailed")
-require File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
+require File.join(File.expand_path("..", File.dirname(__FILE__)), "lib", "nailed")
+require File.join(File.expand_path("..", File.dirname(__FILE__)), "db", "database")
 
 opts = Trollop::options do
   opt :migrate, "Migrate/Upgrade database", :short => 'm'
@@ -13,14 +13,14 @@ opts = Trollop::options do
   opt :server, "Start a dashboard webinterface", :short => 's'
 end
 
-abort("try nailed -h") if opts.all?{|k,v| v.is_a?(FalseClass)}
+abort("try nailed -h") if opts.all?{|k, v| v.is_a?(FalseClass)}
 
 if opts[:server_given]
   if Nailed.get_config["products"].nil?
     abort("Add some data, there is nothing to be shown")
   else
     begin
-      `#{File.join(File.expand_path("..", File.dirname(__FILE__)),"bin","app")}`
+      `#{File.join(File.expand_path("..", File.dirname(__FILE__)), "bin", "app")}`
     rescue Interrupt
       sleep 2
       exit
@@ -28,7 +28,7 @@ if opts[:server_given]
   end
 end
 
-opts.each_pair do |key,val|
+opts.each_pair do |key, val|
   case key
   when :migrate
     if val
