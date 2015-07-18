@@ -45,6 +45,7 @@ module Nailed
       YAML.load(File.read(DEFAULT_COLORS_PATH)))
     conf.configure(
       YAML.load(File.read(COLORS_PATH))) if File.exist?(COLORS_PATH)
+    conf
   end
 
   # database helpers
