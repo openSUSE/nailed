@@ -61,7 +61,8 @@ module Nailed
                            :state => pr.state,
                            :url => pr.html_url,
                            :created_at => pr.created_at,
-                           :repository_rname => repo}
+                           :repository_rname => repo,
+                           :repository_organization_oname => organization}
 
               # if pr exists dont create a new record
               pull_to_update = Pullrequest.all(:pr_number => pr.number, :repository_rname => repo)
@@ -91,7 +92,7 @@ module Nailed
       pulls.each do |db_pull|
         number = db_pull.pr_number
         repo = db_pull.repository_rname
-        org = Repository.get(repo).organization_oname
+        org = db_pull.repository_organization_oname
         begin
           github_pull = @client.pull_request("#{org}/#{repo}", number)
         rescue Octokit::NotFound
@@ -107,12 +108,13 @@ module Nailed
       end
     end
 
-    def write_pull_trends(repo)
+    def write_pull_trends(org, repo)
       Nailed.log("info", "#{__method__}: Writing pull trends for #{repo}")
       open = Pullrequest.count(:repository_rname => repo)
       attributes = {:time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                     :open => open,
-                    :repository_rname => repo}
+                    :repository_rname => repo,
+                    :repository_organization_oname => org}
 
       db_handler = Pulltrend.first_or_create(attributes)
 
