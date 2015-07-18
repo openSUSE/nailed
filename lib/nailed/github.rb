@@ -8,7 +8,7 @@ module Nailed
     end
 
     def get_open_pulls
-      Nailed.get_config["products"].each do |product,values|
+      Nailed.get_config["products"].each do |product, values|
         organization = values["organization"]
         repos = values["repos"]
         repos.each do |repo|
