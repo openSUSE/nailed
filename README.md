@@ -73,6 +73,41 @@ nailed --jenkins
 * create a `cronjob` for automated data collection with `nailed`
 * start the webserver with `nailed --server`
 
+## Running as a Docker container
+
+* Build the image
+
+```
+$ git clone https://github.com/MaximilianMeister/nailed
+$ cd nailed
+$ docker build -t nailed:latest .
+```
+
+* Create a directory to hold the data, and create the config, db and log subdirectories
+
+```
+mkdir -p /mystorage/config
+mkdir -p /mystorage/log
+mkdir -p /mystorage/db
+``
+
+Add .oscrc and netrc into /mystorage/config.
+You need to mount that directory as the /data volume in the container
+
+* Migrate and fetch initial data
+
+```
+docker run -ti -v /mystorage:/data nailed:latest --migrate
+```
+
+* Run the server
+
+In this case, we map it to port 8000 on the host
+
+```
+docker run -ti -v /mystorage:/data -p 8000:4567 nailed:latest --server
+```
+
 ## Credits
 
 * [Duncan Mac-Vicar P.](https://github.com/dmacvicar) for the awesome [Bicho](https://github.com/dmacvicar/bicho) gem.
