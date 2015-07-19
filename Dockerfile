@@ -18,7 +18,6 @@ ADD . /home/nailed/app
 RUN chown nailed:users /home/nailed/app/ -R
 USER nailed
 WORKDIR /home/nailed/app
-RUN ls -la
 # add the dependencies
 RUN bundle config build.nokogiri "--use-system-libraries"
 RUN bundle install --path /home/nailed/app/vendor/bundle
@@ -26,9 +25,7 @@ RUN bundle install --path /home/nailed/app/vendor/bundle
 RUN rm -rf config && ln -s /data/config config
 RUN rm -rf log && ln -s /data/log log
 
-# Bugzilla configuration
-#ENV DEFAULT_OSCRC_PATH /data/config/oscrc
-# Guthub configuration
+# Github and Bugzilla configuration
 ENV OCTOKIT_NETRC /data/config/netrc
 ENV HOME /data/config
 
