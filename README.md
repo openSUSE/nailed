@@ -91,8 +91,9 @@ mkdir -p /mystorage/log
 mkdir -p /mystorage/db
 ```
 
-Add .oscrc and netrc into /mystorage/config.
-You need to mount that directory as the /data volume in the container
+Add .oscrc and netrc and config.yml into /mystorage/config. You can as well add colors.yml
+here and override some defaults.
+You need to mount that directory as the /data volume in the container.
 
 * Migrate and fetch initial data
 
