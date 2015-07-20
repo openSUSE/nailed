@@ -89,7 +89,7 @@ $ docker build -t nailed:latest .
 mkdir -p /mystorage/config
 mkdir -p /mystorage/log
 mkdir -p /mystorage/db
-``
+```
 
 Add .oscrc and netrc into /mystorage/config.
 You need to mount that directory as the /data volume in the container
