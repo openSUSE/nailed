@@ -361,7 +361,7 @@ class App < Sinatra::Base
     pulltop = []
     allpulls = Pullrequest.aggregate(:repository_organization_oname, :repository_rname, :all.count)
     allpulls.each do |donut_bite|
-      pulltop << {label: "#{donut_bite[0]}/#{donut_bite[1]}", value: donut_bite[2]}
+      pulltop << {label: donut_bite[1], value: donut_bite[2]}
     end
     pulltop.to_json
   end
