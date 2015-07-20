@@ -5,7 +5,7 @@ module Nailed
     end
 
     def get_bugs
-      Nailed.get_config["products"].each do |product,values|
+      Nailed.get_config["products"].each do |product, values|
         values["versions"].each do |version|
           Nailed.log("info", "#{__method__}: Fetching bugs for #{version}")
           begin
@@ -23,21 +23,21 @@ module Nailed
                 :assigned_to => bug.assigned_to,
                 :creation_time => "#{bug.creation_time.to_date}T#{bug.creation_time.hour}:#{bug.creation_time.min}:#{bug.creation_time.sec}+00:00",
                 :last_change_time => "#{bug.last_change_time.to_date}T#{bug.last_change_time.hour}:#{bug.last_change_time.min}:#{bug.last_change_time.sec}+00:00",
-                :url => bug.url.gsub(/novell.com\//,'suse.com/show_bug.cgi?id=')
+                :url => bug.url.gsub(/novell.com\//, 'suse.com/show_bug.cgi?id=')
               }
 
               db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
               Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
             end
           rescue
-            Nailed.log("error","Could not fetch Bugs for #{version}.")
+            Nailed.log("error", "Could not fetch Bugs for #{version}.")
           end
         end unless values["versions"].nil?
       end
     end
 
     def write_bug_trends
-      Nailed.get_config["products"].each do |product,values|
+      Nailed.get_config["products"].each do |product, values|
         values["versions"].each do |version|
           Nailed.log("info", "#{__method__}: Writing bug trends for #{version}")
           open = Bugreport.count(:is_open => true, :product_name => version)
@@ -71,7 +71,7 @@ module Nailed
 
     def write_l3_trends
       open = 0
-      Nailed.get_config["products"].each do |product,values|
+      Nailed.get_config["products"].each do |product, values|
         values["versions"].each do |version|
           Nailed.log("info", "#{__method__}: Aggregating l3 trends for #{version}")
           open += Bugreport.count(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)

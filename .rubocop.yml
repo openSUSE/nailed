@@ -1,0 +1,6 @@
+StringLiterals:
+  EnforcedStyle: double_quotes
+Style/HashSyntax:
+  EnforcedStyle: hash_rockets
+  SupportedStyles:
+    - hash_rockets

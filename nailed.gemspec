@@ -24,4 +24,5 @@ Gem::Specification.new do |s|
   s.add_dependency("sinatra-assetpack", ["0.3.3"])
   s.add_dependency("sinatra-advanced-routes", ["0.5.3"])
   s.add_dependency("haml", ["4.0.6"])
+  s.add_dependency("confstruct", ["~> 1.0.1"])
 end

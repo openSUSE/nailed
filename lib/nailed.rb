@@ -2,19 +2,28 @@ require 'logger'
 require 'yaml'
 require "octokit"
 require "bicho"
+require "confstruct"
 require "jenkins_api_client"
 require_relative "nailed/bugzilla"
 require_relative "nailed/github"
 require_relative "nailed/jenkins"
 require_relative "nailed/version"
-require File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
+require File.join(File.expand_path("..", File.dirname(__FILE__)), "db", "database")
 
 module Nailed
-  LOGGER = Logger.new(File.join(File.expand_path("..", File.dirname(__FILE__)),"log","nailed.log"))
+  LOGGER = Logger.new(File.join(File.expand_path("..", File.dirname(__FILE__)), "log", "nailed.log"))
+  DEFAULT_CONFIG_PATH =
+    File.join(File.expand_path(File.dirname(__FILE__)), "nailed", "default-config.yml")
+  DEFAULT_COLORS_PATH =
+    File.join(File.expand_path(File.dirname(__FILE__)), "nailed", "default-colors.yml")
+  COLORS_PATH =
+    File.join(File.expand_path("..", File.dirname(__FILE__)), "config", "colors.yml")
+  CONFIG_PATH =
+    File.join(File.expand_path("..", File.dirname(__FILE__)), "config", "config.yml")
 
   extend self
   # generic helpers
-  def log(level,msg)
+  def log(level, msg)
     if get_config["debug"]
       LOGGER.error(msg) if level == "error"
       LOGGER.info(msg) if level == "info"
@@ -22,13 +31,21 @@ module Nailed
   end
 
   def get_config
-    conf = File.join(File.expand_path("..", File.dirname(__FILE__)),"config","config.yml")
-    YAML.load_file(conf)
+    if !File.exist?(CONFIG_PATH)
+      Confstruct::Configuration.new(
+        YAML.load(File.read(DEFAULT_CONFIG_PATH)))
+    else
+      Confstruct::Configuration.new(
+        YAML.load(File.read(CONFIG_PATH)))
+    end
   end
 
   def get_colors
-    conf = File.join(File.expand_path("..", File.dirname(__FILE__)),"config","colors.yml")
-    YAML.load_file(conf)
+    conf = Confstruct::Configuration.new(
+      YAML.load(File.read(DEFAULT_COLORS_PATH)))
+    conf.configure(
+      YAML.load(File.read(COLORS_PATH))) if File.exist?(COLORS_PATH)
+    conf
   end
 
   # database helpers
@@ -46,7 +63,7 @@ module Nailed
   end
 
   def fill_db_after_migration(github_client)
-    get_config["products"].each do |product,values|
+    get_config["products"].each do |product, values|
       organization = values["organization"]
       values["versions"].each do |version|
         db_handler = Product.first_or_create(:name => version)
@@ -74,7 +91,7 @@ module Nailed
 
   def get_github_repos_from_yaml
     repos = []
-    get_config["products"].each do |product,values|
+    get_config["products"].each do |product, values|
       values["repos"].each do |repo|
         repos << repo
       end unless values["repos"].nil?
@@ -85,7 +102,7 @@ module Nailed
   # jenkins helpers
   def get_jenkins_jobs_from_yaml
     jobs = []
-    get_config["products"].each do |product,values|
+    get_config["products"].each do |product, values|
       values["jobs"].each do |job|
         jobs << job
       end unless values["jobs"].nil?

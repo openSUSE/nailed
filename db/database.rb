@@ -68,9 +68,9 @@ end
 
 class Repository
   include DataMapper::Resource
-  property :rname, String, :required => true, :key => true
+  property :rname, String, :required => true, :key => true, :unique_index => false
 
-  belongs_to :organization, :required => false
+  belongs_to :organization, :required => false, :key => true
 end
 
 class Pullrequest
@@ -134,4 +134,4 @@ end
 
 DataMapper.finalize
 
-DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{File.join(File.expand_path(File.dirname(__FILE__)),'nailed.db')}")
+DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{File.join(File.expand_path(File.dirname(__FILE__)), 'nailed.db')}")
