@@ -82,6 +82,14 @@ module Nailed
     repos
   end
 
+  def get_github_orgs_from_yaml
+    orgs = []
+    get_config["products"].each do |product,values|
+      orgs << values["organization"]
+    end
+    orgs
+  end
+
   # jenkins helpers
   def get_jenkins_jobs_from_yaml
     jobs = []

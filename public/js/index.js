@@ -1,4 +1,4 @@
-function index(colors, product_query){
+function index(colors, product_query, org_query){
   $.getJSON("/json/github/donut/allpulls", function (json) {
     new Morris.Donut({
       element: 'pull_top',
@@ -111,8 +111,7 @@ function index(colors, product_query){
         jQuery.noop();
       else
         jQuery.noop();
-        // TODO find the link which lists all open PR's in github.com
-        //window.open("")
+        window.open("https://github.com/pulls?q=is%3Aopen+is%3Apr+"+org_query)
     });
   });
 }
