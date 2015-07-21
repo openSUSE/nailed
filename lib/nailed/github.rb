@@ -11,33 +11,38 @@ module Nailed
       Nailed.get_config["products"].each do |product,values|
         organization = values["organization"]
         repos = values["repos"]
+        remote_repos = @client.org_repos(organization).map(&:name)
         repos.each do |repo|
-          Nailed.log("info", "#{__method__}: Getting open pullrequests for #{organization}/#{repo}")
-          pulls = @client.pull_requests("#{organization}/#{repo}")
-          pulls.each do |pr|
-            attributes = {:pr_number => pr.number,
-                         :title => pr.title,
-                         :state => pr.state,
-                         :url => pr.html_url,
-                         :created_at => pr.created_at,
-                         :repository_rname => repo}
+          if remote_repos.include?(repo)
+            Nailed.log("info", "#{__method__}: Getting open pullrequests for #{organization}/#{repo}")
+            pulls = @client.pull_requests("#{organization}/#{repo}")
+            pulls.each do |pr|
+              attributes = {:pr_number => pr.number,
+                           :title => pr.title,
+                           :state => pr.state,
+                           :url => pr.html_url,
+                           :created_at => pr.created_at,
+                           :repository_rname => repo}
 
-            # if pr exists dont create a new record
-            pull_to_update = Pullrequest.all(:pr_number => pr.number, :repository_rname => repo)
-            unless pull_to_update.empty?
-              # update saves the state, so we dont need a db_handler
-              # TODO check return code for true if saved correctly
-              pull_to_update[0].update(attributes)
-              Nailed.log("info", "#{__method__}: Updated #{pr.repo} ##{pr.number} with #{attributes.inspect}")
-            else
-              db_handler = Pullrequest.first_or_create(attributes)
-              Nailed.log("info", "#{__method__}: Created new pullrequest #{pr.repo} ##{pr.number} with #{attributes.inspect}")
-            end
+              # if pr exists dont create a new record
+              pull_to_update = Pullrequest.all(:pr_number => pr.number, :repository_rname => repo)
+              unless pull_to_update.empty?
+                # update saves the state, so we dont need a db_handler
+                # TODO check return code for true if saved correctly
+                pull_to_update[0].update(attributes)
+                Nailed.log("info", "#{__method__}: Updated #{pr.repo} ##{pr.number} with #{attributes.inspect}")
+              else
+                db_handler = Pullrequest.first_or_create(attributes)
+                Nailed.log("info", "#{__method__}: Created new pullrequest #{pr.repo} ##{pr.number} with #{attributes.inspect}")
+              end
 
-            Nailed.save_state(db_handler) unless defined? db_handler
-            Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
-          end unless pulls.empty?
-          write_pull_trends(repo)
+              Nailed.save_state(db_handler) unless defined? db_handler
+              Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
+            end unless pulls.empty?
+            write_pull_trends(repo)
+          else
+            Nailed.log("error", "#{__method__}: #{repo} does not exist anymore.")
+          end
         end unless repos.nil?
       end
     end
