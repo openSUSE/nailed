@@ -53,7 +53,13 @@ module Nailed
         number = db_pull.pr_number
         repo = db_pull.repository_rname
         org = Repository.get(repo).organization_oname
-        github_pull = @client.pull_request("#{org}/#{repo}", number)
+        begin
+          github_pull = @client.pull_request("#{org}/#{repo}", number)
+        rescue Octokit::NotFound
+          Nailed.log("error", "#{__method__}: Pullrequest #{org}/#{repo}, ##{number} not found. Deleting from database...")
+          db_pull.destroy
+          next
+        end
         Nailed.log("info", "#{__method__}: Checking state of pullrequest #{number} from #{org}/#{repo}")
         if github_pull.state == "closed"
           Nailed.log("info", "#{__method__}: Deleting closed pullrequest #{number} from #{org}/#{repo}")
