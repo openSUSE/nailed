@@ -108,7 +108,7 @@ class App < Sinatra::Base
       when :allpulls
         table = "allpull_trends"
         filter = if AllpullTrend.count > 20
-          "WHERE (id % ((SELECT COUNT(*) FROM #{table})/20) = 0)"
+          "WHERE (id % ((SELECT COUNT(*) FROM #{table})/20) = 0) OR (id = (SELECT MAX(id) FROM #{table}));"
         else
           ""
         end
