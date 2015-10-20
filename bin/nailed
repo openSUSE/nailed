@@ -16,7 +16,7 @@ end
 abort("try nailed -h") if opts.all?{|k,v| v.is_a?(FalseClass)}
 
 if opts[:server_given]
-  if Nailed.get_config["products"].nil?
+  if Nailed::Config.products.nil?
     abort("Add some data, there is nothing to be shown")
   else
     begin

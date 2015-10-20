@@ -1,2 +1,4 @@
 Gemfile.lock
 db/nailed.db
+log/nailed.log
+*~
