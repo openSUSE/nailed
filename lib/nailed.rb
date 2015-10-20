@@ -3,12 +3,15 @@ require 'yaml'
 require "octokit"
 require "bicho"
 require "jenkins_api_client"
+
+TOPLEVEL = File.expand_path("..", File.dirname(__FILE__))
+
+require_relative "nailed/config"
 require_relative "nailed/bugzilla"
 require_relative "nailed/github"
 require_relative "nailed/jenkins"
 require_relative "nailed/version"
 
-TOPLEVEL = File.expand_path("..", File.dirname(__FILE__))
 require File.join(TOPLEVEL, "db", "database")
 
 module Nailed
@@ -25,22 +28,6 @@ module Nailed
     if get_config["debug"]
       LOGGER.error(msg) if level == "error"
       LOGGER.info(msg) if level == "info"
-    end
-  end
-
-  #
-  # Config
-  #
-  class Config
-    def self.content
-      @@conf ||= File.join(TOPLEVEL,"config","config.yml")
-      @@yaml = YAML.load_file(@@conf)
-    end
-    def self.[] name
-      self.content[name]
-    end
-    def self.products
-      self.content["products"] || raise("No products defined in config.yml")
     end
   end
 
