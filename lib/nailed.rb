@@ -47,59 +47,6 @@ module Nailed
   end
 
   #
-  # github helpers
-  #
-  def get_org_repos(github_client, org)
-    all_repos = github_client.org_repos(org)
-    all_repos.map(&:name)
-  end
-
-  def fill_db_after_migration(github_client)
-    Config.products.each do |product,values|
-      organization = values["organization"]
-      values["versions"].each do |version|
-        db_handler = Product.first_or_create(:name => version)
-        save_state(db_handler)
-      end unless values["versions"].nil?
-      unless organization.nil?
-        db_handler = Organization.first_or_create(:oname => organization)
-        save_state(db_handler)
-        org_repos_github = get_org_repos(github_client, organization)
-        org_repos_yml = values["repos"]
-        org_repos_yml.each do |org_repo|
-          if org_repos_github.include?(org_repo)
-            db_handler = Repository.first_or_create(:rname => org_repo, :organization_oname => organization)
-            save_state(db_handler)
-          end
-        end
-      end
-    end
-  end
-
-  def list_org_repos(github_client, org)
-    repos = get_org_repos(github_client, org)
-    repos.each {|r| puts "- #{r}"}
-  end
-
-  def get_github_repos_from_yaml
-    repos = []
-    Config.products.each do |product,values|
-      values["repos"].each do |repo|
-        repos << repo
-      end unless values["repos"].nil?
-    end
-    repos
-  end
-
-  def get_github_orgs_from_yaml
-    orgs = []
-    Config.products.each do |product,values|
-      orgs << values["organization"]
-    end
-    orgs
-  end
-
-  #
   # jenkins helpers
   #
   def get_jenkins_jobs_from_yaml
