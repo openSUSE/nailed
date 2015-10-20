@@ -74,7 +74,7 @@ class App < Sinatra::Base
     @title = Nailed::Config["title"] || "Dashboard"
     @products = Nailed::Config.products.map{|p,v| v["versions"]}.flatten.compact
     @product_query = @products.join("&product=")
-    @org_query = Nailed.get_github_orgs_from_yaml.map {|o| o.prepend("user%3A")}.join("+")
+    @org_query = Nailed::Github.orgs.map {|o| o.prepend("user%3A")}.join("+")
     @theme_type = get_theme_type
     @colors = Nailed.get_colors
   end
