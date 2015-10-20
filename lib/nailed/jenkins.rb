@@ -1,7 +1,7 @@
 module Nailed
   class Jenkins
     def initialize
-      if Nailed.get_config["debug"]
+      if Nailed::Config["debug"]
         log_location = File.join(File.expand_path("../../", File.dirname(__FILE__)), "log", "nailed.log")
         log_level = 1
       else
@@ -9,9 +9,9 @@ module Nailed
         log_level = 4
       end
       @client = JenkinsApi::Client.new(
-         :server_ip => Nailed.get_config["jenkins"]["server_ip"],
-         :username  => Nailed.get_config["jenkins"]["username"],
-         :password  => Nailed.get_config["jenkins"]["api_token"],
+         :server_ip => Nailed::Config["jenkins"]["server_ip"],
+         :username  => Nailed::Config["jenkins"]["username"],
+         :password  => Nailed::Config["jenkins"]["api_token"],
          :log_location => log_location,
          :log_level => log_level)
     end

@@ -12,20 +12,36 @@ TOPLEVEL = File.expand_path("..", File.dirname(__FILE__))
 require File.join(TOPLEVEL, "db", "database")
 
 module Nailed
+
+  #
+  # Logger
+  #
+
   LOGGER = Logger.new(File.join(TOPLEVEL,"log","nailed.log"))
 
   extend self
   # generic helpers
   def log(level,msg)
-    if get_config["debug"]
+    if Config["debug"]
       LOGGER.error(msg) if level == "error"
       LOGGER.info(msg) if level == "info"
     end
   end
 
-  def get_config
-    conf = File.join(TOPLEVEL,"config","config.yml")
-    YAML.load_file(conf)
+  #
+  # Config
+  #
+  class Config
+    def self.content
+      @@conf ||= File.join(TOPLEVEL,"config","config.yml")
+      @@yaml = YAML.load_file(@@conf)
+    end
+    def self.[] name
+      self.content[name]
+    end
+    def self.products
+      self.content["products"] || raise("No products defined in config.yml")
+    end
   end
 
   def get_colors
@@ -33,7 +49,9 @@ module Nailed
     YAML.load_file(conf)
   end
 
+  #
   # database helpers
+  #
   def save_state(db_handler)
     unless db_handler.save
       puts("ERROR: #{__method__}: set debug true and see logfile")
@@ -41,16 +59,16 @@ module Nailed
     end
   end
 
+  #
   # github helpers
+  #
   def get_org_repos(github_client, org)
     all_repos = github_client.org_repos(org)
     all_repos.map(&:name)
   end
 
   def fill_db_after_migration(github_client)
-    products = get_config["products"]
-    raise "No products defined in config.yml" unless products
-    products.each do |product,values|
+    Config.products.each do |product,values|
       organization = values["organization"]
       values["versions"].each do |version|
         db_handler = Product.first_or_create(:name => version)
@@ -78,7 +96,7 @@ module Nailed
 
   def get_github_repos_from_yaml
     repos = []
-    get_config["products"].each do |product,values|
+    Config.products.each do |product,values|
       values["repos"].each do |repo|
         repos << repo
       end unless values["repos"].nil?
@@ -88,16 +106,18 @@ module Nailed
 
   def get_github_orgs_from_yaml
     orgs = []
-    get_config["products"].each do |product,values|
+    Config.products.each do |product,values|
       orgs << values["organization"]
     end
     orgs
   end
 
+  #
   # jenkins helpers
+  #
   def get_jenkins_jobs_from_yaml
     jobs = []
-    get_config["products"].each do |product,values|
+    Config.products.each do |product,values|
       values["jobs"].each do |job|
         jobs << job
       end unless values["jobs"].nil?
