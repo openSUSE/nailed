@@ -46,7 +46,9 @@ module Nailed
   end
 
   def fill_db_after_migration(github_client)
-    get_config["products"].each do |product,values|
+    products = get_config["products"]
+    raise "No products defined in config.yml" unless products
+    products.each do |product,values|
       organization = values["organization"]
       values["versions"].each do |version|
         db_handler = Product.first_or_create(:name => version)
