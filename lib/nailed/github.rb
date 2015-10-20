@@ -8,7 +8,7 @@ module Nailed
     end
 
     def get_open_pulls
-      Nailed.get_config["products"].each do |product,values|
+      Nailed::Config.products.each do |product,values|
         organization = values["organization"]
         repos = values["repos"]
         remote_repos = @client.org_repos(organization).map(&:name)
