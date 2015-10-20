@@ -7,10 +7,12 @@ require_relative "nailed/bugzilla"
 require_relative "nailed/github"
 require_relative "nailed/jenkins"
 require_relative "nailed/version"
-require File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
+
+TOPLEVEL = TOPLEVEL
+require File.join(TOPLEVEL, "db", "database")
 
 module Nailed
-  LOGGER = Logger.new(File.join(File.expand_path("..", File.dirname(__FILE__)),"log","nailed.log"))
+  LOGGER = Logger.new(File.join(TOPLEVEL,"log","nailed.log"))
 
   extend self
   # generic helpers
@@ -22,12 +24,12 @@ module Nailed
   end
 
   def get_config
-    conf = File.join(File.expand_path("..", File.dirname(__FILE__)),"config","config.yml")
+    conf = File.join(TOPLEVEL,"config","config.yml")
     YAML.load_file(conf)
   end
 
   def get_colors
-    conf = File.join(File.expand_path("..", File.dirname(__FILE__)),"config","colors.yml")
+    conf = File.join(TOPLEVEL,"config","colors.yml")
     YAML.load_file(conf)
   end
 
