@@ -1,4 +1,3 @@
-require 'logger'
 require 'yaml'
 require "octokit"
 require "bicho"
@@ -6,6 +5,7 @@ require "jenkins_api_client"
 
 TOPLEVEL = File.expand_path("..", File.dirname(__FILE__))
 
+require_relative "nailed/logger"
 require_relative "nailed/config"
 require_relative "nailed/bugzilla"
 require_relative "nailed/github"
@@ -15,12 +15,6 @@ require_relative "nailed/version"
 require File.join(TOPLEVEL, "db", "database")
 
 module Nailed
-
-  #
-  # Logger
-  #
-
-  LOGGER = Logger.new(File.join(TOPLEVEL,"log","nailed.log"))
 
   extend self
   # generic helpers
