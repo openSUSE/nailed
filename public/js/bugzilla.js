@@ -31,12 +31,13 @@ function bugzilla(colors, product){
       element: 'bug_prio',
       data: json,
       xkey: 'bugprio',
-      ykeys: ['p1', 'p2', 'p3', 'p4', 'p5'],
-      labels: ['P1 - Urgent', 'P2 - High', 'P3 - Medium', 'P4 - Low', 'P5 - None'],
+      ykeys: ['p0', 'p1', 'p2', 'p3', 'p4', 'p5'],
+      labels: ['P0 - Crit Sit', 'P1 - Urgent', 'P2 - High', 'P3 - Medium', 'P4 - Low', 'P5 - None'],
       resize: true,
       stacked: true,
       hideHover: true,
-      barColors: [ colors["bar"]["red"],
+      barColors: [ "#000000",
+                   colors["bar"]["red"],
                    colors["bar"]["orange"],
                    colors["bar"]["yellow"],
                    colors["bar"]["green"],
@@ -46,6 +47,8 @@ function bugzilla(colors, product){
         var ret = '';
         if (typeof row.p1 !== "undefined")
           return row.p1;
+        else if (typeof row.p0 !== "undefined")
+          return row.p0;
         else if (typeof row.p2 !== "undefined")
           return row.p2;
         else if (typeof row.p3 !== "undefined")

@@ -2,6 +2,8 @@
 function bugzillaPriority(priority) {
   if (priority == "P1 - Urgent") {
     return '<span class="label label-danger">' + priority + '</span>' ;
+  } else if (priority == "P0 - Crit Sit") {
+    return '<span class="label label-default">' + priority + '</span>';
   } else if (priority == "P2 - High") {
     return '<span class="label label-warning">' + priority + '</span>' ;
   } else if (priority == "P3 - Medium") {
