@@ -6,6 +6,13 @@
 `Be aware` that the bugzilla layout (metadata) is still SUSE specific, which may not be useful for everybody.
 e.g. it relies on bugs being tagged as L3. The plan is to make it optional in the future.
 
+## How does it look like?
+
+![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/blob/master/pics/nailed_overview.png)
+![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/blob/master/pics/nailed_bugzilla.png)
+![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/blob/master/pics/nailed_github.png)
+![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/blob/master/pics/nailed_jenkins.png)
+
 ## Installation using gem
 `gem install 'nailed'`
 
