@@ -45,10 +45,10 @@ function bugzilla(colors, product){
                  ],
       hoverCallback: function (index, options, content, row) {
         var ret = '';
-        if (typeof row.p1 !== "undefined")
-          return row.p1;
-        else if (typeof row.p0 !== "undefined")
+        if (typeof row.p0 !== "undefined")
           return row.p0;
+        else if (typeof row.p1 !== "undefined")
+          return row.p1;
         else if (typeof row.p2 !== "undefined")
           return row.p2;
         else if (typeof row.p3 !== "undefined")
