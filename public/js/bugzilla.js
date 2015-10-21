@@ -36,7 +36,7 @@ function bugzilla(colors, product){
       resize: true,
       stacked: true,
       hideHover: true,
-      barColors: [ "#000000",
+      barColors: [ colors["bar"]["black"],
                    colors["bar"]["red"],
                    colors["bar"]["orange"],
                    colors["bar"]["yellow"],

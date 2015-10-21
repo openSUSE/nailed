@@ -1,17 +1,20 @@
 ---
 line:
+  black: "#000000"
   red: "#E57373"
   orange: "#FFB74D"
   yellow: "#FFF176"
   green: "#81C784"
   blue: "#64B5F6"
 bar:
+  black: "#000000"
   red: "#E57373"
   orange: "#FFB74D"
   yellow: "#FFF176"
   green: "#81C784"
   blue: "#64B5F6"
 pie:
+  black: "#000000"
   red: "#E57373"
   orange: "#FFB74D"
   yellow: "#FFF176"
