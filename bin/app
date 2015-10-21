@@ -17,8 +17,8 @@ class App < Sinatra::Base
   set :public_folder, File.join(ROOT_PATH, "public")
   set :views, File.join(ROOT_PATH, "views")
   set :bind, "0.0.0.0"
-  set :port, Nailed.get_config["port"] || 4567
-  theme = Nailed.get_config["theme"] || "default"
+  set :port, Nailed::Config["port"] || 4567
+  theme = Nailed::Config["theme"] || "default"
 
   register Sinatra::AssetPack
 
@@ -71,10 +71,10 @@ class App < Sinatra::Base
   }
 
   before do
-    @title = Nailed.get_config["title"] || "Dashboard"
-    @products = Nailed.get_config["products"].map{|p,v| v["versions"]}.flatten.compact
+    @title = Nailed::Config["title"] || "Dashboard"
+    @products = Nailed::Config.products.map{|p,v| v["versions"]}.flatten.compact
     @product_query = @products.join("&product=")
-    @org_query = Nailed.get_github_orgs_from_yaml.map {|o| o.prepend("user%3A")}.join("+")
+    @org_query = Nailed::Github.orgs.map {|o| o.prepend("user%3A")}.join("+")
     @theme_type = get_theme_type
     @colors = Nailed.get_colors
   end
@@ -143,7 +143,7 @@ class App < Sinatra::Base
     end
 
     def get_theme_type
-      theme = Nailed.get_config["theme"] || "default"
+      theme = Nailed::Config["theme"] || "default"
       if ["cyborg", "darkly", "slate", "superhero"].include? theme
         "dark"
       else
@@ -205,7 +205,7 @@ class App < Sinatra::Base
   #
   # bar
   #
-  Nailed.get_config["products"].each do |product,values|
+  Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /,'_')}/bar/priority" do
@@ -225,7 +225,7 @@ class App < Sinatra::Base
   #
   # trends
   #
-  Nailed.get_config["products"].each do |product,values|
+  Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /,'_')}/trend/open" do
@@ -245,7 +245,7 @@ class App < Sinatra::Base
   #
   # donut
   #
-  Nailed.get_config["products"].each do |product,values|
+  Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /,'_')}/donut/component" do
@@ -263,7 +263,7 @@ class App < Sinatra::Base
 
   get "/json/bugzilla/donut/allbugs" do
     bugtop = []
-    Nailed.get_config["products"].each do |product,values|
+    Nailed::Config.products.each do |product,values|
       versions = values["versions"]
       versions.each do |version|
         p = Product.get(version)
@@ -294,7 +294,7 @@ class App < Sinatra::Base
   end
 
   # product -> openwithoutl3
-  Nailed.get_config["products"].each do |product,values|
+  Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /,'_')}/openwithoutl3" do
@@ -304,7 +304,7 @@ class App < Sinatra::Base
   end
 
   # product -> openl3
-  Nailed.get_config["products"].each do |product,values|
+  Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /,'_')}/openl3" do
@@ -314,7 +314,7 @@ class App < Sinatra::Base
   end
 
   # product -> closedwithoutl3
-  Nailed.get_config["products"].each do |product,values|
+  Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /,'_')}/closedwithoutl3" do
@@ -324,7 +324,7 @@ class App < Sinatra::Base
   end
 
   # product -> closedl3
-  Nailed.get_config["products"].each do |product,values|
+  Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /,'_')}/closedl3" do
@@ -392,7 +392,7 @@ class App < Sinatra::Base
     haml :index
   end
 
-  Nailed.get_config["products"].each do |product,values|
+  Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
       get "/#{version.gsub(/ /,'_')}/bugzilla" do
@@ -428,7 +428,7 @@ class App < Sinatra::Base
 
       @job = job
       @view_object = {}
-      blacklist = Nailed.get_config["jenkins"]["blacklist"]["parameter"]
+      blacklist = Nailed::Config["jenkins"]["blacklist"]["parameter"]
       all_parameters = JenkinsParameter.all(:job => job).map(&:name).sort_by {|m| m.downcase}
       all_parameters.each do |parameter|
         @view_object[parameter] = get_jenkins_view_object(job, parameter) unless blacklist.include? parameter
