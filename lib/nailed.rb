@@ -5,8 +5,8 @@ require "jenkins_api_client"
 
 TOPLEVEL = File.expand_path("..", File.dirname(__FILE__))
 
-require_relative "nailed/logger"
 require_relative "nailed/config"
+require_relative "nailed/logger"
 require_relative "nailed/bugzilla"
 require_relative "nailed/github"
 require_relative "nailed/jenkins"
@@ -17,12 +17,9 @@ require File.join(TOPLEVEL, "db", "database")
 module Nailed
 
   extend self
-  # generic helpers
-  def log(level,msg)
-    if Config["debug"]
-      LOGGER.error(msg) if level == "error"
-      LOGGER.info(msg) if level == "info"
-    end
+
+  def logger
+    @@logger ||= Logger.new
   end
 
   def get_colors
@@ -35,8 +32,8 @@ module Nailed
   #
   def save_state(db_handler)
     unless db_handler.save
-      puts("ERROR: #{__method__}: set debug true and see logfile")
-      log("error", "#{__method__}: #{db_handler.errors.inspect}")
+      puts("ERROR: #{__method__}: set 'debug: error' in config.yml and see logfile")
+      logger.error("#{__method__}: #{db_handler.errors.inspect}")
     end
   end
 

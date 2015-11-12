@@ -49,7 +49,7 @@ opts.each_pair do |key,val|
         JenkinsBuild.auto_upgrade!
         github_client = Nailed::Github.new
         Nailed.fill_db_after_migration(github_client.client)
-        Nailed.log("info", "Database migrated")
+        Nailed.logger.info("Database migrated")
         abort "Database migrated"
       end
     end
