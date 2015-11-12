@@ -154,7 +154,7 @@ class App < Sinatra::Base
     ### github helpers
 
     def get_github_repos
-      Pullrequest.all(:order => [:created_at.desc]).map(&:repository_rname).uniq
+      Repository.all
     end
 
     ### jenkins helpers
