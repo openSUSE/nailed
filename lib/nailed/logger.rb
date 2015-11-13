@@ -10,22 +10,27 @@ module Nailed
       logname = Config["logfile"]
       logfile = nil
       case logname
-      when "stderr"
+      when "stderr", "STDERR", "", nil
         logfile = STDERR
-      when "stdout"
+      when "stdout", "STDOUT"
         logfile = STDOUT
-      when "", nil
-        logdir = File.join(TOPLEVEL,"log")
-        Dir.mkdir(logdir) rescue nil
-        logname = File.join(logdir, "nailed.log")
       else
-        # assume valid file path
+        require 'fileutils'
+        logname = File.expand_path(logname, Dir.getwd) # expand relative to current dir
+        logdir = File.dirname(logname)
+        begin
+          FileUtils.mkdir_p(logdir)
+        rescue Exception => e
+          STDERR.puts "Can't create log directory '#{logdir}': #{e}"
+          exit 1
+        end
       end
       if logfile.nil?
         begin
           logfile = File.new(logname, "a+")
         rescue Exception => e
           STDERR.puts "Log file creation '#{logname}' failed: #{e}"
+          exit 1
         end
       end
       super logfile

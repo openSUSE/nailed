@@ -1,6 +1,6 @@
 ---
-debug: debug # fatal, error, warn, info, debug; defaults to 'fatal'
-logfile: stderr # stderr, stdout, or path; defaults to log/nailed.log
+debug: # fatal, error, warn, info, debug; defaults to 'fatal'
+logfile: # STDERR, STDOUT, or path; defaults to STDERR
 title: # Give me a name, or (default) call me Dashboard
 theme: # One of cerulean cosmo cyborg darkly flatly journal lumen paper readable sandstone simplex slate spacelab superhero united yeti (see http://bootswatch.com). Leave empty for default
 port: # Specify a port where you can reach the webinterface, or (default) 4567
