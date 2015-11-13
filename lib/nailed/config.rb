@@ -3,13 +3,23 @@
 #
 module Nailed
 
+  DEFAULT_CONFIG_PATH =
+    File.join(TOPLEVEL, "config", "default-config.yml")
+  CONFIG_PATH =
+    File.join(TOPLEVEL, "config", "config.yml")
   #
   # Config
   #
   class Config
     # load config.yml once
     def self.content
-      @@conf ||= File.join(TOPLEVEL,"config","config.yml")
+      unless @@conf
+        if !File.exist?(CONFIG_PATH)
+          @@conf = DEFAULT_CONFIG_PATH
+        else
+          @@conf = CONFIG_PATH
+        end
+      end
       @@yaml ||= YAML.load_file(@@conf)
     end
     # access config section by name

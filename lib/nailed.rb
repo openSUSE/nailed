@@ -16,6 +16,11 @@ require File.join(TOPLEVEL, "db", "database")
 
 module Nailed
 
+  DEFAULT_COLORS_PATH =
+    File.join(File.expand_path(File.dirname(__FILE__)), "config", "default-colors.yml")
+  COLORS_PATH =
+    File.join(File.expand_path("..", File.dirname(__FILE__)), "config", "colors.yml")
+
   extend self
   # generic helpers
   def log(level,msg)
@@ -26,8 +31,11 @@ module Nailed
   end
 
   def get_colors
-    conf = File.join(TOPLEVEL,"config","colors.yml")
-    YAML.load_file(conf)
+    conf = Confstruct::Configuration.new(
+      YAML.load(File.read(DEFAULT_COLORS_PATH)))
+    conf.configure(
+      YAML.load(File.read(COLORS_PATH))) if File.exist?(COLORS_PATH)
+    conf
   end
 
   #
