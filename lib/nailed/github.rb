@@ -80,7 +80,7 @@ module Nailed
               Nailed.save_state(db_handler) unless defined? db_handler
               Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
             end unless pulls.empty?
-            write_pull_trends(organization, repo)
+            write_pull_trends(repo)
           else
             Nailed.logger.error("#{__method__}: #{repo} does not exist anymore.")
           end
@@ -109,12 +109,12 @@ module Nailed
       end
     end
 
-      Nailed.logger.info("#{__method__}: Writing pull trends for #{org}/#{repo}")
-      open = Pullrequest.count(:repository_rname => repo)
+    def write_pull_trends(repository)
+      Nailed.logger.info("#{__method__}: Writing pull trends for #{repository}")
+      open = Pullrequest.count(:repository_rname => repository)
       attributes = {:time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                     :open => open,
-                    :repository_rname => repo,
-                    :repository_organization_oname => org}
+                    :repository_rname => repository}
 
       db_handler = Pulltrend.first_or_create(attributes)
 
