@@ -4,7 +4,7 @@
 module Nailed
 
   DEFAULT_CONFIG_PATH =
-    File.join(TOPLEVEL, "nailed", "default-config.yml")
+    File.join(TOPLEVEL, "config", "default-config.yml")
   CONFIG_PATH =
     File.join(TOPLEVEL, "config", "config.yml")
   #
