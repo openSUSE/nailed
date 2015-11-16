@@ -7,7 +7,7 @@ module Nailed
     def get_bugs
       Nailed::Config.products.each do |product,values|
         values["versions"].each do |version|
-          Nailed.log("info", "#{__method__}: Fetching bugs for #{version}")
+          Nailed.logger.info("#{__method__}: Fetching bugs for #{version}")
           begin
             Bicho::Bug.where(:product => version).each do |bug|
               attributes = {
@@ -27,10 +27,10 @@ module Nailed
               }
 
               db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
-              Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
+              Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
             end
           rescue
-            Nailed.log("error","Could not fetch Bugs for #{version}.")
+            Nailed.logger.error("Could not fetch Bugs for #{version}.")
           end
         end unless values["versions"].nil?
       end
@@ -39,7 +39,7 @@ module Nailed
     def write_bug_trends
       Nailed::Config.products.each do |product,values|
         values["versions"].each do |version|
-          Nailed.log("info", "#{__method__}: Writing bug trends for #{version}")
+          Nailed.logger.info("#{__method__}: Writing bug trends for #{version}")
           open = Bugreport.count(:is_open => true, :product_name => version)
           fixed = Bugreport.count(:status => "VERIFIED", :product_name => version) + \
                   Bugreport.count(:status => "RESOLVED", :product_name => version)
@@ -51,13 +51,13 @@ module Nailed
           db_handler = Bugtrend.first_or_create(attributes)
 
           Nailed.save_state(db_handler)
-          Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
+          Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
         end unless values["versions"].nil?
       end
     end
 
     def write_allbug_trends
-      Nailed.log("info", "#{__method__}: Aggregating all bug trends for all products")
+      Nailed.logger.info("#{__method__}: Aggregating all bug trends for all products")
       open = Bugreport.count(:is_open => true)
 
       attributes = {:time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
@@ -66,14 +66,14 @@ module Nailed
       db_handler = AllbugTrend.first_or_create(attributes)
 
       Nailed.save_state(db_handler)
-      Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
+      Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
     end
 
     def write_l3_trends
       open = 0
       Nailed::Config.products.each do |product,values|
         values["versions"].each do |version|
-          Nailed.log("info", "#{__method__}: Aggregating l3 trends for #{version}")
+          Nailed.logger.info("#{__method__}: Aggregating l3 trends for #{version}")
           open += Bugreport.count(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)
         end unless values["versions"].nil?
       end
@@ -83,7 +83,7 @@ module Nailed
       db_handler = L3Trend.first_or_create(attributes)
 
       Nailed.save_state(db_handler)
-      Nailed.log("info", "#{__method__}: Saved #{attributes.inspect}")
+      Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
     end
   end
 end
