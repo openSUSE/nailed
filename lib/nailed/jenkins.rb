@@ -3,6 +3,8 @@ module Nailed
     def initialize
       @client = JenkinsApi::Client.new(
          :server_ip => Nailed::Config["jenkins"]["server_ip"],
+         :server_port => Nailed::Config["jenkins"]["server_port"] || 8080,
+         :ssl => Nailed::Config["jenkins"]["ssl"] || false,
          :username  => Nailed::Config["jenkins"]["username"],
          :password  => Nailed::Config["jenkins"]["api_token"],
          :log_location => Nailed.logfile,
