@@ -2,13 +2,13 @@ module Nailed
   class Jenkins
     def initialize
       @client = JenkinsApi::Client.new(
-         server_ip: Nailed::Config["jenkins"]["server_ip"],
-         server_port: Nailed::Config["jenkins"]["server_port"] || 8080,
-         ssl: Nailed::Config["jenkins"]["ssl"] || false,
-         username: Nailed::Config["jenkins"]["username"],
-         password: Nailed::Config["jenkins"]["api_token"],
-         log_location: Nailed.logfile,
-         log_level: (logger.level == Logger::FATAL) ? 4 : 1)
+        server_ip:    Nailed::Config["jenkins"]["server_ip"],
+        server_port:  Nailed::Config["jenkins"]["server_port"] || 8080,
+        ssl:          Nailed::Config["jenkins"]["ssl"] || false,
+        username:     Nailed::Config["jenkins"]["username"],
+        password:     Nailed::Config["jenkins"]["api_token"],
+        log_location: Nailed.logfile,
+        log_level:    (logger.level == Logger::FATAL) ? 4 : 1)
     end
 
     def get_builds(job_name)
@@ -37,11 +37,11 @@ module Nailed
         parameters = get_build_params(job)
         parameters.each do |parameter|
           attributes = {
-            type: parameter[:type],
-            job: job,
-            name: parameter[:name],
+            type:        parameter[:type],
+            job:         job,
+            name:        parameter[:name],
             description: parameter[:description],
-            default: parameter[:default]
+            default:     parameter[:default]
           }
           db_handler = (JenkinsParameter.get(parameter[:name], job) || JenkinsParameter.new).update(attributes)
 
@@ -57,8 +57,8 @@ module Nailed
         builds.each do |build|
           attributes = {
             number: build["number"],
-            job: job,
-            url: build["url"]
+            job:    job,
+            url:    build["url"]
           }
           db_handler = JenkinsBuild.first_or_create(attributes)
 
@@ -79,8 +79,8 @@ module Nailed
 
           # update JenkinsBuild table with the result
           attributes = {
-            result: build_details["result"],
-            built_on: build_details["builtOn"],
+            result:      build_details["result"],
+            built_on:    build_details["builtOn"],
             description: build_details["description"]
           }
           db_handler = JenkinsBuild.all(job: job, number: build_number).update(attributes)
@@ -89,7 +89,7 @@ module Nailed
           # write JenkinsParameterValue table
           parameters.each do |parameter|
             parameter_section = build_details["actions"].select { |p| p["parameters"] }
-            #FIXME a parameter in parameter_section[0]["parameters"] could be missing
+            # FIXME: a parameter in parameter_section[0]["parameters"] could be missing
             # not sure yet why this happens
             value = begin
               parameter_section[0]["parameters"].select { |element| element["name"] == parameter }[0]["value"]
@@ -97,11 +97,11 @@ module Nailed
               ""
             end
             attributes = {
-              value: value,
+              value:                  value,
               jenkins_parameter_name: parameter,
-              jenkins_parameter_job: job,
-              jenkins_build_number: build_number,
-              jenkins_build_job: job,
+              jenkins_parameter_job:  job,
+              jenkins_build_number:   build_number,
+              jenkins_build_job:      job
             }
             db_handler = JenkinsParameterValue.first_or_create(attributes)
 

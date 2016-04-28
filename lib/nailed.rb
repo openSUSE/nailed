@@ -15,7 +15,6 @@ require_relative "nailed/version"
 require File.join(TOPLEVEL, "db", "database")
 
 module Nailed
-
   extend self
 
   def logger
@@ -47,16 +46,15 @@ module Nailed
         db_handler = Product.first_or_create(name: version)
         save_state(db_handler)
       end unless values["versions"].nil?
-      unless organization.nil?
-        db_handler = Organization.first_or_create(oname: organization)
-        save_state(db_handler)
-        org_repos_github = get_org_repos(github_client, organization)
-        org_repos_yml = values["repos"]
-        org_repos_yml.each do |org_repo|
-          if org_repos_github.include?(org_repo)
-            db_handler = Repository.first_or_create(rname: org_repo, organization_oname: organization)
-            save_state(db_handler)
-          end
+      next if organization.nil?
+      db_handler = Organization.first_or_create(oname: organization)
+      save_state(db_handler)
+      org_repos_github = get_org_repos(github_client, organization)
+      org_repos_yml = values["repos"]
+      org_repos_yml.each do |org_repo|
+        if org_repos_github.include?(org_repo)
+          db_handler = Repository.first_or_create(rname: org_repo, organization_oname: organization)
+          save_state(db_handler)
         end
       end
     end

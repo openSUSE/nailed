@@ -101,7 +101,7 @@ class AllpullTrend
   property :open, Integer
 end
 
-# TODO Jenkins specific tables
+# TODO: Jenkins specific tables
 
 class JenkinsParameter
   include DataMapper::Resource

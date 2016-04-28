@@ -7,13 +7,13 @@ require "haml"
 require "json"
 require "time"
 require File.join(File.expand_path("..", File.dirname(__FILE__)), "lib", "nailed")
-require  File.join(File.expand_path("..", File.dirname(__FILE__)), "db", "database")
+require File.join(File.expand_path("..", File.dirname(__FILE__)), "db", "database")
 
 class App < Sinatra::Base
   register Sinatra::AdvancedRoutes
 
   ROOT_PATH = File.join(File.expand_path("..", File.dirname(__FILE__)))
-  self.set :root, File.join(ROOT_PATH, "lib")
+  set :root, File.join(ROOT_PATH, "lib")
   set :public_folder, File.join(ROOT_PATH, "public")
   set :views, File.join(ROOT_PATH, "views")
   set :bind, "0.0.0.0"
@@ -22,7 +22,7 @@ class App < Sinatra::Base
 
   register Sinatra::AssetPack
 
-  assets {
+  assets do
     serve "/js",        from: "../public/vendor/js"
     serve "/customjs",  from: "../public/js"
     serve "/css",       from: "../public/vendor/css"
@@ -68,11 +68,11 @@ class App < Sinatra::Base
 
     js_compression  :jsmin
     css_compression :simple
-  }
+  end
 
   before do
     @title = Nailed::Config["title"] || "Dashboard"
-    @products = Nailed::Config.products.map{ |_p, v| v["versions"] }.flatten.compact
+    @products = Nailed::Config.products.map { |_p, v| v["versions"] }.flatten.compact
     @product_query = @products.join("&product=")
     @org_query = Nailed::Github.orgs.map { |o| o.prepend("user%3A") }.join("+")
     @theme_type = get_theme_type
@@ -208,15 +208,15 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /, "_")}/bar/priority" do
+      get "/json/bugzilla/#{version.tr(" ", "_")}/bar/priority" do
         bugprio = []
         { "P0 - Crit Sit" => "p0",
-         "P1 - Urgent" => "p1",
-         "P2 - High" => "p2",
-         "P3 - Medium" => "p3",
-         "P4 - Low" => "p4",
-         "P5 - None" => "p5" }.each_pair do |key, val|
-           bugprio << { "bugprio" => key, val => Bugreport.count(product_name: version, priority: key, is_open: true) }
+          "P1 - Urgent"   => "p1",
+          "P2 - High"     => "p2",
+          "P3 - Medium"   => "p3",
+          "P4 - Low"      => "p4",
+          "P5 - None"     => "p5" }.each_pair do |key, val|
+          bugprio << { "bugprio" => key, val => Bugreport.count(product_name: version, priority: key, is_open: true) }
         end
         bugprio.to_json
       end
@@ -229,7 +229,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /, "_")}/trend/open" do
+      get "/json/bugzilla/#{version.tr(" ", "_")}/trend/open" do
         get_trends(:bug, version)
       end
     end unless versions.nil?
@@ -249,14 +249,14 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /, "_")}/donut/component" do
+      get "/json/bugzilla/#{version.tr(" ", "_")}/donut/component" do
         top5_components = []
         components = repository(:default).adapter.select("SELECT component AS label, COUNT(component) AS value FROM bugreports WHERE product_name = '#{version}' AND is_open = 't' GROUP BY component ORDER BY COUNT(component) DESC LIMIT 5")
         components.each do |bar|
           top5_components << { label: bar.label, value: bar.value }
         end
-        component_labels = top5_components.map{ |a| a.values[0] }
-        component_values = top5_components.map{ |a| a.values[1] }
+        component_labels = top5_components.map { |a| a.values[0] }
+        component_values = top5_components.map { |a| a.values[1] }
         top5_components.to_json
       end
     end unless versions.nil?
@@ -298,7 +298,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /, "_")}/openwithoutl3" do
+      get "/json/bugzilla/#{version.tr(" ", "_")}/openwithoutl3" do
         (Bugreport.all(is_open: true, product_name: version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true, :product_name => version)).to_json
       end
     end unless versions.nil?
@@ -308,7 +308,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /, "_")}/openl3" do
+      get "/json/bugzilla/#{version.tr(" ", "_")}/openl3" do
         Bugreport.all(:is_open => true, :product_name => version, :whiteboard.like => "%openL3%").to_json
       end
     end unless versions.nil?
@@ -318,7 +318,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /, "_")}/closedwithoutl3" do
+      get "/json/bugzilla/#{version.tr(" ", "_")}/closedwithoutl3" do
         (Bugreport.all(is_open: false, product_name: version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => false, :product_name => version)).to_json
       end
     end unless versions.nil?
@@ -328,7 +328,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /, "_")}/closedl3" do
+      get "/json/bugzilla/#{version.tr(" ", "_")}/closedl3" do
         Bugreport.all(:is_open => false, :product_name => version, :whiteboard.like => "%openL3%").to_json
       end
     end unless versions.nil?
@@ -385,7 +385,7 @@ class App < Sinatra::Base
   github_repos.each do |repo|
     get "/json/github/#{repo[0]}/#{repo[1]}/open" do
       Pullrequest.all(
-        repository_rname: repo[1],
+        repository_rname:              repo[1],
         repository_organization_oname: repo[0]).to_json
     end
   end
@@ -404,12 +404,12 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
-      get "/#{version.gsub(/ /, "_")}/bugzilla" do
+      get "/#{version.tr(" ", "_")}/bugzilla" do
         @github_repos = get_github_repos
         @jenkins_jobs = get_jenkins_jobs
 
         @product = version
-        @product_ = version.gsub(/ /, "_")
+        @product_ = version.tr(" ", "_")
 
         haml :bugzilla
       end
@@ -441,7 +441,7 @@ class App < Sinatra::Base
       @job = job
       @view_object = {}
       blacklist = Nailed::Config["jenkins"]["blacklist"]["parameter"]
-      all_parameters = JenkinsParameter.all(job: job).map(&:name).sort_by { |m| m.downcase }
+      all_parameters = JenkinsParameter.all(job: job).map(&:name).sort_by(&:downcase)
       all_parameters.each do |parameter|
         @view_object[parameter] = get_jenkins_view_object(job, parameter) unless blacklist.include? parameter
       end
@@ -465,5 +465,5 @@ class App < Sinatra::Base
     haml :help
   end
 
-  run! if app_file == $0
+  run! if app_file == $PROGRAM_NAME
 end

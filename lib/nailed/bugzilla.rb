@@ -11,19 +11,19 @@ module Nailed
           begin
             Bicho::Bug.where(product: version).each do |bug|
               attributes = {
-                bug_id: bug.id,
-                summary: bug.summary,
-                status: bug.status,
-                is_open: bug.is_open,
-                product_name: bug.product,
-                component: bug.component,
-                severity: bug.severity,
-                priority: bug.priority,
-                whiteboard: bug.whiteboard,
-                assigned_to: bug.assigned_to,
-                creation_time: "#{bug.creation_time.to_date}T#{bug.creation_time.hour}:#{bug.creation_time.min}:#{bug.creation_time.sec}+00:00",
+                bug_id:           bug.id,
+                summary:          bug.summary,
+                status:           bug.status,
+                is_open:          bug.is_open,
+                product_name:     bug.product,
+                component:        bug.component,
+                severity:         bug.severity,
+                priority:         bug.priority,
+                whiteboard:       bug.whiteboard,
+                assigned_to:      bug.assigned_to,
+                creation_time:    "#{bug.creation_time.to_date}T#{bug.creation_time.hour}:#{bug.creation_time.min}:#{bug.creation_time.sec}+00:00",
                 last_change_time: "#{bug.last_change_time.to_date}T#{bug.last_change_time.hour}:#{bug.last_change_time.min}:#{bug.last_change_time.sec}+00:00",
-                url: bug.url.gsub(/novell.com\//, "suse.com/show_bug.cgi?id=")
+                url:              bug.url.gsub(/novell.com\//, "suse.com/show_bug.cgi?id=")
               }
 
               db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
@@ -42,11 +42,11 @@ module Nailed
           Nailed.logger.info("#{__method__}: Writing bug trends for #{version}")
           open = Bugreport.count(is_open: true, product_name: version)
           fixed = Bugreport.count(status: "VERIFIED", product_name: version) + \
-                  Bugreport.count(status: "RESOLVED", product_name: version)
-          attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                        open: open,
-                        fixed: fixed,
-                        product_name: version }
+            Bugreport.count(status: "RESOLVED", product_name: version)
+          attributes = { time:         Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                         open:         open,
+                         fixed:        fixed,
+                         product_name: version }
 
           db_handler = Bugtrend.first_or_create(attributes)
 
@@ -61,7 +61,7 @@ module Nailed
       open = Bugreport.count(is_open: true)
 
       attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: open }
+                     open: open }
 
       db_handler = AllbugTrend.first_or_create(attributes)
 
@@ -78,7 +78,7 @@ module Nailed
         end unless values["versions"].nil?
       end
       attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: open }
+                     open: open }
 
       db_handler = L3Trend.first_or_create(attributes)
 
