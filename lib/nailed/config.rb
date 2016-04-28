@@ -10,7 +10,7 @@ module Nailed
   class Config
     # load config.yml once
     def self.content
-      @@conf ||= File.join(TOPLEVEL,"config","config.yml")
+      @@conf ||= File.join(TOPLEVEL, "config", "config.yml")
       begin
 	@@yaml ||= YAML.load_file(@@conf)
       rescue Exception => e

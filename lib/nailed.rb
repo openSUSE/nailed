@@ -23,7 +23,7 @@ module Nailed
   end
 
   def get_colors
-    conf = File.join(TOPLEVEL,"config","colors.yml")
+    conf = File.join(TOPLEVEL, "config", "colors.yml")
     YAML.load_file(conf)
   end
 
@@ -41,7 +41,7 @@ module Nailed
   # needs to be splitted into Github and Bugzilla parts
   #
   def fill_db_after_migration(github_client)
-    Config.products.each do |product,values|
+    Config.products.each do |product, values|
       organization = values["organization"]
       values["versions"].each do |version|
         db_handler = Product.first_or_create(name: version)
@@ -67,7 +67,7 @@ module Nailed
   #
   def get_jenkins_jobs_from_yaml
     jobs = []
-    Config.products.each do |product,values|
+    Config.products.each do |product, values|
       values["jobs"].each do |job|
         jobs << job
       end unless values["jobs"].nil?
