@@ -18,7 +18,7 @@ module Nailed
 
   def get_github_repos_from_yaml
     repos = []
-    Config.products.each do |product, values|
+    Config.products.each do |_product, values|
       values["repos"].each do |repo|
         repos << repo
       end unless values["repos"].nil?
@@ -33,7 +33,7 @@ module Nailed
     def self.orgs
       @@orgs ||= []
       if @@orgs.empty?
-        Config.products.each do |product, values|
+        Config.products.each do |_product, values|
           @@orgs << values["organization"]
         end
       end
@@ -48,7 +48,7 @@ module Nailed
 
     def get_open_pulls
       Nailed.logger.info("Github: #{__method__}")
-      Nailed::Config.products.each do |product, values|
+      Nailed::Config.products.each do |_product, values|
         organization = values["organization"]
         repos = values["repos"]
         remote_repos = @client.org_repos(organization).map(&:name)

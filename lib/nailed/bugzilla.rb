@@ -5,7 +5,7 @@ module Nailed
     end
 
     def get_bugs
-      Nailed::Config.products.each do |product, values|
+      Nailed::Config.products.each do |_product, values|
         values["versions"].each do |version|
           Nailed.logger.info("#{__method__}: Fetching bugs for #{version}")
           begin
@@ -37,7 +37,7 @@ module Nailed
     end
 
     def write_bug_trends
-      Nailed::Config.products.each do |product, values|
+      Nailed::Config.products.each do |_product, values|
         values["versions"].each do |version|
           Nailed.logger.info("#{__method__}: Writing bug trends for #{version}")
           open = Bugreport.count(is_open: true, product_name: version)
@@ -71,7 +71,7 @@ module Nailed
 
     def write_l3_trends
       open = 0
-      Nailed::Config.products.each do |product, values|
+      Nailed::Config.products.each do |_product, values|
         values["versions"].each do |version|
           Nailed.logger.info("#{__method__}: Aggregating l3 trends for #{version}")
           open += Bugreport.count(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)

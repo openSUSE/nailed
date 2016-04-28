@@ -72,7 +72,7 @@ class App < Sinatra::Base
 
   before do
     @title = Nailed::Config["title"] || "Dashboard"
-    @products = Nailed::Config.products.map{ |p, v| v["versions"] }.flatten.compact
+    @products = Nailed::Config.products.map{ |_p, v| v["versions"] }.flatten.compact
     @product_query = @products.join("&product=")
     @org_query = Nailed::Github.orgs.map { |o| o.prepend("user%3A") }.join("+")
     @theme_type = get_theme_type
@@ -205,7 +205,7 @@ class App < Sinatra::Base
   #
   # bar
   #
-  Nailed::Config.products.each do |product, values|
+  Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /, "_")}/bar/priority" do
@@ -226,7 +226,7 @@ class App < Sinatra::Base
   #
   # trends
   #
-  Nailed::Config.products.each do |product, values|
+  Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /, "_")}/trend/open" do
@@ -246,7 +246,7 @@ class App < Sinatra::Base
   #
   # donut
   #
-  Nailed::Config.products.each do |product, values|
+  Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /, "_")}/donut/component" do
@@ -264,7 +264,7 @@ class App < Sinatra::Base
 
   get "/json/bugzilla/donut/allbugs" do
     bugtop = []
-    Nailed::Config.products.each do |product, values|
+    Nailed::Config.products.each do |_product, values|
       versions = values["versions"]
       versions.each do |version|
         p = Product.get(version)
@@ -295,7 +295,7 @@ class App < Sinatra::Base
   end
 
   # product -> openwithoutl3
-  Nailed::Config.products.each do |product, values|
+  Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /, "_")}/openwithoutl3" do
@@ -305,7 +305,7 @@ class App < Sinatra::Base
   end
 
   # product -> openl3
-  Nailed::Config.products.each do |product, values|
+  Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /, "_")}/openl3" do
@@ -315,7 +315,7 @@ class App < Sinatra::Base
   end
 
   # product -> closedwithoutl3
-  Nailed::Config.products.each do |product, values|
+  Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /, "_")}/closedwithoutl3" do
@@ -325,7 +325,7 @@ class App < Sinatra::Base
   end
 
   # product -> closedl3
-  Nailed::Config.products.each do |product, values|
+  Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /, "_")}/closedl3" do
@@ -401,7 +401,7 @@ class App < Sinatra::Base
     haml :index
   end
 
-  Nailed::Config.products.each do |product, values|
+  Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
     versions.each do |version|
       get "/#{version.gsub(/ /, "_")}/bugzilla" do
