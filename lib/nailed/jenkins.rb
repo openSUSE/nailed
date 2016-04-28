@@ -27,7 +27,7 @@ module Nailed
       Nailed.get_jenkins_jobs_from_yaml.each do |job|
         # first delete all old parameters
         db_parameters = JenkinsParameter.all(job: job).map(&:name)
-        jenkinsapi_parameters = get_build_params(job).map {|p| p[:name]}.uniq
+        jenkinsapi_parameters = get_build_params(job).map { |p| p[:name] }.uniq
         (db_parameters - jenkinsapi_parameters).each do |param_delete|
           JenkinsParameter.get(param_delete, job).destroy
           Nailed.logger.info("#{__method__}: Destroyed #{param_delete} parameter for #{job}")
@@ -92,7 +92,7 @@ module Nailed
             #FIXME a parameter in parameter_section[0]["parameters"] could be missing
             # not sure yet why this happens
             value = begin
-              parameter_section[0]["parameters"].select {|element| element["name"] == parameter}[0]["value"]
+              parameter_section[0]["parameters"].select { |element| element["name"] == parameter }[0]["value"]
             rescue
               ""
             end

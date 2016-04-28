@@ -13,7 +13,7 @@ module Nailed
 
   def list_org_repos(github_client, org)
     repos = get_org_repos(github_client, org)
-    repos.each {|r| puts "- #{r}"}
+    repos.each { |r| puts "- #{r}" }
   end
 
   def get_github_repos_from_yaml

@@ -72,9 +72,9 @@ class App < Sinatra::Base
 
   before do
     @title = Nailed::Config["title"] || "Dashboard"
-    @products = Nailed::Config.products.map{|p,v| v["versions"]}.flatten.compact
+    @products = Nailed::Config.products.map{ |p,v| v["versions"] }.flatten.compact
     @product_query = @products.join("&product=")
-    @org_query = Nailed::Github.orgs.map {|o| o.prepend("user%3A")}.join("+")
+    @org_query = Nailed::Github.orgs.map { |o| o.prepend("user%3A") }.join("+")
     @theme_type = get_theme_type
     @colors = Nailed.get_colors
   end
@@ -255,8 +255,8 @@ class App < Sinatra::Base
         components.each do |bar|
           top5_components << {label: bar.label, value: bar.value}
         end
-        component_labels = top5_components.map{|a| a.values[0]}
-        component_values = top5_components.map{|a| a.values[1]}
+        component_labels = top5_components.map{ |a| a.values[0] }
+        component_values = top5_components.map{ |a| a.values[1] }
         top5_components.to_json
       end
     end unless versions.nil?
@@ -441,7 +441,7 @@ class App < Sinatra::Base
       @job = job
       @view_object = {}
       blacklist = Nailed::Config["jenkins"]["blacklist"]["parameter"]
-      all_parameters = JenkinsParameter.all(job: job).map(&:name).sort_by {|m| m.downcase}
+      all_parameters = JenkinsParameter.all(job: job).map(&:name).sort_by { |m| m.downcase }
       all_parameters.each do |parameter|
         @view_object[parameter] = get_jenkins_view_object(job, parameter) unless blacklist.include? parameter
       end

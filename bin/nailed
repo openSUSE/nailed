@@ -13,7 +13,7 @@ opts = Trollop::options do
   opt :server, "Start a dashboard webinterface", short: "s"
 end
 
-abort("try nailed -h") if opts.all?{|k,v| v.is_a?(FalseClass)}
+abort("try nailed -h") if opts.all?{ |k,v| v.is_a?(FalseClass) }
 
 if opts[:server_given]
   if Nailed::Config.products.nil?
