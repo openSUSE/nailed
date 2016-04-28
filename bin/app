@@ -93,7 +93,7 @@ class App < Sinatra::Base
           Bugtrend.repository(:default).adapter.select("SELECT time, open, fixed FROM #{table} WHERE product_name = '#{item}'")
         end
         trends.each do |col|
-          json << {time: col.time, open: col.open, fixed: col.fixed}
+          json << { time: col.time, open: col.open, fixed: col.fixed }
         end
       when :pull
         table = "pulltrends"
@@ -103,7 +103,7 @@ class App < Sinatra::Base
           Pulltrend.repository(:default).adapter.select("SELECT time, open FROM #{table} WHERE repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}'")
         end
         trends.each do |col|
-          json << {time: col.time, open: col.open}
+          json << { time: col.time, open: col.open }
         end
       when :allpulls
         table = "allpull_trends"
@@ -114,7 +114,7 @@ class App < Sinatra::Base
         end
         trends = AllbugTrend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
         trends.each do |col|
-          json << {time: col.time, open: col.open}
+          json << { time: col.time, open: col.open }
         end
       when :allbugs
         table = "allbug_trends"
@@ -125,7 +125,7 @@ class App < Sinatra::Base
         end
         trends = AllbugTrend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
         trends.each do |col|
-          json << {time: col.time, open: col.open}
+          json << { time: col.time, open: col.open }
         end
       when :l3
         table = "l3_trends"
@@ -136,7 +136,7 @@ class App < Sinatra::Base
         end
         trends = L3Trend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
         trends.each do |col|
-          json << {time: col.time, open: col.open}
+          json << { time: col.time, open: col.open }
         end
       end
       json.to_json
@@ -190,7 +190,7 @@ class App < Sinatra::Base
           build_number = build.jenkins_build_number
           build_details = JenkinsBuild.all(job: job, number: build_number)
           build_details.each do |build_detail|
-            view_object[parameter_name][build_number] = {build_url: build_detail.url, build_result: build_detail.result, build_parameters: get_jenkins_build_parameters(job, build_number)}
+            view_object[parameter_name][build_number] = { build_url: build_detail.url, build_result: build_detail.result, build_parameters: get_jenkins_build_parameters(job, build_number) }
           end
         end
       end
@@ -210,13 +210,13 @@ class App < Sinatra::Base
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /, "_")}/bar/priority" do
         bugprio = []
-        {"P0 - Crit Sit" => "p0",
+        { "P0 - Crit Sit" => "p0",
          "P1 - Urgent" => "p1",
          "P2 - High" => "p2",
          "P3 - Medium" => "p3",
          "P4 - Low" => "p4",
-         "P5 - None" => "p5"}.each_pair do |key, val|
-           bugprio << {"bugprio" => key, val => Bugreport.count(product_name: version, priority: key, is_open: true)}
+         "P5 - None" => "p5" }.each_pair do |key, val|
+           bugprio << { "bugprio" => key, val => Bugreport.count(product_name: version, priority: key, is_open: true) }
         end
         bugprio.to_json
       end
@@ -253,7 +253,7 @@ class App < Sinatra::Base
         top5_components = []
         components = repository(:default).adapter.select("SELECT component AS label, COUNT(component) AS value FROM bugreports WHERE product_name = '#{version}' AND is_open = 't' GROUP BY component ORDER BY COUNT(component) DESC LIMIT 5")
         components.each do |bar|
-          top5_components << {label: bar.label, value: bar.value}
+          top5_components << { label: bar.label, value: bar.value }
         end
         component_labels = top5_components.map{ |a| a.values[0] }
         component_values = top5_components.map{ |a| a.values[1] }
@@ -269,7 +269,7 @@ class App < Sinatra::Base
       versions.each do |version|
         p = Product.get(version)
         open = Bugreport.count(product_name: p.name, is_open: true)
-        bugtop << {label: p.name, value: open} unless open == 0
+        bugtop << { label: p.name, value: open } unless open == 0
       end unless versions.nil?
     end
     bugtop.to_json
@@ -363,7 +363,7 @@ class App < Sinatra::Base
     pulltop = []
     allpulls = Pullrequest.aggregate(:repository_organization_oname, :repository_rname, :all.count)
     allpulls.each do |donut_bite|
-      pulltop << {label: "#{donut_bite[0]}/#{donut_bite[1]}", value: donut_bite[2]}
+      pulltop << { label: "#{donut_bite[0]}/#{donut_bite[1]}", value: donut_bite[2] }
     end
     pulltop.to_json
   end
@@ -453,7 +453,7 @@ class App < Sinatra::Base
   get "/json/help" do
     routes = []
     App.each_route do |route|
-      routes << {route: route.path} if route.path.is_a? String
+      routes << { route: route.path } if route.path.is_a? String
     end
     routes.uniq.to_json
   end

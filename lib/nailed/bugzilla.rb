@@ -43,10 +43,10 @@ module Nailed
           open = Bugreport.count(is_open: true, product_name: version)
           fixed = Bugreport.count(status: "VERIFIED", product_name: version) + \
                   Bugreport.count(status: "RESOLVED", product_name: version)
-          attributes = {time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+          attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                         open: open,
                         fixed: fixed,
-                        product_name: version}
+                        product_name: version }
 
           db_handler = Bugtrend.first_or_create(attributes)
 
@@ -60,8 +60,8 @@ module Nailed
       Nailed.logger.info("#{__method__}: Aggregating all bug trends for all products")
       open = Bugreport.count(is_open: true)
 
-      attributes = {time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: open}
+      attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                    open: open }
 
       db_handler = AllbugTrend.first_or_create(attributes)
 
@@ -77,8 +77,8 @@ module Nailed
           open += Bugreport.count(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)
         end unless values["versions"].nil?
       end
-      attributes = {time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: open}
+      attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                    open: open }
 
       db_handler = L3Trend.first_or_create(attributes)
 
