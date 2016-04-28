@@ -1,4 +1,4 @@
-require_relative 'lib/nailed/version'
+require_relative "lib/nailed/version"
 
 Gem::Specification.new do |s|
   s.name                    = "nailed"

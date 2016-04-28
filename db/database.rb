@@ -1,4 +1,4 @@
-require 'data_mapper'
+require "data_mapper"
 
 # set all String properties to have a default length of 255
 DataMapper::Property::String.length(666)
@@ -134,4 +134,4 @@ end
 
 DataMapper.finalize
 
-DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{File.join(File.expand_path(File.dirname(__FILE__)),'nailed.db')}")
+DataMapper.setup(:default, ENV["DATABASE_URL"] || "sqlite3://#{File.join(File.expand_path(File.dirname(__FILE__)),'nailed.db')}")

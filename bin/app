@@ -409,7 +409,7 @@ class App < Sinatra::Base
         @jenkins_jobs = get_jenkins_jobs
 
         @product = version
-        @product_ = version.gsub(/ /,'_')
+        @product_ = version.gsub(/ /,"_")
 
         haml :bugzilla
       end

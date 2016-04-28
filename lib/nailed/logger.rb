@@ -1,7 +1,7 @@
 #
 # Nailed::Logger
 #
-require 'logger'
+require "logger"
 
 module Nailed
 
@@ -15,7 +15,7 @@ module Nailed
       when "stdout", "STDOUT"
         logfile = STDOUT
       else
-        require 'fileutils'
+        require "fileutils"
         logname = File.expand_path(logname, Dir.getwd) # expand relative to current dir
         logdir = File.dirname(logname)
         begin

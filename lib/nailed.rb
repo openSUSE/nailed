@@ -1,4 +1,4 @@
-require 'yaml'
+require "yaml"
 require "octokit"
 require "bicho"
 require "jenkins_api_client"

@@ -5,12 +5,12 @@ require File.join(File.expand_path("..", File.dirname(__FILE__)),"lib","nailed")
 require File.join(File.expand_path("..", File.dirname(__FILE__)),"db","database")
 
 opts = Trollop::options do
-  opt :migrate, "Migrate/Upgrade database", :short => 'm'
-  opt :bugzilla, "Refresh bugzilla database records", :short => 'b'
-  opt :github, "Refresh github database records", :short => 'g'
-  opt :jenkins, "Refresh jenkins database records", :short => 'j'
-  opt :list, "List github repositories within organization", :type => :string, :short => 'l'
-  opt :server, "Start a dashboard webinterface", :short => 's'
+  opt :migrate, "Migrate/Upgrade database", :short => "m"
+  opt :bugzilla, "Refresh bugzilla database records", :short => "b"
+  opt :github, "Refresh github database records", :short => "g"
+  opt :jenkins, "Refresh jenkins database records", :short => "j"
+  opt :list, "List github repositories within organization", :type => :string, :short => "l"
+  opt :server, "Start a dashboard webinterface", :short => "s"
 end
 
 abort("try nailed -h") if opts.all?{|k,v| v.is_a?(FalseClass)}
