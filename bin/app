@@ -208,7 +208,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /,'_')}/bar/priority" do
+      get "/json/bugzilla/#{version.gsub(/ /,"_")}/bar/priority" do
         bugprio = []
         {"P0 - Crit Sit" => "p0",
          "P1 - Urgent" => "p1",
@@ -229,7 +229,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /,'_')}/trend/open" do
+      get "/json/bugzilla/#{version.gsub(/ /,"_")}/trend/open" do
         get_trends(:bug, version)
       end
     end unless versions.nil?
@@ -249,7 +249,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /,'_')}/donut/component" do
+      get "/json/bugzilla/#{version.gsub(/ /,"_")}/donut/component" do
         top5_components = []
         components = repository(:default).adapter.select("SELECT component AS label, COUNT(component) AS value FROM bugreports WHERE product_name = '#{version}' AND is_open = 't' GROUP BY component ORDER BY COUNT(component) DESC LIMIT 5")
         components.each do |bar|
@@ -298,7 +298,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /,'_')}/openwithoutl3" do
+      get "/json/bugzilla/#{version.gsub(/ /,"_")}/openwithoutl3" do
         (Bugreport.all(is_open: true, product_name: version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true, :product_name => version)).to_json
       end
     end unless versions.nil?
@@ -308,7 +308,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /,'_')}/openl3" do
+      get "/json/bugzilla/#{version.gsub(/ /,"_")}/openl3" do
         Bugreport.all(:is_open => true, :product_name => version, :whiteboard.like => "%openL3%").to_json
       end
     end unless versions.nil?
@@ -318,7 +318,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /,'_')}/closedwithoutl3" do
+      get "/json/bugzilla/#{version.gsub(/ /,"_")}/closedwithoutl3" do
         (Bugreport.all(is_open: false, product_name: version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => false, :product_name => version)).to_json
       end
     end unless versions.nil?
@@ -328,7 +328,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
-      get "/json/bugzilla/#{version.gsub(/ /,'_')}/closedl3" do
+      get "/json/bugzilla/#{version.gsub(/ /,"_")}/closedl3" do
         Bugreport.all(:is_open => false, :product_name => version, :whiteboard.like => "%openL3%").to_json
       end
     end unless versions.nil?
@@ -404,7 +404,7 @@ class App < Sinatra::Base
   Nailed::Config.products.each do |product,values|
     versions = values["versions"]
     versions.each do |version|
-      get "/#{version.gsub(/ /,'_')}/bugzilla" do
+      get "/#{version.gsub(/ /,"_")}/bugzilla" do
         @github_repos = get_github_repos
         @jenkins_jobs = get_jenkins_jobs
 

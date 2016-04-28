@@ -134,4 +134,4 @@ end
 
 DataMapper.finalize
 
-DataMapper.setup(:default, ENV["DATABASE_URL"] || "sqlite3://#{File.join(File.expand_path(File.dirname(__FILE__)),'nailed.db')}")
+DataMapper.setup(:default, ENV["DATABASE_URL"] || "sqlite3://#{File.join(File.expand_path(File.dirname(__FILE__)),"nailed.db")}")
