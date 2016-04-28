@@ -87,7 +87,7 @@ class App < Sinatra::Base
       case action
       when :bug
         table = "bugtrends"
-        trends = if Bugtrend.count(:product_name => item) > 20
+        trends = if Bugtrend.count(product_name: item) > 20
           Bugtrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM #{table} t1 WHERE t1.id <= t2.id AND product_name = '#{item}') AS tmp_id, time, open, fixed, product_name FROM #{table} AS t2 WHERE product_name = '#{item}' AND (tmp_id % ((SELECT COUNT(*) FROM #{table} WHERE product_name = '#{item}')/20) = 0) ORDER BY id")
         else
           Bugtrend.repository(:default).adapter.select("SELECT time, open, fixed FROM #{table} WHERE product_name = '#{item}'")
@@ -97,7 +97,7 @@ class App < Sinatra::Base
         end
       when :pull
         table = "pulltrends"
-        trends = if Pulltrend.count(:repository_organization_oname => item[0], :repository_rname => item[1]) > 20
+        trends = if Pulltrend.count(repository_organization_oname: item[0], repository_rname: item[1]) > 20
           Pulltrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM #{table} t1 WHERE t1.id <= t2.id AND repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}') AS tmp_id, time, open, repository_rname FROM #{table} AS t2 WHERE repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}' AND (tmp_id % ((SELECT COUNT(*) FROM #{table} WHERE repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}')/20) = 0) ORDER BY id")
         else
           Pulltrend.repository(:default).adapter.select("SELECT time, open FROM #{table} WHERE repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}'")
@@ -165,8 +165,8 @@ class App < Sinatra::Base
 
     # returns a formatted string with all build parameters for the popover
     def get_jenkins_build_parameters(job, build_number)
-      all_build_parameters = JenkinsParameterValue.all(:jenkins_build_job => job, :jenkins_build_number => build_number)
-      description = JenkinsBuild.all(:number => build_number, :job => job).map(&:description)[0] || ""
+      all_build_parameters = JenkinsParameterValue.all(jenkins_build_job: job, jenkins_build_number: build_number)
+      description = JenkinsBuild.all(number: build_number, job: job).map(&:description)[0] || ""
       ret = ""
       all_build_parameters.each do |bp|
         ret += bp.jenkins_parameter_name + "=" + bp.value + "\n" unless bp.value.empty?
@@ -176,21 +176,21 @@ class App < Sinatra::Base
 
     # find equal jenkins builds
     def get_equal_builds(job, build_number)
-      JenkinsBuild.all(:job => job, :number => build_number).map(&:equal_builds)[0].split(",").take(10)
+      JenkinsBuild.all(job: job, number: build_number).map(&:equal_builds)[0].split(",").take(10)
     end
 
     # generates a view object for a specific build parameter within a job
     def get_jenkins_view_object(job, parameter)
       view_object = {}
-      all_parameters = JenkinsParameterValue.all(:jenkins_parameter_name => parameter, :jenkins_parameter_job => job).map(&:value).uniq.sort
+      all_parameters = JenkinsParameterValue.all(jenkins_parameter_name: parameter, jenkins_parameter_job: job).map(&:value).uniq.sort
       all_parameters.each do |parameter_name|
         view_object[parameter_name] = {}
-        all_builds_with_parameter = JenkinsParameterValue.all(:jenkins_parameter_name => parameter, :jenkins_parameter_job => job, :value => parameter_name, :limit => 15, :order => :jenkins_build_number.desc)
+        all_builds_with_parameter = JenkinsParameterValue.all(jenkins_parameter_name: parameter, jenkins_parameter_job: job, value: parameter_name, limit: 15, order: :jenkins_build_number.desc)
         all_builds_with_parameter.each do |build|
           build_number = build.jenkins_build_number
-          build_details = JenkinsBuild.all(:job => job, :number => build_number)
+          build_details = JenkinsBuild.all(job: job, number: build_number)
           build_details.each do |build_detail|
-            view_object[parameter_name][build_number] = {:build_url => build_detail.url, :build_result => build_detail.result, :build_parameters => get_jenkins_build_parameters(job, build_number)}
+            view_object[parameter_name][build_number] = {build_url: build_detail.url, build_result: build_detail.result, build_parameters: get_jenkins_build_parameters(job, build_number)}
           end
         end
       end
@@ -216,7 +216,7 @@ class App < Sinatra::Base
          "P3 - Medium" => "p3",
          "P4 - Low" => "p4",
          "P5 - None" => "p5"}.each_pair do |key,val|
-           bugprio << {"bugprio" => key, val => Bugreport.count(:product_name => version, :priority => key, :is_open => true)}
+           bugprio << {"bugprio" => key, val => Bugreport.count(product_name: version, priority: key, is_open: true)}
         end
         bugprio.to_json
       end
@@ -268,7 +268,7 @@ class App < Sinatra::Base
       versions = values["versions"]
       versions.each do |version|
         p = Product.get(version)
-        open = Bugreport.count(:product_name => p.name, :is_open => true)
+        open = Bugreport.count(product_name: p.name, is_open: true)
         bugtop << {label: p.name, value: open} unless open == 0
       end unless versions.nil?
     end
@@ -281,12 +281,12 @@ class App < Sinatra::Base
 
   # allopen
   get "/json/bugzilla/allopen" do
-    Bugreport.all(:is_open => true).to_json
+    Bugreport.all(is_open: true).to_json
   end
 
   # allopenwithoutl3
   get "/json/bugzilla/allopenwithoutl3" do
-    (Bugreport.all(:is_open => true) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true)).to_json
+    (Bugreport.all(is_open: true) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true)).to_json
   end
 
   # allopenl3
@@ -299,7 +299,7 @@ class App < Sinatra::Base
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /,'_')}/openwithoutl3" do
-        (Bugreport.all(:is_open => true, :product_name => version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true, :product_name => version)).to_json
+        (Bugreport.all(is_open: true, product_name: version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true, :product_name => version)).to_json
       end
     end unless versions.nil?
   end
@@ -319,7 +319,7 @@ class App < Sinatra::Base
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.gsub(/ /,'_')}/closedwithoutl3" do
-        (Bugreport.all(:is_open => false, :product_name => version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => false, :product_name => version)).to_json
+        (Bugreport.all(is_open: false, product_name: version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => false, :product_name => version)).to_json
       end
     end unless versions.nil?
   end
@@ -341,7 +341,7 @@ class App < Sinatra::Base
   #
   # trends
   #
-  github_repos = Pullrequest.all(:order => [:created_at.desc]).map do |row|
+  github_repos = Pullrequest.all(order: [:created_at.desc]).map do |row|
     [row.repository_organization_oname, row.repository_rname]
   end.uniq
 
@@ -374,19 +374,19 @@ class App < Sinatra::Base
 
   # allopenpulls
   get "/json/github/allopenpulls" do
-    Pullrequest.all(:state => "open").to_json
+    Pullrequest.all(state: "open").to_json
   end
 
   # all open pull requests for repo
-  github_repos = Pullrequest.all(:order => [:created_at.desc]).map do |row|
+  github_repos = Pullrequest.all(order: [:created_at.desc]).map do |row|
     [row.repository_organization_oname, row.repository_rname]
   end.uniq
 
   github_repos.each do |repo|
     get "/json/github/#{repo[0]}/#{repo[1]}/open" do
       Pullrequest.all(
-        :repository_rname => repo[1],
-        :repository_organization_oname => repo[0]).to_json
+        repository_rname: repo[1],
+        repository_organization_oname: repo[0]).to_json
     end
   end
 
@@ -416,7 +416,7 @@ class App < Sinatra::Base
     end unless versions.nil?
   end
 
-  github_repos = Pullrequest.all(:order => [:created_at.desc]).map do |row|
+  github_repos = Pullrequest.all(order: [:created_at.desc]).map do |row|
     [row.repository_organization_oname, row.repository_rname]
   end.uniq
 
@@ -441,7 +441,7 @@ class App < Sinatra::Base
       @job = job
       @view_object = {}
       blacklist = Nailed::Config["jenkins"]["blacklist"]["parameter"]
-      all_parameters = JenkinsParameter.all(:job => job).map(&:name).sort_by {|m| m.downcase}
+      all_parameters = JenkinsParameter.all(job: job).map(&:name).sort_by {|m| m.downcase}
       all_parameters.each do |parameter|
         @view_object[parameter] = get_jenkins_view_object(job, parameter) unless blacklist.include? parameter
       end
@@ -453,7 +453,7 @@ class App < Sinatra::Base
   get "/json/help" do
     routes = []
     App.each_route do |route|
-      routes << {:route => route.path} if route.path.is_a? String
+      routes << {route: route.path} if route.path.is_a? String
     end
     routes.uniq.to_json
   end

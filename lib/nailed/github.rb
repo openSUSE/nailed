@@ -43,7 +43,7 @@ module Nailed
 
     def initialize
       Octokit.auto_paginate = true
-      @client = Octokit::Client.new(:netrc => true)
+      @client = Octokit::Client.new(netrc: true)
     end
 
     def get_open_pulls
@@ -57,16 +57,16 @@ module Nailed
             Nailed.logger.info("#{__method__}: Getting open pullrequests for #{organization}/#{repo}")
             pulls = @client.pull_requests("#{organization}/#{repo}")
             pulls.each do |pr|
-              attributes = {:pr_number => pr.number,
-                           :title => pr.title,
-                           :state => pr.state,
-                           :url => pr.html_url,
-                           :created_at => pr.created_at,
-                           :repository_rname => repo,
-                           :repository_organization_oname => organization}
+              attributes = {pr_number: pr.number,
+                           title: pr.title,
+                           state: pr.state,
+                           url: pr.html_url,
+                           created_at: pr.created_at,
+                           repository_rname: repo,
+                           repository_organization_oname: organization}
 
               # if pr exists dont create a new record
-              pull_to_update = Pullrequest.all(:pr_number => pr.number, :repository_rname => repo)
+              pull_to_update = Pullrequest.all(pr_number: pr.number, repository_rname: repo)
               unless pull_to_update.empty?
                 # update saves the state, so we dont need a db_handler
                 # TODO check return code for true if saved correctly
@@ -111,11 +111,11 @@ module Nailed
 
     def write_pull_trends(org, repo)
       Nailed.logger.info("#{__method__}: Writing pull trends for #{org}/#{repo}")
-      open = Pullrequest.count(:repository_rname => repo)
-      attributes = {:time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                    :open => open,
-                    :repository_organization_oname => org,
-                    :repository_rname => repo}
+      open = Pullrequest.count(repository_rname: repo)
+      attributes = {time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                    open: open,
+                    repository_organization_oname: org,
+                    repository_rname: repo}
 
       db_handler = Pulltrend.first_or_create(attributes)
 
@@ -125,9 +125,9 @@ module Nailed
 
     def write_allpull_trends
       Nailed.logger.info("#{__method__}: Writing pull trends for all repos")
-      open = Pullrequest.count(:state => "open")
-      attributes = {:time => Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                    :open => open}
+      open = Pullrequest.count(state: "open")
+      attributes = {time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                    open: open}
 
       db_handler = AllpullTrend.first_or_create(attributes)
 

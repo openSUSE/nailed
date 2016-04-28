@@ -10,7 +10,7 @@ DataMapper::Property::String.length(666)
 # BugZilla specific tables
 class Product
   include DataMapper::Resource
-  property :name, String, :required => true, :key => true
+  property :name, String, required: true, key: true
 
   has n, :bugreports
   has n, :bugtrends
@@ -18,10 +18,10 @@ end
 
 class Bugreport
   include DataMapper::Resource
-  property :bug_id, Integer, :required => true, :key => true
+  property :bug_id, Integer, required: true, key: true
   property :summary, String
-  property :status, String, :required => true
-  property :is_open, Boolean, :required => true
+  property :status, String, required: true
+  property :is_open, Boolean, required: true
   property :component, String
   property :severity, String
   property :priority, String
@@ -36,7 +36,7 @@ end
 
 class Bugtrend
   include DataMapper::Resource
-  property :id, Serial, :key => true
+  property :id, Serial, key: true
   property :time, String
   property :open, Integer
   property :fixed, Integer
@@ -46,14 +46,14 @@ end
 
 class AllbugTrend
   include DataMapper::Resource
-  property :id, Serial, :key => true
+  property :id, Serial, key: true
   property :time, String
   property :open, Integer
 end
 
 class L3Trend
   include DataMapper::Resource
-  property :id, Serial, :key => true
+  property :id, Serial, key: true
   property :time, String
   property :open, Integer
 end
@@ -61,22 +61,22 @@ end
 # GitHub specific tables
 class Organization
   include DataMapper::Resource
-  property :oname, String, :required => true, :key => true
+  property :oname, String, required: true, key: true
 
   has n, :repositories
 end
 
 class Repository
   include DataMapper::Resource
-  property :rname, String, :required => true, :key => true, :unique_index => false
+  property :rname, String, required: true, key: true, unique_index: false
 
-  belongs_to :organization, :required => false, :key => true
+  belongs_to :organization, required: false, key: true
 end
 
 class Pullrequest
   include DataMapper::Resource
   property :id, Serial
-  property :pr_number, Integer, :required => true
+  property :pr_number, Integer, required: true
   property :title, String
   property :state, String
   property :url, String
@@ -87,7 +87,7 @@ end
 
 class Pulltrend
   include DataMapper::Resource
-  property :id, Serial, :key => true
+  property :id, Serial, key: true
   property :time, String
   property :open, Integer
 
@@ -96,7 +96,7 @@ end
 
 class AllpullTrend
   include DataMapper::Resource
-  property :id, Serial, :key => true
+  property :id, Serial, key: true
   property :time, String
   property :open, Integer
 end
@@ -105,8 +105,8 @@ end
 
 class JenkinsParameter
   include DataMapper::Resource
-  property :name, String, :key => true
-  property :job, String, :key => true
+  property :name, String, key: true
+  property :job, String, key: true
   property :type, String
   property :description, String
   property :default, String
@@ -114,8 +114,8 @@ end
 
 class JenkinsBuild
   include DataMapper::Resource
-  property :number, Integer, :key => true
-  property :job, String, :key => true
+  property :number, Integer, key: true
+  property :job, String, key: true
   property :description, String
   property :url, String
   property :result, String
@@ -125,7 +125,7 @@ end
 
 class JenkinsParameterValue
   include DataMapper::Resource
-  property :id, Serial, :key => true
+  property :id, Serial, key: true
   property :value, String
 
   belongs_to :jenkins_parameter
