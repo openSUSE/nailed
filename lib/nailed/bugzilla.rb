@@ -27,7 +27,7 @@ module Nailed
               }
 
               db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
-              Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
+              Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
             end
           rescue
             Nailed.logger.error("Could not fetch Bugs for #{version}.")
@@ -51,7 +51,7 @@ module Nailed
           db_handler = Bugtrend.first_or_create(attributes)
 
           Nailed.save_state(db_handler)
-          Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
+          Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
         end unless values["versions"].nil?
       end
     end
@@ -66,7 +66,7 @@ module Nailed
       db_handler = AllbugTrend.first_or_create(attributes)
 
       Nailed.save_state(db_handler)
-      Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
+      Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
 
     def write_l3_trends
@@ -83,7 +83,7 @@ module Nailed
       db_handler = L3Trend.first_or_create(attributes)
 
       Nailed.save_state(db_handler)
-      Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
+      Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
   end
 end

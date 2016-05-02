@@ -7,8 +7,8 @@ module Nailed
         ssl:          Nailed::Config["jenkins"]["ssl"] || false,
         username:     Nailed::Config["jenkins"]["username"],
         password:     Nailed::Config["jenkins"]["api_token"],
-        log_location: Nailed.logfile,
-        log_level:    (logger.level == Logger::FATAL) ? 4 : 1)
+        log_location: Nailed::Config["logfile"] || STDOUT,
+        log_level:    (Nailed.logger.level == Logger::FATAL) ? 4 : 1)
     end
 
     def get_builds(job_name)
@@ -45,7 +45,7 @@ module Nailed
           }
           db_handler = (JenkinsParameter.get(parameter[:name], job) || JenkinsParameter.new).update(attributes)
 
-          Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
+          Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
         end
       end
     end
@@ -63,7 +63,7 @@ module Nailed
           db_handler = JenkinsBuild.first_or_create(attributes)
 
           Nailed.save_state(db_handler)
-          Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
+          Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
         end
       end
     end
@@ -84,7 +84,7 @@ module Nailed
             description: build_details["description"]
           }
           db_handler = JenkinsBuild.all(job: job, number: build_number).update(attributes)
-          Nailed.logger.info("#{__method__}: Updated #{attributes.inspect} on Jenkins build ##{build_number}")
+          Nailed.logger.debug("#{__method__}: Updated #{attributes.inspect} on Jenkins build ##{build_number}")
 
           # write JenkinsParameterValue table
           parameters.each do |parameter|
@@ -106,7 +106,7 @@ module Nailed
             db_handler = JenkinsParameterValue.first_or_create(attributes)
 
             Nailed.save_state(db_handler)
-            Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
+            Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
           end
           update_equal_builds(job, build_number)
         end

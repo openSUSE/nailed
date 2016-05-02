@@ -66,16 +66,16 @@ module Nailed
               pull_to_update = Pullrequest.all(pr_number: pr.number, repository_rname: repo)
               if pull_to_update.empty?
                 db_handler = Pullrequest.first_or_create(attributes)
-                Nailed.logger.info("#{__method__}: Created new pullrequest #{pr.repo} ##{pr.number} with #{attributes.inspect}")
+                Nailed.logger.debug("#{__method__}: Created new pullrequest #{pr.repo} ##{pr.number} with #{attributes.inspect}")
               else
                 # update saves the state, so we dont need a db_handler
                 # TODO check return code for true if saved correctly
                 pull_to_update[0].update(attributes)
-                Nailed.logger.info("#{__method__}: Updated #{pr.repo} ##{pr.number} with #{attributes.inspect}")
+                Nailed.logger.debug("#{__method__}: Updated #{pr.repo} ##{pr.number} with #{attributes.inspect}")
               end
 
               Nailed.save_state(db_handler) unless defined? db_handler
-              Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
+              Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
             end unless pulls.empty?
             write_pull_trends(organization, repo)
           else
@@ -117,7 +117,7 @@ module Nailed
       db_handler = Pulltrend.first_or_create(attributes)
 
       Nailed.save_state(db_handler)
-      Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
+      Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
 
     def write_allpull_trends
@@ -129,7 +129,7 @@ module Nailed
       db_handler = AllpullTrend.first_or_create(attributes)
 
       Nailed.save_state(db_handler)
-      Nailed.logger.info("#{__method__}: Saved #{attributes.inspect}")
+      Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
   end
 end
