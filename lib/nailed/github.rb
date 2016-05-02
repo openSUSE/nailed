@@ -40,7 +40,7 @@ module Nailed
 
     def initialize
       Octokit.auto_paginate = true
-      @client = Octokit::Client.new(netrc: true)
+      @client = Octokit::Client.new(netrc: Config["netrc"] || false)
     end
 
     def get_open_pulls
