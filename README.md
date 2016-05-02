@@ -26,6 +26,8 @@ zypper in libxml2-devel sqlite3-devel gcc make ruby-devel
 bundle install
 ```
 
+* for the SUSE BugZilla API make sure you have an `.oscrc` file with your credentials in ~
+
 ## Usage
 
 ```
@@ -40,10 +42,10 @@ Options:
          --help, -h:   Show this message
 ```
 
-## Initial setup
+## Private GitHub repos
 
-* for the bugzilla API make sure you have an `.oscrc` file with your credentials in ~
 * for the github API make sure you have a `.netrc` with a valid GitHub OAuth-Token in ~
+
 ```
 # example .netrc
 
@@ -51,28 +53,34 @@ machine api.github.com
   login MaximilianMeister
   password <your OAuth Token>
 ```
-* configure your [config/config.yml](./config/config.yml)
-* to setup the database run
-```
-nailed --migrate
-```
 
 ## Configuration
 
 All configuration is read from [config/config.yml](./config/config.yml)
 
-## Changes in production
+* configure your [config/config.yml](./config/config.yml)
+* to setup the database run
 
-* in production, after adding products/changes, to upgrade the database with the new changes run
 ```
 nailed --migrate
 ```
+
+## Changes in production
+
+* in production, after adding products/changes, to upgrade the database with the new changes run
+
+```
+nailed --migrate
+```
+
 * make sure to fetch new data with
+
 ```
 nailed --bugzilla
 nailed --github
 nailed --jenkins
 ```
+
 * restart the webserver
 
 ## Run
@@ -85,35 +93,25 @@ nailed --jenkins
 * Build the image
 
 ```
-$ git clone https://github.com/MaximilianMeister/nailed
-$ cd nailed
-$ docker build -t nailed:latest .
+git clone https://github.com/MaximilianMeister/nailed
+cd nailed
+docker build -t nailed:latest .
 ```
 
-* Create a directory to hold the data, and create the config, db and log subdirectories
+* Create a directory to hold the data, and create the config subdirectory
 
 ```
-mkdir -p /mystorage/config
-mkdir -p /mystorage/log
-mkdir -p /mystorage/db
+mkdir -p /tmp/storage/config
 ```
 
-Add .oscrc and netrc and config.yml into /mystorage/config. You can as well add colors.yml
-here and override some defaults.
-You need to mount that directory as the /data volume in the container.
+Add `~/.netrc` when you want to collect data from a private GitHub repo, `config/colors.yml` `config/config.yml`, and if you are from SUSE `~/.oscrc` into `/tmp/storage/config`.
 
-* Migrate and fetch initial data
+For trying out Nailed, just use [test/config.yml](./test/config.yml)
 
-```
-docker run -ti -v /mystorage:/data nailed:latest --migrate
-```
-
-* Run the server
-
-In this case, we map it to port 8000 on the host
+That directory will be mounted as the /nailed/data volume in the container.
 
 ```
-docker run -ti -v /mystorage:/data -p 8000:4567 nailed:latest --server
+docker run -ti -v /tmp/storage:/nailed/data -p 8000:4567 nailed:latest
 ```
 
 ## Credits

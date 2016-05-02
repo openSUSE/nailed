@@ -1,0 +1,14 @@
+---
+debug: info
+logfile: STDOUT
+title: Nailed Example
+theme: readable
+bugzilla:
+  url: https://bugzilla.mozilla.org
+products:
+  mozilla:
+    versions:
+    - addons.mozilla.org
+    organization: mozilla
+    repos:
+    - pdf.js
