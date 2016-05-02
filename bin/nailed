@@ -50,7 +50,8 @@ opts.each_pair do |key, val|
         github_client = Nailed::Github.new
         Nailed.fill_db_after_migration(github_client.client)
         Nailed.logger.info("Database migrated")
-        abort "Database migrated"
+        puts "Database migrated"
+        exit 0
       end
     end
   when :bugzilla
