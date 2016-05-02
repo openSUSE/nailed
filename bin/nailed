@@ -32,27 +32,24 @@ opts.each_pair do |key, val|
   case key
   when :migrate
     if val
-      print "Are you sure? This will create new tables, new columns, but not change anything existing. (y/n) "
-      if gets.strip == "y"
-        Product.auto_upgrade!
-        Bugreport.auto_upgrade!
-        Bugtrend.auto_upgrade!
-        AllbugTrend.auto_upgrade!
-        L3Trend.auto_upgrade!
-        Organization.auto_upgrade!
-        Repository.auto_upgrade!
-        Pullrequest.auto_upgrade!
-        Pulltrend.auto_upgrade!
-        AllpullTrend.auto_upgrade!
-        JenkinsParameter.auto_upgrade!
-        JenkinsParameterValue.auto_upgrade!
-        JenkinsBuild.auto_upgrade!
-        github_client = Nailed::Github.new
-        Nailed.fill_db_after_migration(github_client.client)
-        Nailed.logger.info("Database migrated")
-        puts "Database migrated"
-        exit 0
-      end
+      Product.auto_upgrade!
+      Bugreport.auto_upgrade!
+      Bugtrend.auto_upgrade!
+      AllbugTrend.auto_upgrade!
+      L3Trend.auto_upgrade!
+      Organization.auto_upgrade!
+      Repository.auto_upgrade!
+      Pullrequest.auto_upgrade!
+      Pulltrend.auto_upgrade!
+      AllpullTrend.auto_upgrade!
+      JenkinsParameter.auto_upgrade!
+      JenkinsParameterValue.auto_upgrade!
+      JenkinsBuild.auto_upgrade!
+      github_client = Nailed::Github.new
+      Nailed.fill_db_after_migration(github_client.client)
+      Nailed.logger.info("Database migrated")
+      puts "Database migrated"
+      exit 0
     end
   when :bugzilla
     if val
