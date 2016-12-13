@@ -43,7 +43,7 @@ module Nailed
       @client = Octokit::Client.new(netrc: Config["netrc"] || false)
     end
 
-    def get_open_pulls
+    def get_pull_requests(state: 'all')
       Nailed.logger.info("Github: #{__method__}")
       Nailed::Config.products.each do |_product, values|
         organization = values["organization"]
@@ -51,14 +51,17 @@ module Nailed
         remote_repos = @client.org_repos(organization).map(&:name)
         repos.each do |repo|
           if remote_repos.include?(repo)
-            Nailed.logger.info("#{__method__}: Getting open pullrequests for #{organization}/#{repo}")
-            pulls = @client.pull_requests("#{organization}/#{repo}")
+            Nailed.logger.info("#{__method__}: Getting #{state} pullrequests for #{organization}/#{repo}")
+            pulls = @client.pull_requests("#{organization}/#{repo}", :state => state)
             pulls.each do |pr|
               attributes = { pr_number:                     pr.number,
                              title:                         pr.title,
                              state:                         pr.state,
                              url:                           pr.html_url,
                              created_at:                    pr.created_at,
+                             updated_at:                    pr.updated_at,
+                             closed_at:                     pr.closed_at,
+                             merged_at:                     pr.merged_at,
                              repository_rname:              repo,
                              repository_organization_oname: organization }
 
@@ -86,7 +89,9 @@ module Nailed
     end
 
     def update_pull_states
-      pulls = Pullrequest.all
+      # only update open PRs
+      pulls = Pullrequest.all(state: "open")
+      Nailed.logger.info("#{__method__}: I have #{pulls.count} Prs to update")
       pulls.each do |db_pull|
         number = db_pull.pr_number
         repo = db_pull.repository_rname
@@ -94,23 +99,28 @@ module Nailed
         begin
           github_pull = @client.pull_request("#{org}/#{repo}", number)
         rescue Octokit::NotFound
+          # TODO(itxaka): Set it as deleted instead of really deleting it from our db?
           Nailed.logger.error("#{__method__}: Pullrequest #{org}/#{repo}, ##{number} not found. Deleting from database...")
           db_pull.destroy
           next
         end
         Nailed.logger.info("#{__method__}: Checking state of pullrequest #{number} from #{org}/#{repo}")
         if github_pull.state == "closed"
-          Nailed.logger.info("#{__method__}: Deleting closed pullrequest #{number} from #{org}/#{repo}")
-          db_pull.destroy
+          # If closed, update its status on the database
+          Nailed.logger.info("#{__method__}: Updating closed pullrequest #{number} from #{org}/#{repo}")
+          db_pull.state = "closed"
+          db_pull.save
         end
       end
     end
 
     def write_pull_trends(org, repo)
       Nailed.logger.info("#{__method__}: Writing pull trends for #{org}/#{repo}")
-      open = Pullrequest.count(repository_rname: repo)
+      open = Pullrequest.count(repository_rname: repo, state: "open")
+      closed = Pullrequest.count(repository_rname: repo, state: "closed")
       attributes = { time:                          Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                      open:                          open,
+                     closed:                        closed,
                      repository_organization_oname: org,
                      repository_rname:              repo }
 
@@ -123,8 +133,10 @@ module Nailed
     def write_allpull_trends
       Nailed.logger.info("#{__method__}: Writing pull trends for all repos")
       open = Pullrequest.count(state: "open")
+      closed = Pullrequest.count(state: "closed")
       attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                     open: open }
+                     open: open,
+                     closed: closed}
 
       db_handler = AllpullTrend.first_or_create(attributes)
 

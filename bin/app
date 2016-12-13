@@ -361,7 +361,7 @@ class App < Sinatra::Base
   #
   get "/json/github/donut/allpulls" do
     pulltop = []
-    allpulls = Pullrequest.aggregate(:repository_organization_oname, :repository_rname, :all.count)
+    allpulls = Pullrequest.all(state: "open").aggregate(:repository_organization_oname, :repository_rname, :all.count)
     allpulls.each do |donut_bite|
       pulltop << { label: "#{donut_bite[0]}/#{donut_bite[1]}", value: donut_bite[2] }
     end
@@ -378,13 +378,14 @@ class App < Sinatra::Base
   end
 
   # all open pull requests for repo
-  github_repos = Pullrequest.all(order: [:created_at.desc]).map do |row|
+  github_repos = Pullrequest.all(state: "open", order: [:created_at.desc]).map do |row|
     [row.repository_organization_oname, row.repository_rname]
   end.uniq
 
   github_repos.each do |repo|
     get "/json/github/#{repo[0]}/#{repo[1]}/open" do
       Pullrequest.all(
+        state:                         "open",
         repository_rname:              repo[1],
         repository_organization_oname: repo[0]).to_json
     end
