@@ -81,6 +81,9 @@ class Pullrequest
   property :state, String
   property :url, String
   property :created_at, DateTime
+  property :updated_at, DateTime
+  property :closed_at, DateTime
+  property :merged_at, DateTime
 
   belongs_to :repository
 end
@@ -90,6 +93,7 @@ class Pulltrend
   property :id, Serial, key: true
   property :time, String
   property :open, Integer
+  property :closed, Integer
 
   belongs_to :repository
 end
@@ -99,6 +103,7 @@ class AllpullTrend
   property :id, Serial, key: true
   property :time, String
   property :open, Integer
+  property :closed, Integer
 end
 
 # TODO: Jenkins specific tables

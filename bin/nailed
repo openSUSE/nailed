@@ -63,7 +63,7 @@ opts.each_pair do |key, val|
     if val
       github_client = Nailed::Github.new
       github_client.update_pull_states
-      github_client.get_open_pulls
+      github_client.get_pull_requests
       github_client.write_allpull_trends
     end
   when :jenkins
