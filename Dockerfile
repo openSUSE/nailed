@@ -1,10 +1,11 @@
-FROM opensuse:latest
+FROM opensuse:42.3
 MAINTAINER Maximilian Meister "mmeister@suse.de"
 
 RUN zypper --gpg-auto-import-keys --non-interactive in --no-recommends \
     libxml2-devel libxslt-devel \
-    sqlite3-devel gcc make ruby-devel ruby2.1-rubygem-bundler \
-    ca-certificates ca-certificates-mozilla git-core
+    sqlite3-devel gcc make ruby-devel ruby2.2-rubygem-bundler \
+    ca-certificates ca-certificates-mozilla git-core \
+    ruby2.2-devel
 
 RUN mkdir -p /nailed/data/config
 VOLUME /nailed/data
@@ -12,6 +13,9 @@ VOLUME /nailed/data
 # add the git tree with the app
 ADD . /nailed
 WORKDIR /nailed
+
+# set Ruby 2.2 as the default version
+RUN ln -sf /usr/bin/ruby.ruby2.2 /usr/local/bin/ruby
 
 # add the dependencies
 RUN bundle config build.nokogiri "--use-system-libraries"
