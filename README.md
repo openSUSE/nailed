@@ -22,7 +22,8 @@ Note that this is always a bit outdated.
 You can use nailed directly from a git checkout as well. Make sure to fetch the dependencies and call `nailed` from the `bin` directory.
 ### SUSE
 ```
-zypper in libxml2-devel sqlite3-devel gcc make ruby-devel
+zypper in libxml2-devel libxslt-devel sqlite3-devel gcc make ruby-devel \
+          ruby2.2-rubygem-bundler ruby2.2-devel
 bundle install
 ```
 
