@@ -23,8 +23,9 @@ You can use nailed directly from a git checkout as well. Make sure to fetch the 
 ### SUSE
 ```
 zypper in libxml2-devel libxslt-devel sqlite3-devel gcc make ruby-devel \
-          ruby2.2-rubygem-bundler ruby2.2-devel
-bundle install
+          ruby2.3-rubygem-bundler ruby2.3-devel
+
+bundle.ruby2.3 install
 ```
 
 * for the SUSE BugZilla API make sure you have an `.oscrc` file with your credentials in ~
