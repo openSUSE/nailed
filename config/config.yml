@@ -21,6 +21,7 @@ products:
     versions:
     # Array of Bugzilla products (typically different versions of one product)
     # Exact names have to be given, as they appear in Bugzilla (can not be arbitrary)
+    qe: # true, false; Show most important Quality Engineering bugs for this product.
     organization: # here goes the organization name (under which your repos are hosted) as it appears in GitHub
     repos:
     # Array of GitHub repository names, as they appear in GitHub

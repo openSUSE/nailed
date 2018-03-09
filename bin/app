@@ -284,11 +284,6 @@ class App < Sinatra::Base
     Bugreport.all(is_open: true).to_json
   end
 
-  #allqe_top_5
-  get "/json/bugzilla/qe_top_5" do
-    Bugreport.all(:is_open => true, :whiteboard.like => "%qe_top_5%").to_json
-  end
-
   # allopenwithoutl3
   get "/json/bugzilla/allopenwithoutl3" do
     (Bugreport.all(is_open: true) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true)).to_json
@@ -301,12 +296,14 @@ class App < Sinatra::Base
 
   # product -> qe_top_5
   Nailed::Config.products.each do |_product, values|
-    versions = values["versions"]
-    versions.each do |version|
-      get "/json/bugzilla/#{version.tr(" ", "_")}/qe_top_5" do
-        (Bugreport.all(:is_open => true, :product_name => version, whiteboard.like => "%qe_top_5%")).to_json
-      end
-    end unless versions.nil?
+    if values["qe"]
+      versions = values["versions"]
+      versions.each do |version|
+        get "/json/bugzilla/#{version.tr(" ", "_")}/qe_top_5" do
+          (Bugreport.all(:is_open => true, :product_name => version, :whiteboard.like => "%qe_top_5%")).to_json
+        end
+      end unless versions.nil?
+    end
   end
 
   # product -> openwithoutl3
@@ -426,6 +423,7 @@ class App < Sinatra::Base
 
         @product = version
         @product_ = version.tr(" ", "_")
+        @top5 = values["qe"]
 
         haml :bugzilla
       end
