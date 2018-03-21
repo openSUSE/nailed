@@ -88,6 +88,9 @@ nailed --jenkins
 ## Run
 
 * create a `cronjob` for automated data collection with `nailed`
+  
+  e.g. `0 * * * * cd /path/to/bin/nailed; ./nailed -b && ./nailed -g`
+
 * start the webserver with `nailed --server`
 
 ## Running as a Docker container
