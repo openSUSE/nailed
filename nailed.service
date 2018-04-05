@@ -1,0 +1,14 @@
+### This is an example file! ###
+[Unit]
+Description=Collect and visualize product related data from Bugzilla, Github and Jenkins
+After=network.target
+
+[Service]
+User=nailed
+Group=www
+### Path needs to be adjusted! ###
+WorkingDirectory=/opt/nailed/
+ExecStart=/opt/nailed/bin/nailed --server
+
+[Install]
+WantedBy=multi-user.target
