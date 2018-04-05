@@ -1,3 +1,5 @@
+### This is an example file! ###
+# the default path to the color file is: config/color.yml
 ---
 line:
   black: "#000000"

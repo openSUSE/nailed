@@ -1,3 +1,5 @@
+### This is an example config! ###
+# the default path to the config file is: config/config.yml
 ---
 debug: # fatal, error, warn, info, debug; defaults to 'fatal'
 logfile: # STDERR, STDOUT, or path; defaults to STDERR
