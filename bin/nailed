@@ -15,16 +15,23 @@ end
 
 abort("try nailed -h") if opts.all? { |_k, v| v.is_a?(FalseClass) }
 
+if Nailed::Config.products.nil?
+  abort("Config incomplete or missing: Add products to your config.")
+else
+  Nailed::Config.products.each do |_product, values|
+    values["versions"].each do |version|
+    db_handler = Product.first_or_create(name: version)
+    Nailed::save_state(db_handler)
+    end unless values["versions"].nil?
+  end
+end
+
 if opts[:server_given]
-  if Nailed::Config.products.nil?
-    abort("Add some data, there is nothing to be shown")
-  else
-    begin
-      `#{File.join(File.expand_path("..", File.dirname(__FILE__)), "bin", "app")}`
-    rescue Interrupt
-      sleep 2
-      exit
-    end
+  begin
+    `#{File.join(File.expand_path("..", File.dirname(__FILE__)), "bin", "app")}`
+  rescue Interrupt
+    sleep 2
+    exit
   end
 end
 
