@@ -1,3 +1,5 @@
 Gemfile.lock
 db/nailed.db
 log/nailed.log
+config/config.yml
+config/colors.yml
