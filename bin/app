@@ -267,9 +267,8 @@ class App < Sinatra::Base
     Nailed::Config.products.each do |_product, values|
       versions = values["versions"]
       versions.each do |version|
-        p = Product.get(version)
-        open = Bugreport.count(product_name: p.name, is_open: true)
-        bugtop << { label: p.name, value: open } unless open == 0
+        open = Bugreport.count(product_name: version, is_open: true)
+        bugtop << { label: version, value: open } unless open == 0
       end unless versions.nil?
     end
     bugtop.to_json
