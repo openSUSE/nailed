@@ -42,10 +42,6 @@ module Nailed
   def fill_db_after_migration(github_client)
     Config.products.each do |_product, values|
       organization = values["organization"]
-      values["versions"].each do |version|
-        db_handler = Product.first_or_create(name: version)
-        save_state(db_handler)
-      end unless values["versions"].nil?
       next if organization.nil?
       db_handler = Organization.first_or_create(oname: organization)
       save_state(db_handler)
