@@ -153,13 +153,10 @@ class App < Sinatra::Base
         end
       when :allbugs
         table = "allbug_trends"
-        filter =
-          if AllbugTrend.count > 20
-            "WHERE (id % ((SELECT COUNT(*) FROM #{table})/20) = 0)"
-          else
-            ""
-          end
-        trends = AllbugTrend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
+        sql_statement = "SELECT * " \
+                        "FROM (SELECT * FROM #{table} ORDER BY time) " \
+                        "GROUP BY date(time)"
+        trends = AllbugTrend.repository(:default).adapter.select(sql_statement)
         trends.each do |col|
           json << { time: col.time, open: col.open }
         end
