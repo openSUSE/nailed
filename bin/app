@@ -87,53 +87,87 @@ class App < Sinatra::Base
       case action
       when :bug
         table = "bugtrends"
-        trends = if Bugtrend.count(product_name: item) > 20
-          Bugtrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM #{table} t1 WHERE t1.id <= t2.id AND product_name = '#{item}') AS tmp_id, time, open, fixed, product_name FROM #{table} AS t2 WHERE product_name = '#{item}' AND (tmp_id % ((SELECT COUNT(*) FROM #{table} WHERE product_name = '#{item}')/20) = 0) ORDER BY id")
-        else
-          Bugtrend.repository(:default).adapter.select("SELECT time, open, fixed FROM #{table} WHERE product_name = '#{item}'")
-        end
+        trends =
+          if Bugtrend.count(product_name: item) > 20
+            sql_statement = "SELECT (SELECT COUNT(0) " \
+                            "FROM #{table} t1 " \
+                            "WHERE t1.id <= t2.id " \
+                            "AND product_name = '#{item}') " \
+                            "AS tmp_id, time, open, fixed, product_name " \
+                            "FROM #{table} AS t2 " \
+                            "WHERE product_name = '#{item}' " \
+                            "AND (tmp_id % ((SELECT COUNT(*) " \
+                            "FROM #{table} " \
+                            "WHERE product_name = '#{item}')/20) = 0) " \
+                            "ORDER BY id"
+            Bugtrend.repository(:default).adapter.select(sql_statement)
+          else
+            sql_statement = "SELECT time, open, fixed " \
+                            "FROM #{table} " \
+                            "WHERE product_name = '#{item}'"
+            Bugtrend.repository(:default).adapter.select(sql_statement)
+          end
         trends.each do |col|
           json << { time: col.time, open: col.open, fixed: col.fixed }
         end
       when :pull
         table = "pulltrends"
-        trends = if Pulltrend.count(repository_organization_oname: item[0], repository_rname: item[1]) > 20
-          Pulltrend.repository(:default).adapter.select("SELECT (SELECT COUNT(0) FROM #{table} t1 WHERE t1.id <= t2.id AND repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}') AS tmp_id, time, open, repository_rname FROM #{table} AS t2 WHERE repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}' AND (tmp_id % ((SELECT COUNT(*) FROM #{table} WHERE repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}')/20) = 0) ORDER BY id")
-        else
-          Pulltrend.repository(:default).adapter.select("SELECT time, open FROM #{table} WHERE repository_rname = '#{item[1]}' AND repository_organization_oname = '#{item[0]}'")
-        end
+        trends =
+          if (Pulltrend.count(repository_organization_oname: item[0], repository_rname: item[1]) > 20)
+            sql_statement = "SELECT (SELECT COUNT(0) " \
+                            "FROM #{table} t1 " \
+                            "WHERE t1.id <= t2.id AND repository_rname = '#{item[1]}' " \
+                            "AND repository_organization_oname = '#{item[0]}')" \
+                            "AS tmp_id, time, open, repository_rname " \
+                            "FROM #{table} AS t2 " \
+                            "WHERE repository_rname = '#{item[1]}' " \
+                            "AND repository_organization_oname = '#{item[0]}' " \
+                            "AND (tmp_id % ((SELECT COUNT(*) " \
+                            "FROM #{table} WHERE repository_rname = '#{item[1]}' " \
+                            "AND repository_organization_oname = '#{item[0]}')/20) = 0)" \
+                            "ORDER BY id"
+            Pulltrend.repository(:default).adapter.select(sql_statement)
+          else
+            sql_statement = "SELECT time, open " \
+                            "FROM #{table} " \
+                            "WHERE repository_rname = '#{item[1]}' " \
+                            "AND repository_organization_oname = '#{item[0]}'"
+            Pulltrend.repository(:default).adapter.select(sql_statement)
+          end
         trends.each do |col|
           json << { time: col.time, open: col.open }
         end
       when :allpulls
         table = "allpull_trends"
-        filter = if AllpullTrend.count > 20
-          "WHERE (id % ((SELECT COUNT(*) FROM #{table})/20) = 0) OR (id = (SELECT MAX(id) FROM #{table}));"
-        else
-          ""
-        end
+        filter =
+          if AllpullTrend.count > 20
+            "WHERE (id % ((SELECT COUNT(*) " \
+            "FROM #{table})/20) = 0) " \
+            "OR (id = (SELECT MAX(id) FROM #{table}));"
+          else
+            ""
+          end
         trends = AllbugTrend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
         trends.each do |col|
           json << { time: col.time, open: col.open }
         end
       when :allbugs
         table = "allbug_trends"
-        filter = if AllbugTrend.count > 20
-          "WHERE (id % ((SELECT COUNT(*) FROM #{table})/20) = 0)"
-        else
-          ""
-        end
-        trends = AllbugTrend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
+        sql_statement = "SELECT * " \
+                        "FROM (SELECT * FROM #{table} ORDER BY time) " \
+                        "GROUP BY date(time)"
+        trends = AllbugTrend.repository(:default).adapter.select(sql_statement)
         trends.each do |col|
           json << { time: col.time, open: col.open }
         end
       when :l3
         table = "l3_trends"
-        filter = if L3Trend.count > 20
-          "WHERE (id % ((SELECT COUNT(*) FROM #{table})/20) = 0)"
-        else
-          ""
-        end
+        filter =
+          if L3Trend.count > 20
+            "WHERE (id % ((SELECT COUNT(*) FROM #{table})/20) = 0)"
+          else
+            ""
+          end
         trends = L3Trend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
         trends.each do |col|
           json << { time: col.time, open: col.open }
