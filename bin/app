@@ -256,6 +256,24 @@ class App < Sinatra::Base
       end
     end unless versions.nil?
   end
+  #
+  # status
+  #
+  Nailed::Config.products.each do |_product, values|
+    versions = values["versions"]
+    versions.each do |version|
+      get "/json/bugzilla/#{version.tr(" ", "_")}/bar/status" do
+        bugstatus = []
+        { "NEW"         => 's0',
+          "CONFIRMED"   => 's1',
+          "IN_PROGRESS" => 's2',
+          "REOPENED"    => 's3' }.each_pair do |key, val|
+          bugstatus << { "bugstatus" => key, val => Bugreport.count(product_name: version, status: key, is_open: true) }
+        end
+        bugstatus.to_json
+      end
+    end unless versions.nil?
+  end
 
   #
   # trends
