@@ -6,6 +6,7 @@ After=network.target
 [Service]
 User=nailed
 Group=www
+Restart=always
 ### Path needs to be adjusted! ###
 WorkingDirectory=/opt/nailed/
 ExecStart=/opt/nailed/bin/nailed --server
