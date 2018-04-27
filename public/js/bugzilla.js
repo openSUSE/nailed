@@ -65,6 +65,40 @@ function bugzilla(colors, product){
         window.open("https://bugzilla.suse.com/buglist.cgi?order=Importance&priority="+row.bugprio+"&product="+product_+"&query_format=advanced&resolution=---");
     });
   });
+  $.getJSON("/json/bugzilla/" + product + "/bar/status", function (json) {
+    new Morris.Bar({
+      element: 'bug_status',
+      data: json,
+      xkey: 'bugstatus',
+      ykeys: ['s0', 's1', 's2', 's3'],
+      labels: ['NEW', 'CONFIRMED', 'IN_PROGRESS', 'REOPENED'],
+      xLabelMargin: 11,
+      resize: true,
+      stacked: true,
+      hideHover: true,
+      barColors: [ colors["bar"]["black"],
+                   colors["bar"]["red"],
+                   colors["bar"]["orange"],
+                   colors["bar"]["yellow"]
+                 ],
+      hoverCallback: function (index, options, content, row) {
+        var ret = '';
+        if (typeof row.s0 !== "undefined")
+          return row.s0;
+        else if (typeof row.s1 !== "undefined")
+          return row.s1;
+        else if (typeof row.s2 !== "undefined")
+          return row.s2;
+        else if (typeof row.s3 !== "undefined")
+          return row.s3;
+      }
+    }).on('click', function(i, row){
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
+        jQuery.noop();
+      else
+        window.open("https://bugzilla.suse.com/buglist.cgi?bug_status="+row.bugstatus+"&product="+product_+"&query_format=advanced&resolution=---");
+    });
+  });
   $.getJSON("/json/bugzilla/" + product + "/donut/component", function (json) {
     new Morris.Donut({
       element: 'top_components',
