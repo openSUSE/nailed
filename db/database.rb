@@ -30,6 +30,7 @@ class Bugreport
   property :creation_time, DateTime
   property :last_change_time, DateTime
   property :url, String
+  property :requestee, String
 
   belongs_to :product
 end
