@@ -4,7 +4,7 @@ Description=Collect and visualize product related data from Bugzilla, Github and
 After=network.target
 
 [Service]
-User=nailed
+User=root
 Group=www
 Restart=always
 ### Path needs to be adjusted! ###
