@@ -26,6 +26,11 @@ module Nailed
                 url:              bug.url.gsub(/novell.com\//, "suse.com/show_bug.cgi?id=")
               }
 
+              attributes[:requestee] = bug.flags.collect do |flag|
+                next unless flag["name"] == "needinfo"
+                flag["requestee"]
+              end.compact.join(", ")
+
               db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
               Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
             end

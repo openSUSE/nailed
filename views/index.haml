@@ -27,7 +27,7 @@
         #l3_trend
     %br
     .row
-      .col-md-6
+      .col-md-12
         %hr
         %h5 L3 List
         %table{:data => {:toggle => "table", :url => "/json/bugzilla/allopenl3", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
@@ -43,6 +43,10 @@
                 Created at
               %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
                 Changed at
+              %th{:data => {:field => "requestee", :sortable => "true"}}
+                needinfo?
+    .row
+      .col-md-12
         %hr
         %h5 Bugs
         %table{:data => {:toggle => "table", :url => "/json/bugzilla/allopenwithoutl3", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
@@ -58,7 +62,10 @@
                 Created at
               %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
                 Changed at
-      .col-md-6
+              %th{:data => {:field => "requestee", :sortable => "true"}}
+                needinfo?
+    .row
+      .col-md-12
         %hr
         %h5 Open Pull Requests
         %table{:data => {:toggle => "table", :url => "/json/github/allopenpulls", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
