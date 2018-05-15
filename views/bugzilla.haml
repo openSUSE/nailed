@@ -2,13 +2,11 @@
 .container
   %div.col-md-12.main
     .row
-      .col-md-12
-        %h1.page-header
-          #{@product}
+      %h1.page-header
+        #{@product}
     .row
-      .col-md-12
-        %h5 Bug Trends
-        #bug_trend
+      %h5 Bug Trends
+      #bug_trend
     .row
       .col-md-6
         %h5 Bug Priorities
@@ -22,10 +20,32 @@
         #bug_status
     .row.no-hide
       - if @top5
-        .col-md-12
-          %h5 Quality Engineering top 5
-          %hr
-          %table{:data => {:toggle => "table", :url => "/json/bugzilla/#{@product_}/qe_top_5", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+        %h5 Quality Engineering top 5
+        %hr
+        %table{:data => {:toggle => "table", :url => "/json/bugzilla/#{@product_}/qe_top_5", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+          %thead
+            %tr
+              %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
+                Bug Id
+              %th{:data => {:field => "summary", :sortable => "true", :class => "summary"}}
+                Summary
+              %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
+                Priority
+              %th{:data => {:field => "component", :sortable => "true"}}
+                Component
+              %th{:data => {:field => "creation_time", :sortable => "true", :formatter => "timestampReduce"}}
+                Created at
+              %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
+                Changed at
+  %div.col-md-12
+    %ul.nav.nav-tabs
+      %li.active
+        %a{"data-toggle" => "tab", href: '#L3'} L3 List
+      %li
+        %a{"data-toggle" => "tab", href: '#Bugs'} All Bugs
+      .tab-content
+        #L3.tab-pane.active
+          %table{:data => {:toggle => "table", :url => "/json/bugzilla/allopenl3", :search => "true", :show => {:refresh => "true", :columns => "true", :cellpadding => "0", :cellspacing => "0"}}}
             %thead
               %tr
                 %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
@@ -37,50 +57,29 @@
                 %th{:data => {:field => "component", :sortable => "true"}}
                   Component
                 %th{:data => {:field => "creation_time", :sortable => "true", :formatter => "timestampReduce"}}
-                  Creation Time
+                  Created at
                 %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
-                  Last Change Time
-      .col-md-12
-        %h5 L3 Bugs
-        %hr
-        %table{:data => {:toggle => "table", :url => "/json/bugzilla/#{@product_}/openl3", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
-          %thead
-            %tr
-              %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
-                Bug Id
-              %th{:data => {:field => "summary", :sortable => "true", :class => "summary"}}
-                Summary
-              %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
-                Priority
-              %th{:data => {:field => "component", :sortable => "true"}}
-                Component
-              %th{:data => {:field => "creation_time", :sortable => "true", :formatter => "timestampReduce"}}
-                Creation Time
-              %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
-                Last Change Time
-              %th{:data => {:field => "requestee", :sortable => "true"}}
-                needinfo?
-      %hr
-      .col-md-12
-        %h5 Bugs
-        %hr
-        %table{:data => {:toggle => "table", :url => "/json/bugzilla/#{@product_}/openwithoutl3", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
-          %thead
-            %tr
-              %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
-                Bug Id
-              %th{:data => {:field => "summary", :sortable => "true", :class => "summary"}}
-                Summary
-              %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
-                Priority
-              %th{:data => {:field => "component", :sortable => "true"}}
-                Component
-              %th{:data => {:field => "creation_time", :sortable => "true", :formatter => "timestampReduce"}}
-                Creation Time
-              %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
-                Last Change Time
-              %th{:data => {:field => "requestee", :sortable => "true"}}
-                needinfo?
+                  Changed at
+                %th{:data => {:field => "requestee", :sortable => "true", :class => "requestee"}}
+                  needinfo?
+        #Bugs.tab-pane
+          %table{:data => {:toggle => "table", :url => "/json/bugzilla/allopenwithoutl3", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+            %thead
+              %tr
+                %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
+                  Bug Id
+                %th{:data => {:field => "summary", :sortable => "true", :class => "summary"}}
+                  Summary
+                %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
+                  Priority
+                %th{:data => {:field => "component", :sortable => "true"}}
+                  Component
+                %th{:data => {:field => "creation_time", :sortable => "true", :formatter => "timestampReduce"}}
+                  Created at
+                %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
+                  Changed at
+                %th{:data => {:field => "requestee", :sortable => "true", :class => "requestee"}}
+                  needinfo?
 
 != js :jquery
 != js :jqueryplugin
