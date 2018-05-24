@@ -40,12 +40,12 @@
   %div.col-md-12
     %ul.nav.nav-tabs
       %li.active
-        %a{"data-toggle" => "tab", href: '#L3'} L3 List
+        %a{"data-toggle" => "tab", href: '#L3'} L3 Bugs
       %li
-        %a{"data-toggle" => "tab", href: '#Bugs'} All Bugs
+        %a{"data-toggle" => "tab", href: '#Bugs'} Non L3 Bugs
       .tab-content
         #L3.tab-pane.active
-          %table{:data => {:toggle => "table", :url => "/json/bugzilla/allopenl3", :search => "true", :show => {:refresh => "true", :columns => "true", :cellpadding => "0", :cellspacing => "0"}}}
+          %table{:data => {:toggle => "table", :url => "/json/bugzilla/#{@product_}/openl3", :search => "true", :show => {:refresh => "true", :columns => "true", :cellpadding => "0", :cellspacing => "0"}}}
             %thead
               %tr
                 %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
@@ -63,7 +63,7 @@
                 %th{:data => {:field => "requestee", :sortable => "true", :class => "requestee"}}
                   needinfo?
         #Bugs.tab-pane
-          %table{:data => {:toggle => "table", :url => "/json/bugzilla/allopenwithoutl3", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+          %table{:data => {:toggle => "table", :url => "/json/bugzilla/#{@product_}/openwithoutl3", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
             %thead
               %tr
                 %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
