@@ -44,7 +44,6 @@ class App < Sinatra::Base
     ]
     js :customjs, [
       "/customjs/bugzilla.js",
-      "/customjs/jenkins.js",
       "/customjs/github.js",
       "/customjs/index.js",
       "/customjs/nailed.js"
@@ -75,7 +74,6 @@ class App < Sinatra::Base
     @products = Nailed::Config.products.map { |_p, v| v["versions"] }.flatten.compact
     @product_query = @products.join("&product=")
     @org_query = Nailed::Github.orgs.map { |o| o.prepend("user%3A") }.join("+")
-    @theme_type = get_theme_type
     @colors = Nailed.get_colors
   end
 
@@ -176,59 +174,10 @@ class App < Sinatra::Base
       json.to_json
     end
 
-    def get_theme_type
-      theme = Nailed::Config["theme"] || "default"
-      if ["cyborg", "darkly", "slate", "superhero"].include? theme
-        "dark"
-      else
-        "light"
-      end
-    end
-
     ### github helpers
 
     def get_github_repos
       Repository.all
-    end
-
-    ### jenkins helpers
-
-    def get_jenkins_jobs
-      Nailed.get_jenkins_jobs_from_yaml
-    end
-
-    # returns a formatted string with all build parameters for the popover
-    def get_jenkins_build_parameters(job, build_number)
-      all_build_parameters = JenkinsParameterValue.all(jenkins_build_job: job, jenkins_build_number: build_number)
-      description = JenkinsBuild.all(number: build_number, job: job).map(&:description)[0] || ""
-      ret = ""
-      all_build_parameters.each do |bp|
-        ret += bp.jenkins_parameter_name + "=" + bp.value + "\n" unless bp.value.empty?
-      end
-      ret + "\nequal_builds:" + get_equal_builds(job, build_number).to_s + "\ndescription: " + description.split("/").to_s
-    end
-
-    # find equal jenkins builds
-    def get_equal_builds(job, build_number)
-      JenkinsBuild.all(job: job, number: build_number).map(&:equal_builds)[0].split(",").take(10)
-    end
-
-    # generates a view object for a specific build parameter within a job
-    def get_jenkins_view_object(job, parameter)
-      view_object = {}
-      all_parameters = JenkinsParameterValue.all(jenkins_parameter_name: parameter, jenkins_parameter_job: job).map(&:value).uniq.sort
-      all_parameters.each do |parameter_name|
-        view_object[parameter_name] = {}
-        all_builds_with_parameter = JenkinsParameterValue.all(jenkins_parameter_name: parameter, jenkins_parameter_job: job, value: parameter_name, limit: 15, order: :jenkins_build_number.desc)
-        all_builds_with_parameter.each do |build|
-          build_number = build.jenkins_build_number
-          build_details = JenkinsBuild.all(job: job, number: build_number)
-          build_details.each do |build_detail|
-            view_object[parameter_name][build_number] = { build_url: build_detail.url, build_result: build_detail.result, build_parameters: get_jenkins_build_parameters(job, build_number) }
-          end
-        end
-      end
-      view_object
     end
   end
 
@@ -353,18 +302,6 @@ class App < Sinatra::Base
     Bugreport.all(:is_open => true, :whiteboard.like => "%openL3%").to_json
   end
 
-  # product -> qe_top_5
-  Nailed::Config.products.each do |_product, values|
-    if values["qe"]
-      versions = values["versions"]
-      versions.each do |version|
-        get "/json/bugzilla/#{version.tr(" ", "_")}/qe_top_5" do
-          (Bugreport.all(:is_open => true, :product_name => version, :whiteboard.like => "%qe_top_5%")).to_json
-        end
-      end unless versions.nil?
-    end
-  end
-
   # product -> openwithoutl3
   Nailed::Config.products.each do |_product, values|
     versions = values["versions"]
@@ -468,7 +405,6 @@ class App < Sinatra::Base
 
   get "/" do
     @github_repos = get_github_repos
-    @jenkins_jobs = get_jenkins_jobs
 
     haml :index
   end
@@ -478,7 +414,6 @@ class App < Sinatra::Base
     versions.each do |version|
       get "/#{version.tr(" ", "_")}/bugzilla" do
         @github_repos = get_github_repos
-        @jenkins_jobs = get_jenkins_jobs
 
         @product = version
         @product_ = version.tr(" ", "_")
@@ -496,30 +431,12 @@ class App < Sinatra::Base
   github_repos.each do |repo|
     get "/github/#{repo[0]}/#{repo[1]}" do
       @github_repos = get_github_repos
-      @jenkins_jobs = get_jenkins_jobs
 
       @repo = repo[1]
       @org = repo[0]
       @github_url_all_pulls = "https://github.com/#{@org}/#{repo}/pulls"
 
       haml :github
-    end
-  end
-
-  Nailed.get_jenkins_jobs_from_yaml.each do |job|
-    get "/jenkins/#{job}" do
-      @github_repos = get_github_repos
-      @jenkins_jobs = get_jenkins_jobs
-
-      @job = job
-      @view_object = {}
-      blacklist = Nailed::Config["jenkins"]["blacklist"]["parameter"]
-      all_parameters = JenkinsParameter.all(job: job).map(&:name).sort_by(&:downcase)
-      all_parameters.each do |parameter|
-        @view_object[parameter] = get_jenkins_view_object(job, parameter) unless blacklist.include? parameter
-      end
-
-      haml :jenkins
     end
   end
 
@@ -533,7 +450,6 @@ class App < Sinatra::Base
 
   get "/help" do
     @github_repos = get_github_repos
-    @jenkins_jobs = get_jenkins_jobs
 
     haml :help
   end

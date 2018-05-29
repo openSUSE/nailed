@@ -9,15 +9,6 @@ port: # Specify a port where you can reach the webinterface, or (default) 4567
 netrc: # true or false (default). For private GitHub repos you will need to use a .netrc
 bugzilla:
   url: # Url of your Bugzilla instance
-jenkins:
-  server_ip: # Server IP of your Jenkins instace
-  server_port: # Server port of your Jenkins instace; defaults to 8080
-  ssl: # true, false; defaults to false
-  username: # Username of your Jenkins instance
-  api_token: # API Token of your Jenkins instance
-  blacklist: # hide parameters in the jenkins view
-    parameter:
-    # Array of parameter names
 products:
   example_product: # Just a a short key/name for the product (can be arbitrary)
     versions:
@@ -28,6 +19,4 @@ products:
     repos:
     # Array of GitHub repository names, as they appear in GitHub
     # query available repos with nailed -l <organization>
-    jobs:
-    # Array of Jenkins jobs/workers as they appear in Jenkins
   # continue adding more products here

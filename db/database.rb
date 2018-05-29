@@ -107,37 +107,6 @@ class AllpullTrend
   property :closed, Integer
 end
 
-# TODO: Jenkins specific tables
-
-class JenkinsParameter
-  include DataMapper::Resource
-  property :name, String, key: true
-  property :job, String, key: true
-  property :type, String
-  property :description, String
-  property :default, String
-end
-
-class JenkinsBuild
-  include DataMapper::Resource
-  property :number, Integer, key: true
-  property :job, String, key: true
-  property :description, String
-  property :url, String
-  property :result, String
-  property :built_on, String
-  property :equal_builds, String
-end
-
-class JenkinsParameterValue
-  include DataMapper::Resource
-  property :id, Serial, key: true
-  property :value, String
-
-  belongs_to :jenkins_parameter
-  belongs_to :jenkins_build
-end
-
 DataMapper.finalize
 
 DataMapper.setup(:default, ENV["DATABASE_URL"] || "sqlite3://#{File.join(File.expand_path(File.dirname(__FILE__)), "nailed.db")}")
