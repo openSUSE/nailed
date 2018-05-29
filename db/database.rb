@@ -1,11 +1,6 @@
 require "data_mapper"
 
-# set all String properties to have a default length of 255
 DataMapper::Property::String.length(666)
-
-###                            ###
-# setup the database connection  #
-###                            ###
 
 # BugZilla specific tables
 class Product
