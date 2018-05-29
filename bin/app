@@ -303,7 +303,15 @@ class App < Sinatra::Base
     versions.each do |version|
       get "/json/bugzilla/#{version.tr(" ", "_")}/donut/component" do
         top5_components = []
-        components = repository(:default).adapter.select("SELECT component AS label, COUNT(component) AS value FROM bugreports WHERE product_name = '#{version}' AND is_open = 't' GROUP BY component ORDER BY COUNT(component) DESC LIMIT 5")
+        sql_statement = "SELECT component AS label, " \
+                        "COUNT(component) AS value " \
+                        "FROM bugreports " \
+                        "WHERE product_name = '#{version}' " \
+                        "AND is_open = 't' " \
+                        "GROUP BY component " \
+                        "ORDER BY COUNT(component) " \
+                        "DESC LIMIT 5"
+        components = repository(:default).adapter.select(sql_statement)
         components.each do |bar|
           top5_components << { label: bar.label, value: bar.value }
         end
