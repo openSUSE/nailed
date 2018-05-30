@@ -26,12 +26,8 @@ else
 end
 
 if opts[:server_given]
-  begin
-    `#{File.join(File.expand_path("..", File.dirname(__FILE__)), "bin", "app")}`
-  rescue Interrupt
-    sleep 2
-    exit
-  end
+  path_to_sinatra_server = File.join(File.dirname(__FILE__), "app")
+  exec path_to_sinatra_server
 end
 
 opts.each_pair do |key, val|
