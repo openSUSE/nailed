@@ -1,7 +1,6 @@
 require "yaml"
 require "octokit"
 require "bicho"
-require "jenkins_api_client"
 
 TOPLEVEL = File.expand_path("..", File.dirname(__FILE__))
 
@@ -9,7 +8,6 @@ require_relative "nailed/config"
 require_relative "nailed/logger"
 require_relative "nailed/bugzilla"
 require_relative "nailed/github"
-require_relative "nailed/jenkins"
 require_relative "nailed/version"
 
 require File.join(TOPLEVEL, "db", "database")
@@ -56,16 +54,4 @@ module Nailed
     end
   end
 
-  #
-  # jenkins helpers
-  #
-  def get_jenkins_jobs_from_yaml
-    jobs = []
-    Config.products.each do |_product, values|
-      values["jobs"].each do |job|
-        jobs << job
-      end unless values["jobs"].nil?
-    end
-    jobs
-  end
 end

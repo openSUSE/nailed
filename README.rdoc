@@ -26,7 +26,6 @@ You can use nailed directly from a git checkout as well. Make sure to fetch the 
          --upgrade, -u:   Upgrade database
         --bugzilla, -b:   Refresh bugzilla database records
           --github, -g:   Refresh github database records
-         --jenkins, -j:   Refresh jenkins database records
         --list, -l <s>:   List github repositories within organization
           --server, -s:   Start a dashboard webinterface
             --help, -h:   Show this message
@@ -57,7 +56,6 @@ All configuration is read from +config/config.yml+
 * make sure to fetch new data with
    nailed --bugzilla
    nailed --github
-   nailed --jenkins
 * restart the webserver
 
 == Run

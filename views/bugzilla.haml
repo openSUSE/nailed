@@ -18,25 +18,6 @@
       .col-md-6
         %h5 Bug Status
         #bug_status
-    .row.no-hide
-      - if @top5
-        %h5 Quality Engineering top 5
-        %hr
-        %table{:data => {:toggle => "table", :url => "/json/bugzilla/#{@product_}/qe_top_5", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
-          %thead
-            %tr
-              %th{:data => {:field => "url", :sortable => "true", :formatter => "bugzillaFromLink"}}
-                Bug Id
-              %th{:data => {:field => "summary", :sortable => "true", :class => "summary"}}
-                Summary
-              %th{:data => {:field => "priority", :sortable => "true", :formatter => "bugzillaPriority"}}
-                Priority
-              %th{:data => {:field => "component", :sortable => "true"}}
-                Component
-              %th{:data => {:field => "creation_time", :sortable => "true", :formatter => "timestampReduce"}}
-                Created at
-              %th{:data => {:field => "last_change_time", :sortable => "true", :formatter => "timestampReduce"}}
-                Changed at
   %div.col-md-12
     %ul.nav.nav-tabs
       %li.active

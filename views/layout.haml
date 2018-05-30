@@ -19,14 +19,6 @@
           %ul.nav.navbar-nav.pull-right
             %li.dropdown
               %a.dropdown-toggle{:role => 'button', :data => {:toggle => 'dropdown'}, :href => '/'}
-                Jenkins
-                %span.caret
-              %ul.dropdown-menu{:role => 'menu'}
-                - @jenkins_jobs.each do |job|
-                  %li
-                    %a{:href => "/jenkins/#{job}"} #{job}
-            %li.dropdown
-              %a.dropdown-toggle{:role => 'button', :data => {:toggle => 'dropdown'}, :href => '/'}
                 Bugzilla
                 %span.caret
               %ul.dropdown-menu{:role => 'menu'}
