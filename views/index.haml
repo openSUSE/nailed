@@ -77,13 +77,6 @@
                 %th{:data => {:field => "created_at", :sortable => "true", :formatter => "timestampReduce"}}
                   Created at
 
-!= js :jquery
-!= js :jqueryplugin
-!= js :bootstrap
-!= js :bootstrap_table
-!= js :morris
-!= js :customjs
-
 :javascript
   $(document).ready(function(){
     index(#{@colors.to_json}, "#{@product_query}", "#{@org_query}");

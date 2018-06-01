@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require "sinatra"
+require "sprockets"
 require "haml"
 require "json"
 require "time"
@@ -10,58 +11,21 @@ require File.join(File.expand_path("..", File.dirname(__FILE__)), "db", "databas
 class App < Sinatra::Application
 
   ROOT_PATH = File.join(File.expand_path("..", File.dirname(__FILE__)))
-  set :root, File.join(ROOT_PATH, "lib")
-  set :public_folder, File.join(ROOT_PATH, "public")
+  set :root, File.join(ROOT_PATH)
+  set :public_folder, File.join(ROOT_PATH, "assets")
   set :views, File.join(ROOT_PATH, "views")
   set :bind, "0.0.0.0"
   set :port, Nailed::Config["port"] || 4567
   theme = Nailed::Config["theme"] || "default"
 
-  assets do
-    serve "/js",        from: "../public/vendor/js"
-    serve "/customjs",  from: "../public/js"
-    serve "/css",       from: "../public/vendor/css"
-    serve "/customcss", from: "../public/css"
-    serve "/images",    from: "../public/images"
+  assets = Sprockets::Environment.new
 
-    js :jquery, "/js/external/jquery-1.11.2.min.js", [
-      "/js/external/jquery-1.11.2.js"
-    ]
-    js :bootstrap, "/js/bootstrap/bootstrap.min.js", [
-      "/js/bootstrap/bootstrap.js"
-    ]
-    js :bootstrap_table, "/js/bootstrap/bootstrap-table.min.js", [
-      "/js/bootstrap/bootstrap-table.js"
-    ]
-    js :morris, "/js/morris/morris.min.js", [
-      "/js/morris/morris.js",
-      "/js/morris/raphael.js"
-    ]
-    js :customjs, [
-      "/customjs/bugzilla.js",
-      "/customjs/github.js",
-      "/customjs/index.js",
-      "/customjs/nailed.js"
-    ]
+  assets.append_path File.join(ROOT_PATH, "assets/stylesheets")
+  assets.append_path File.join(ROOT_PATH, "assets/javascript")
 
-    css :bootstrap, "/css/bootstrap/#{theme}/bootstrap.min.css", [
-      "/css/bootstrap/#{theme}/bootstrap.css"
-    ]
-    css :bootstrap_table, "/css/bootstrap/bootstrap-table.min.css", [
-      "/css/bootstrap/bootstrap-table.css"
-    ]
-    css :morris, [
-      "/css/morris/morris.css"
-    ]
-    css :material, "/css/material/material.min.css", [
-      "/css/material/material.css"
-    ]
-    css :customcss, [
-      "/customcss/nailed.css"
-    ]
-
-    js_compression  :jsmin
-    css_compression :simple
+  get "/assets/*" do
+    env["PATH_INFO"].sub!("/assets", "")
+    assets.call(env)
   end
 
   before do

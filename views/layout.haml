@@ -1,15 +1,12 @@
 !!!
 %html
   %head
-    != css :bootstrap, :media => 'screen'
-    != css :bootstrap_table, :media => 'screen'
-    != css :morris, :media => 'screen'
-    != css :material, :media => 'screen'
-    != css :customcss, :media => 'screen'
     %meta{:charset => "utf-8"}
     %meta{:name => "viewport", :content => "width=device-width, initial-scale=1.0"}
     %title #{@title}
-    %link{:href => "/images/favicon.ico", :rel => "shortcut icon"}
+    %link{:href => "/assets/images/favicon.ico", :rel => "shortcut icon"}
+    %link{:href => "assets/app.css", :rel => "stylesheet"}
+    %script{:src => "assets/app.js"}
   %body
     %nav.navbar.navbar-default.navbar-static-top{:role => 'navigation'}
       .container

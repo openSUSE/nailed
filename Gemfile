@@ -9,4 +9,5 @@ gem "sqlite3", "1.3.13"
 gem "netrc", "0.11.0"
 # front-end
 gem "sinatra", "2.0.1"
+gem "sprockets", "3.7.1"
 gem "haml", "5.0.4"
