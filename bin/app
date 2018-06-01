@@ -1,16 +1,13 @@
 #!/usr/bin/env ruby
 
-require "sinatra/base"
-require "sinatra/assetpack"
-require "sinatra/advanced_routes"
+require "sinatra"
 require "haml"
 require "json"
 require "time"
 require File.join(File.expand_path("..", File.dirname(__FILE__)), "lib", "nailed")
 require File.join(File.expand_path("..", File.dirname(__FILE__)), "db", "database")
 
-class App < Sinatra::Base
-  register Sinatra::AdvancedRoutes
+class App < Sinatra::Application
 
   ROOT_PATH = File.join(File.expand_path("..", File.dirname(__FILE__)))
   set :root, File.join(ROOT_PATH, "lib")
@@ -19,8 +16,6 @@ class App < Sinatra::Base
   set :bind, "0.0.0.0"
   set :port, Nailed::Config["port"] || 4567
   theme = Nailed::Config["theme"] || "default"
-
-  register Sinatra::AssetPack
 
   assets do
     serve "/js",        from: "../public/vendor/js"
@@ -448,8 +443,8 @@ class App < Sinatra::Base
 
   get "/json/help" do
     routes = []
-    App.each_route do |route|
-      routes << { route: route.path } if route.path.is_a? String
+    App.routes["GET"].each do |route|
+      routes << { route: route[0].to_s }
     end
     routes.uniq.to_json
   end
