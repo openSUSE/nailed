@@ -1,4 +1,3 @@
-[![Code Climate](https://codeclimate.com/github/MaximilianMeister/nailed/badges/gpa.svg)](https://codeclimate.com/github/MaximilianMeister/nailed)
 ## What is nailed?
 
 `nailed` consists of a back-end CLI for data collection and a sinatra based web front-end for visualization of relevant development data of Products that have their bugtracker on Bugzilla and (optionally) their codebase on GitHub.
@@ -12,19 +11,13 @@ e.g. it relies on bugs being tagged as L3. The plan is to make it optional in th
 ![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/blob/master/pics/nailed_bugzilla.png)
 ![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/blob/master/pics/nailed_github.png)
 
-## Installation using gem
-`gem install 'nailed'`
-
-Note that this is always a bit outdated.
-
 ## Installation using git (recommended)
 You can use nailed directly from a git checkout as well. Make sure to fetch the dependencies and call `nailed` from the `bin` directory.
 ### SUSE
 ```
-zypper in libxml2-devel libxslt-devel sqlite3-devel gcc make ruby-devel \
-          ruby2.3-rubygem-bundler ruby2.3-devel
+zypper in ruby ruby-devel ruby2.5-rubygem-bundler gcc gcc-c++ libz1 zlib-devel sqlite3 sqlite3-devel
 
-bundle.ruby2.3 install
+bundle install
 ```
 
 * for the SUSE BugZilla API make sure you have an `.oscrc` file with your credentials in ~
@@ -90,7 +83,7 @@ nailed --github
 
 * start the webserver with `nailed --server`
 
-## Running as a Docker container
+## Running as a Docker container (OUTDATED!)
 
 * Build the image
 
