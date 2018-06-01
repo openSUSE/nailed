@@ -85,53 +85,51 @@ class App < Sinatra::Base
       case action
       when :bug
         table = "bugtrends"
-        trends =
+        sql_statement =
           if Bugtrend.count(product_name: item) > 20
-            sql_statement = "SELECT (SELECT COUNT(0) " \
-                            "FROM #{table} t1 " \
-                            "WHERE t1.id <= t2.id " \
-                            "AND product_name = '#{item}') " \
-                            "AS tmp_id, time, open, fixed, product_name " \
-                            "FROM #{table} AS t2 " \
-                            "WHERE product_name = '#{item}' " \
-                            "AND (tmp_id % ((SELECT COUNT(*) " \
-                            "FROM #{table} " \
-                            "WHERE product_name = '#{item}')/20) = 0) " \
-                            "ORDER BY id"
-            Bugtrend.repository(:default).adapter.select(sql_statement)
+            "SELECT (SELECT COUNT(0) " \
+            "FROM #{table} t1 " \
+            "WHERE t1.id <= t2.id " \
+            "AND product_name = '#{item}') " \
+            "AS tmp_id, time, open, fixed, product_name " \
+            "FROM #{table} AS t2 " \
+            "WHERE product_name = '#{item}' " \
+            "AND (tmp_id % ((SELECT COUNT(*) " \
+            "FROM #{table} " \
+            "WHERE product_name = '#{item}')/20) = 0) " \
+            "ORDER BY id"
           else
-            sql_statement = "SELECT time, open, fixed " \
-                            "FROM #{table} " \
-                            "WHERE product_name = '#{item}'"
-            Bugtrend.repository(:default).adapter.select(sql_statement)
+            "SELECT time, open, fixed " \
+            "FROM #{table} " \
+            "WHERE product_name = '#{item}'"
           end
+        trends = Bugtrend.fetch(sql_statement)
         trends.each do |col|
           json << { time: col.time, open: col.open, fixed: col.fixed }
         end
       when :pull
         table = "pulltrends"
-        trends =
+        sql_statement =
           if (Pulltrend.count(repository_organization_oname: item[0], repository_rname: item[1]) > 20)
-            sql_statement = "SELECT (SELECT COUNT(0) " \
-                            "FROM #{table} t1 " \
-                            "WHERE t1.id <= t2.id AND repository_rname = '#{item[1]}' " \
-                            "AND repository_organization_oname = '#{item[0]}')" \
-                            "AS tmp_id, time, open, repository_rname " \
-                            "FROM #{table} AS t2 " \
-                            "WHERE repository_rname = '#{item[1]}' " \
-                            "AND repository_organization_oname = '#{item[0]}' " \
-                            "AND (tmp_id % ((SELECT COUNT(*) " \
-                            "FROM #{table} WHERE repository_rname = '#{item[1]}' " \
-                            "AND repository_organization_oname = '#{item[0]}')/20) = 0)" \
-                            "ORDER BY id"
-            Pulltrend.repository(:default).adapter.select(sql_statement)
+            "SELECT (SELECT COUNT(0) " \
+            "FROM #{table} t1 " \
+            "WHERE t1.id <= t2.id AND repository_rname = '#{item[1]}' " \
+            "AND repository_organization_oname = '#{item[0]}')" \
+            "AS tmp_id, time, open, repository_rname " \
+            "FROM #{table} AS t2 " \
+            "WHERE repository_rname = '#{item[1]}' " \
+            "AND repository_organization_oname = '#{item[0]}' " \
+            "AND (tmp_id % ((SELECT COUNT(*) " \
+            "FROM #{table} WHERE repository_rname = '#{item[1]}' " \
+            "AND repository_organization_oname = '#{item[0]}')/20) = 0)" \
+            "ORDER BY id"
           else
-            sql_statement = "SELECT time, open " \
-                            "FROM #{table} " \
-                            "WHERE repository_rname = '#{item[1]}' " \
-                            "AND repository_organization_oname = '#{item[0]}'"
-            Pulltrend.repository(:default).adapter.select(sql_statement)
+            "SELECT time, open " \
+            "FROM #{table} " \
+            "WHERE repository_rname = '#{item[1]}' " \
+            "AND repository_organization_oname = '#{item[0]}'"
           end
+        trends = Pulltrend.fetch(sql_statement)
         trends.each do |col|
           json << { time: col.time, open: col.open }
         end
@@ -145,7 +143,7 @@ class App < Sinatra::Base
           else
             ""
           end
-        trends = AllbugTrend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
+        trends = AllbugTrend.fetch("SELECT * FROM #{table} #{filter}")
         trends.each do |col|
           json << { time: col.time, open: col.open }
         end
@@ -154,7 +152,7 @@ class App < Sinatra::Base
         sql_statement = "SELECT * " \
                         "FROM (SELECT * FROM #{table} ORDER BY time) " \
                         "GROUP BY date(time)"
-        trends = AllbugTrend.repository(:default).adapter.select(sql_statement)
+        trends = AllbugTrend.fetch(sql_statement)
         trends.each do |col|
           json << { time: col.time, open: col.open }
         end
@@ -166,7 +164,7 @@ class App < Sinatra::Base
           else
             ""
           end
-        trends = L3Trend.repository(:default).adapter.select("SELECT * FROM #{table} #{filter}")
+        trends = L3Trend.fetch("SELECT * FROM #{table} #{filter}")
         trends.each do |col|
           json << { time: col.time, open: col.open }
         end
@@ -199,7 +197,7 @@ class App < Sinatra::Base
           "P3 - Medium"   => "p3",
           "P4 - Low"      => "p4",
           "P5 - None"     => "p5" }.each_pair do |key, val|
-          bugprio << { "bugprio" => key, val => Bugreport.count(product_name: version, priority: key, is_open: true) }
+          bugprio << { "bugprio" => key, val => Bugreport.where(product_name: version, priority: key, is_open: 't').count }
         end
         bugprio.to_json
       end
@@ -217,7 +215,7 @@ class App < Sinatra::Base
           "CONFIRMED"   => 's1',
           "IN_PROGRESS" => 's2',
           "REOPENED"    => 's3' }.each_pair do |key, val|
-          bugstatus << { "bugstatus" => key, val => Bugreport.count(product_name: version, status: key, is_open: true) }
+          bugstatus << { "bugstatus" => key, val => Bugreport.where(product_name: version, status: key, is_open: 't').count }
         end
         bugstatus.to_json
       end
@@ -260,9 +258,9 @@ class App < Sinatra::Base
                         "GROUP BY component " \
                         "ORDER BY COUNT(component) " \
                         "DESC LIMIT 5"
-        components = repository(:default).adapter.select(sql_statement)
+        components = Repository.fetch(sql_statement).all
         components.each do |bar|
-          top5_components << { label: bar.label, value: bar.value }
+          top5_components << { label: bar[:label], value: bar[:value] }
         end
         component_labels = top5_components.map { |a| a.values[0] }
         component_values = top5_components.map { |a| a.values[1] }
@@ -276,7 +274,7 @@ class App < Sinatra::Base
     Nailed::Config.products.each do |_product, values|
       versions = values["versions"]
       versions.each do |version|
-        open = Bugreport.count(product_name: version, is_open: true)
+        open = Bugreport.where(product_name: version, is_open: 't').count
         bugtop << { label: version, value: open } unless open == 0
       end unless versions.nil?
     end
@@ -289,17 +287,17 @@ class App < Sinatra::Base
 
   # allopen
   get "/json/bugzilla/allopen" do
-    Bugreport.all(is_open: true).to_json
+    Bugreport.where(is_open: 't').naked.all.to_json
   end
 
   # allopenwithoutl3
   get "/json/bugzilla/allopenwithoutl3" do
-    (Bugreport.all(is_open: true) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true)).to_json
+    (Bugreport.where(is_open: 't').naked.all - Bugreport.where(is_open: 't').where(Sequel.like(:whiteboard, "%openL3%")).naked.all).to_json
   end
 
   # allopenl3
   get "/json/bugzilla/allopenl3" do
-    Bugreport.all(:is_open => true, :whiteboard.like => "%openL3%").to_json
+    Bugreport.where(is_open: 't').where(Sequel.like(:whiteboard, "%openL3%")).naked.all.to_json
   end
 
   # product -> openwithoutl3
@@ -307,7 +305,10 @@ class App < Sinatra::Base
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.tr(" ", "_")}/openwithoutl3" do
-        (Bugreport.all(is_open: true, product_name: version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => true, :product_name => version)).to_json
+        open_bugs = Bugreport.where(is_open: 't', product_name: version).naked.all
+        open_l3_bugs = Bugreport.where(is_open: 't', product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all
+        (open_bugs - open_l3_bugs).to_json
+       # (Bugreport.where(is_open: 't', product_name: version).naked.all - Bugreport.where(Sequel.like(:whiteboard => "%openL3%").where(is_open: 't', product_name: version).naked.all)).to_json
       end
     end unless versions.nil?
   end
@@ -317,7 +318,7 @@ class App < Sinatra::Base
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.tr(" ", "_")}/openl3" do
-        Bugreport.all(:is_open => true, :product_name => version, :whiteboard.like => "%openL3%").to_json
+        Bugreport.where(is_open: 't', product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all.to_json
       end
     end unless versions.nil?
   end
@@ -327,7 +328,9 @@ class App < Sinatra::Base
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.tr(" ", "_")}/closedwithoutl3" do
-        (Bugreport.all(is_open: false, product_name: version) - Bugreport.all(:whiteboard.like => "%openL3%", :is_open => false, :product_name => version)).to_json
+        closed_bugs = Bugreport.where(is_open: 'f', product_name: version).naked.all
+        closed_l3_bugs = Bugreport.where(is_open: 'f', product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all
+        (closed_bugs - closed_l3_bugs).to_json
       end
     end unless versions.nil?
   end
@@ -337,7 +340,7 @@ class App < Sinatra::Base
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.tr(" ", "_")}/closedl3" do
-        Bugreport.all(:is_open => false, :product_name => version, :whiteboard.like => "%openL3%").to_json
+        Bugreport.where(is_open: 'f', product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all.to_json
       end
     end unless versions.nil?
   end
@@ -349,7 +352,7 @@ class App < Sinatra::Base
   #
   # trends
   #
-  github_repos = Pullrequest.all(order: [:created_at.desc]).map do |row|
+  github_repos = Pullrequest.reverse(:created_at).all.map do |row|
     [row.repository_organization_oname, row.repository_rname]
   end.uniq
 
@@ -369,9 +372,12 @@ class App < Sinatra::Base
   #
   get "/json/github/donut/allpulls" do
     pulltop = []
-    allpulls = Pullrequest.all(state: "open").aggregate(:repository_organization_oname, :repository_rname, :all.count)
-    allpulls.each do |donut_bite|
-      pulltop << { label: "#{donut_bite[0]}/#{donut_bite[1]}", value: donut_bite[2] }
+    open_pulls = Pullrequest.where(state: "open")
+    grouped_pulls = open_pulls.group_and_count(:repository_rname,
+                                               :repository_organization_oname).all
+    grouped_pulls.each do |pull|
+      pulltop << { label: "#{pull.repository_organization_oname}/#{pull.repository_rname}",
+                   value: pull[:count] }
     end
     pulltop.to_json
   end
@@ -382,20 +388,20 @@ class App < Sinatra::Base
 
   # allopenpulls
   get "/json/github/allopenpulls" do
-    Pullrequest.all(state: "open").to_json
+    Pullrequest.where(state: "open").naked.all.to_json
   end
 
   # all open pull requests for repo
-  github_repos = Pullrequest.all(state: "open", order: [:created_at.desc]).map do |row|
+  github_repos = Pullrequest.where(state: "open").reverse(:created_at).map do |row|
     [row.repository_organization_oname, row.repository_rname]
   end.uniq
 
   github_repos.each do |repo|
     get "/json/github/#{repo[0]}/#{repo[1]}/open" do
-      Pullrequest.all(
+      Pullrequest.where(
         state:                         "open",
         repository_rname:              repo[1],
-        repository_organization_oname: repo[0]).to_json
+        repository_organization_oname: repo[0]).naked.all.to_json
     end
   end
 
@@ -424,7 +430,7 @@ class App < Sinatra::Base
     end unless versions.nil?
   end
 
-  github_repos = Pullrequest.all(order: [:created_at.desc]).map do |row|
+  github_repos = Pullrequest.reverse(:created_at).all.map do |row|
     [row.repository_organization_oname, row.repository_rname]
   end.uniq
 

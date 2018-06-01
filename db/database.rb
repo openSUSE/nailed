@@ -1,108 +1,49 @@
-require "data_mapper"
+require "sequel"
 
-DataMapper::Property::String.length(666)
+db_path = ENV["DATABASE_URL"]
+# if not set, use default:
+db_path ||= File.join(File.expand_path(File.dirname(__FILE__)), "nailed.db")
+
+DB = Sequel.connect("sqlite://#{db_path}")
 
 # BugZilla specific tables
-class Product
-  include DataMapper::Resource
-  property :name, String, required: true, key: true
-
-  has n, :bugreports
-  has n, :bugtrends
+class Product < Sequel::Model
+  one_to_many :bugreports
+  one_to_many :bugtrends
 end
 
-class Bugreport
-  include DataMapper::Resource
-  property :bug_id, Integer, required: true, key: true
-  property :summary, String
-  property :status, String, required: true
-  property :is_open, Boolean, required: true
-  property :component, String
-  property :severity, String
-  property :priority, String
-  property :whiteboard, String
-  property :assigned_to, String
-  property :creation_time, DateTime
-  property :last_change_time, DateTime
-  property :url, String
-  property :requestee, String
-
-  belongs_to :product
+class Bugreport < Sequel::Model
+  many_to_one :product
 end
 
-class Bugtrend
-  include DataMapper::Resource
-  property :id, Serial, key: true
-  property :time, String
-  property :open, Integer
-  property :fixed, Integer
-
-  belongs_to :product
+class Bugtrend < Sequel::Model
+  many_to_one :product
 end
 
-class AllbugTrend
-  include DataMapper::Resource
-  property :id, Serial, key: true
-  property :time, String
-  property :open, Integer
+class AllbugTrend < Sequel::Model
+  table_name = "allbug_trends"
 end
 
-class L3Trend
-  include DataMapper::Resource
-  property :id, Serial, key: true
-  property :time, String
-  property :open, Integer
+class L3Trend < Sequel::Model
 end
 
 # GitHub specific tables
-class Organization
-  include DataMapper::Resource
-  property :oname, String, required: true, key: true
-
-  has n, :repositories
+class Organization < Sequel::Model
+  one_to_many :repository
 end
 
-class Repository
-  include DataMapper::Resource
-  property :rname, String, required: true, key: true, unique_index: false
-
-  belongs_to :organization, required: false, key: true
+class Repository < Sequel::Model
+  table_name = "repositories"
+  many_to_one :organization
 end
 
-class Pullrequest
-  include DataMapper::Resource
-  property :id, Serial
-  property :pr_number, Integer, required: true
-  property :title, String
-  property :state, String
-  property :url, String
-  property :created_at, DateTime
-  property :updated_at, DateTime
-  property :closed_at, DateTime
-  property :merged_at, DateTime
-
-  belongs_to :repository
+class Pullrequest < Sequel::Model
+  many_to_one :repository
 end
 
-class Pulltrend
-  include DataMapper::Resource
-  property :id, Serial, key: true
-  property :time, String
-  property :open, Integer
-  property :closed, Integer
-
-  belongs_to :repository
+class Pulltrend < Sequel::Model
+  many_to_one :repository
 end
 
-class AllpullTrend
-  include DataMapper::Resource
-  property :id, Serial, key: true
-  property :time, String
-  property :open, Integer
-  property :closed, Integer
+class AllpullTrend < Sequel::Model
 end
-
-DataMapper.finalize
-
-db_default_path = File.join(File.expand_path(File.dirname(__FILE__)), "nailed.db")
-DataMapper.setup(:default, ENV["DATABASE_URL"] || "sqlite3://#{db_default_path}")
