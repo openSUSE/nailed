@@ -10,7 +10,6 @@ require_relative "db/database"
 
 class App < Sinatra::Application
 
-  set :public_folder, "assets"
   set :bind, "0.0.0.0"
   set :port, Nailed::Config["port"] || 4567
   theme = Nailed::Config["theme"] || "default"
@@ -19,6 +18,7 @@ class App < Sinatra::Application
 
   assets.append_path File.join(__dir__, "assets/stylesheets/")
   assets.append_path File.join(__dir__, "assets/javascript/")
+  assets.append_path File.join(__dir__, "assets/images/")
 
   get "/assets/*" do
     env["PATH_INFO"].sub!("/assets", "")
