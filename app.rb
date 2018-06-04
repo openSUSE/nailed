@@ -279,28 +279,6 @@ class App < Sinatra::Application
     end unless versions.nil?
   end
 
-  # product -> closedwithoutl3
-  Nailed::Config.products.each do |_product, values|
-    versions = values["versions"]
-    versions.each do |version|
-      get "/json/bugzilla/#{version.tr(" ", "_")}/closedwithoutl3" do
-        closed_bugs = Bugreport.where(is_open: 'f', product_name: version).naked.all
-        closed_l3_bugs = Bugreport.where(is_open: 'f', product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all
-        (closed_bugs - closed_l3_bugs).to_json
-      end
-    end unless versions.nil?
-  end
-
-  # product -> closedl3
-  Nailed::Config.products.each do |_product, values|
-    versions = values["versions"]
-    versions.each do |version|
-      get "/json/bugzilla/#{version.tr(" ", "_")}/closedl3" do
-        Bugreport.where(is_open: 'f', product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all.to_json
-      end
-    end unless versions.nil?
-  end
-
   #
   # GITHUB Routes
   #
