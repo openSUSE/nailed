@@ -5,23 +5,20 @@ require "sprockets"
 require "haml"
 require "json"
 require "time"
-require File.join(File.expand_path("..", File.dirname(__FILE__)), "lib", "nailed")
-require File.join(File.expand_path("..", File.dirname(__FILE__)), "db", "database")
+require_relative "lib/nailed"
+require_relative "db/database"
 
 class App < Sinatra::Application
 
-  ROOT_PATH = File.join(File.expand_path("..", File.dirname(__FILE__)))
-  set :root, File.join(ROOT_PATH)
-  set :public_folder, File.join(ROOT_PATH, "assets")
-  set :views, File.join(ROOT_PATH, "views")
+  set :public_folder, "assets"
   set :bind, "0.0.0.0"
   set :port, Nailed::Config["port"] || 4567
   theme = Nailed::Config["theme"] || "default"
 
   assets = Sprockets::Environment.new
 
-  assets.append_path File.join(ROOT_PATH, "assets/stylesheets")
-  assets.append_path File.join(ROOT_PATH, "assets/javascript")
+  assets.append_path File.join(__dir__, "assets/stylesheets/")
+  assets.append_path File.join(__dir__, "assets/javascript/")
 
   get "/assets/*" do
     env["PATH_INFO"].sub!("/assets", "")

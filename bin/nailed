@@ -27,7 +27,7 @@ else
 end
 
 if opts[:server_given]
-  path_to_sinatra_server = File.join(File.dirname(__FILE__), "app")
+  path_to_sinatra_server = File.join(File.dirname(__FILE__), "..", "app.rb")
   exec path_to_sinatra_server
 end
 
