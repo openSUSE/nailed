@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require "sinatra"
+require "sinatra/base"
 require "sprockets"
 require "haml"
 require "json"
@@ -8,8 +8,9 @@ require "time"
 require_relative "lib/nailed"
 require_relative "db/database"
 
-class App < Sinatra::Application
+class App < Sinatra::Base
 
+  enable :logging
   set :bind, "0.0.0.0"
   set :port, Nailed::Config["port"] || 4567
   theme = Nailed::Config["theme"] || "default"
