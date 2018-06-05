@@ -31,11 +31,12 @@ module Nailed
                 flag["requestee"]
               end.compact.join(", ")
 
-              db_handler = (Bugreport.get(bug.id) || Bugreport.new).update(attributes)
+              DB[:bugreports].insert_conflict(:replace).insert(attributes)
+
               Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
             end
-          rescue
-            Nailed.logger.error("Could not fetch Bugs for #{version}.")
+          rescue Exception => e
+            Nailed.logger.error("Could not fetch Bugs for #{version}:\n#{e}")
           end
         end unless values["versions"].nil?
       end
@@ -45,17 +46,20 @@ module Nailed
       Nailed::Config.products.each do |_product, values|
         values["versions"].each do |version|
           Nailed.logger.info("#{__method__}: Writing bug trends for #{version}")
-          open = Bugreport.count(is_open: true, product_name: version)
-          fixed = Bugreport.count(status: "VERIFIED", product_name: version) + \
-            Bugreport.count(status: "RESOLVED", product_name: version)
+          open = Bugreport.where(is_open: true, product_name: version).count
+          fixed = Bugreport.where(status: "VERIFIED", product_name: version).count + \
+            Bugreport.where(status: "RESOLVED", product_name: version).count
           attributes = { time:         Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                          open:         open,
                          fixed:        fixed,
                          product_name: version }
 
-          db_handler = Bugtrend.first_or_create(attributes)
+          begin
+            DB[:bugtrends].insert(attributes)
+          rescue Exception => e
+            Nailed.logger.error("Could not write bug trend for #{version}:\n#{e}")
+          end
 
-          Nailed.save_state(db_handler)
           Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
         end unless values["versions"].nil?
       end
@@ -63,14 +67,17 @@ module Nailed
 
     def write_allbug_trends
       Nailed.logger.info("#{__method__}: Aggregating all bug trends for all products")
-      open = Bugreport.count(is_open: true)
+      open = Bugreport.where(is_open: true).count
 
       attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                      open: open }
 
-      db_handler = AllbugTrend.first_or_create(attributes)
+      begin
+        DB[:allbug_trends].insert(attributes)
+      rescue Exception => e
+        Nailed.logger.error("Could not write allbug trend:\n#{e}")
+      end
 
-      Nailed.save_state(db_handler)
       Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
 
@@ -79,15 +86,18 @@ module Nailed
       Nailed::Config.products.each do |_product, values|
         values["versions"].each do |version|
           Nailed.logger.info("#{__method__}: Aggregating l3 trends for #{version}")
-          open += Bugreport.count(:product_name => version, :whiteboard.like => "%openL3%", :is_open => true)
+          open += Bugreport.where(product_name: version, is_open: true ).where(Sequel.like(:whiteboard, "%openL3%")).count
         end unless values["versions"].nil?
       end
       attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                      open: open }
 
-      db_handler = L3Trend.first_or_create(attributes)
+      begin
+        DB[:l3_trends].insert(attributes)
+      rescue Exception => e
+        Nailed.logger.error("Could not write l3 trend:\n#{e}")
+      end
 
-      Nailed.save_state(db_handler)
       Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
   end

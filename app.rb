@@ -161,7 +161,7 @@ class App < Sinatra::Base
           "P3 - Medium"   => "p3",
           "P4 - Low"      => "p4",
           "P5 - None"     => "p5" }.each_pair do |key, val|
-          bugprio << { "bugprio" => key, val => Bugreport.where(product_name: version, priority: key, is_open: 't').count }
+          bugprio << { "bugprio" => key, val => Bugreport.where(product_name: version, priority: key, is_open: true).count }
         end
         bugprio.to_json
       end
@@ -179,7 +179,7 @@ class App < Sinatra::Base
           "CONFIRMED"   => 's1',
           "IN_PROGRESS" => 's2',
           "REOPENED"    => 's3' }.each_pair do |key, val|
-          bugstatus << { "bugstatus" => key, val => Bugreport.where(product_name: version, status: key, is_open: 't').count }
+          bugstatus << { "bugstatus" => key, val => Bugreport.where(product_name: version, status: key, is_open: true).count }
         end
         bugstatus.to_json
       end
@@ -218,7 +218,7 @@ class App < Sinatra::Base
                         "COUNT(component) AS value " \
                         "FROM bugreports " \
                         "WHERE product_name = '#{version}' " \
-                        "AND is_open = 't' " \
+                        "AND is_open = true " \
                         "GROUP BY component " \
                         "ORDER BY COUNT(component) " \
                         "DESC LIMIT 5"
@@ -238,7 +238,7 @@ class App < Sinatra::Base
     Nailed::Config.products.each do |_product, values|
       versions = values["versions"]
       versions.each do |version|
-        open = Bugreport.where(product_name: version, is_open: 't').count
+        open = Bugreport.where(product_name: version, is_open: true).count
         bugtop << { label: version, value: open } unless open == 0
       end unless versions.nil?
     end
@@ -251,17 +251,17 @@ class App < Sinatra::Base
 
   # allopen
   get "/json/bugzilla/allopen" do
-    Bugreport.where(is_open: 't').naked.all.to_json
+    Bugreport.where(is_open: true).naked.all.to_json
   end
 
   # allopenwithoutl3
   get "/json/bugzilla/allopenwithoutl3" do
-    (Bugreport.where(is_open: 't').naked.all - Bugreport.where(is_open: 't').where(Sequel.like(:whiteboard, "%openL3%")).naked.all).to_json
+    (Bugreport.where(is_open: true).naked.all - Bugreport.where(is_open: true).where(Sequel.like(:whiteboard, "%openL3%")).naked.all).to_json
   end
 
   # allopenl3
   get "/json/bugzilla/allopenl3" do
-    Bugreport.where(is_open: 't').where(Sequel.like(:whiteboard, "%openL3%")).naked.all.to_json
+    Bugreport.where(is_open: true).where(Sequel.like(:whiteboard, "%openL3%")).naked.all.to_json
   end
 
   # product -> openwithoutl3
@@ -269,10 +269,9 @@ class App < Sinatra::Base
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.tr(" ", "_")}/openwithoutl3" do
-        open_bugs = Bugreport.where(is_open: 't', product_name: version).naked.all
-        open_l3_bugs = Bugreport.where(is_open: 't', product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all
+        open_bugs = Bugreport.where(is_open: true, product_name: version).naked.all
+        open_l3_bugs = Bugreport.where(is_open: true, product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all
         (open_bugs - open_l3_bugs).to_json
-       # (Bugreport.where(is_open: 't', product_name: version).naked.all - Bugreport.where(Sequel.like(:whiteboard => "%openL3%").where(is_open: 't', product_name: version).naked.all)).to_json
       end
     end unless versions.nil?
   end
@@ -282,7 +281,7 @@ class App < Sinatra::Base
     versions = values["versions"]
     versions.each do |version|
       get "/json/bugzilla/#{version.tr(" ", "_")}/openl3" do
-        Bugreport.where(is_open: 't', product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all.to_json
+        Bugreport.where(is_open: true, product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all.to_json
       end
     end unless versions.nil?
   end
