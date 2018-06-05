@@ -16,7 +16,7 @@ function bugzillaPriority(priority) {
 }
 
 function timestampReduce(timestamp) {
-  arr = timestamp.split("T");
+  arr = timestamp.split(" ");
   return arr[0];
 }
 
