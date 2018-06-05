@@ -391,6 +391,10 @@ class App < Sinatra::Base
   get "/json/help" do
     routes = []
     App.routes["GET"].each do |route|
+      # avoids drawing asset routes:
+      if route[0].to_s.include? '*'
+        next
+      end
       routes << { route: route[0].to_s }
     end
     routes.uniq.to_json
