@@ -15,17 +15,6 @@ class App < Sinatra::Base
   set :port, Nailed::Config["port"] || 4567
   theme = Nailed::Config["theme"] || "default"
 
-  assets = Sprockets::Environment.new
-
-  assets.append_path File.join(__dir__, "assets/stylesheets/")
-  assets.append_path File.join(__dir__, "assets/javascript/")
-  assets.append_path File.join(__dir__, "assets/images/")
-
-  get "/assets/*" do
-    env["PATH_INFO"].sub!("/assets", "")
-    assets.call(env)
-  end
-
   before do
     @title = Nailed::Config["title"] || "Dashboard"
     @products = Nailed::Config.products.map { |_p, v| v["versions"] }.flatten.compact
@@ -34,8 +23,26 @@ class App < Sinatra::Base
     @colors = Nailed.get_colors
   end
 
+  # sprockets asset management:
+  assets = Sprockets::Environment.new
+
+  assets.append_path File.join(__dir__, "assets/stylesheets/")
+  assets.append_path File.join(__dir__, "assets/javascript/")
+  assets.append_path File.join(__dir__, "assets/images/")
+  assets.append_path File.join(__dir__, "assets/fonts/")
+
+  get "/assets/*" do
+    env["PATH_INFO"].sub!("/assets", "")
+    assets.call(env)
+  end
+
+  get "/fonts/*" do
+    env["PATH_INFO"].sub!("/fonts", "")
+    assets.call(env)
+  end
+
+  # generic helpers:
   helpers do
-    ### generic helpers
 
     def get_trends(action, item)
       json = []
