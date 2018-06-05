@@ -65,82 +65,56 @@ module Nailed
                              repository_rname:              repo,
                              repository_organization_oname: organization }
 
-              # if pr exists dont create a new record
-              pull_to_update = Pullrequest.all(pr_number: pr.number, repository_rname: repo)
-              if pull_to_update.empty?
-                db_handler = Pullrequest.first_or_create(attributes)
-                Nailed.logger.debug("#{__method__}: Created new pullrequest #{pr.repo} ##{pr.number} with #{attributes.inspect}")
-              else
-                # update saves the state, so we dont need a db_handler
-                # TODO check return code for true if saved correctly
-                pull_to_update[0].update(attributes)
-                Nailed.logger.debug("#{__method__}: Updated #{pr.repo} ##{pr.number} with #{attributes.inspect}")
+              begin
+                DB[:pullrequests].insert_conflict(:replace).insert(attributes)
+              rescue Exception => e
+                Nailed.logger.error("Could not write pullrequest:\n#{e}")
               end
 
-              Nailed.save_state(db_handler) unless defined? db_handler
-              Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
+              Nailed.logger.debug(
+                "#{__method__}: Created/Updated pullrequest #{pr.repo} " \
+                "##{pr.number} with #{attributes.inspect}")
             end unless pulls.empty?
             write_pull_trends(organization, repo)
           else
-            Nailed.logger.error("#{__method__}: #{repo} does not exist anymore.")
+            Nailed.logger.error("#{__method__}: #{repo} does not exist.")
           end
         end unless repos.nil?
       end
     end
 
-    def update_pull_states
-      # only update open PRs
-      pulls = Pullrequest.all(state: "open")
-      Nailed.logger.info("#{__method__}: I have #{pulls.count} Prs to update")
-      pulls.each do |db_pull|
-        number = db_pull.pr_number
-        repo = db_pull.repository_rname
-        org = db_pull.repository_organization_oname
-        begin
-          github_pull = @client.pull_request("#{org}/#{repo}", number)
-        rescue Octokit::NotFound
-          # TODO(itxaka): Set it as deleted instead of really deleting it from our db?
-          Nailed.logger.error("#{__method__}: Pullrequest #{org}/#{repo}, ##{number} not found. Deleting from database...")
-          db_pull.destroy
-          next
-        end
-        Nailed.logger.info("#{__method__}: Checking state of pullrequest #{number} from #{org}/#{repo}")
-        if github_pull.state == "closed"
-          # If closed, update its status on the database
-          Nailed.logger.info("#{__method__}: Updating closed pullrequest #{number} from #{org}/#{repo}")
-          db_pull.state = "closed"
-          db_pull.save
-        end
-      end
-    end
-
     def write_pull_trends(org, repo)
       Nailed.logger.info("#{__method__}: Writing pull trends for #{org}/#{repo}")
-      open = Pullrequest.count(repository_rname: repo, state: "open")
-      closed = Pullrequest.count(repository_rname: repo, state: "closed")
+      open = Pullrequest.where(repository_rname: repo, state: "open").count
+      closed = Pullrequest.where(repository_rname: repo, state: "closed").count
       attributes = { time:                          Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                      open:                          open,
                      closed:                        closed,
                      repository_organization_oname: org,
                      repository_rname:              repo }
 
-      db_handler = Pulltrend.first_or_create(attributes)
+      begin
+        DB[:pulltrends].insert(attributes)
+      rescue Exception => e
+        Nailed.logger.error("Could not write pull trend for #{org}/#{repo}:\n#{e}")
+      end
 
-      Nailed.save_state(db_handler)
       Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
 
     def write_allpull_trends
       Nailed.logger.info("#{__method__}: Writing pull trends for all repos")
-      open = Pullrequest.count(state: "open")
-      closed = Pullrequest.count(state: "closed")
+      open = Pullrequest.where(state: "open").count
+      closed = Pullrequest.where(state: "closed").count
       attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                      open: open,
                      closed: closed}
+      begin
+        DB[:allpull_trends].insert(attributes)
+      rescue Exception => e
+        Nailed.logger.error("Could not write allpull trend:\n#{e}")
+      end
 
-      db_handler = AllpullTrend.first_or_create(attributes)
-
-      Nailed.save_state(db_handler)
       Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
   end
