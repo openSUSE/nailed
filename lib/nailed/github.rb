@@ -1,3 +1,4 @@
+require_relative '../../db/model'
 #
 # Nailed::Github
 #
@@ -54,16 +55,16 @@ module Nailed
             Nailed.logger.info("#{__method__}: Getting #{state} pullrequests for #{organization}/#{repo}")
             pulls = @client.pull_requests("#{organization}/#{repo}", :state => state)
             pulls.each do |pr|
-              attributes = { pr_number:                     pr.number,
-                             title:                         pr.title,
-                             state:                         pr.state,
-                             url:                           pr.html_url,
-                             created_at:                    pr.created_at,
-                             updated_at:                    pr.updated_at,
-                             closed_at:                     pr.closed_at,
-                             merged_at:                     pr.merged_at,
-                             repository_rname:              repo,
-                             repository_organization_oname: organization }
+              attributes = { pr_number: pr.number,
+                             title: pr.title,
+                             state: pr.state,
+                             url: pr.html_url,
+                             created_at: pr.created_at,
+                             updated_at: pr.updated_at,
+                             closed_at: pr.closed_at,
+                             merged_at: pr.merged_at,
+                             rname: repo,
+                             oname: organization }
 
               begin
                 DB[:pullrequests].insert_conflict(:replace).insert(attributes)
@@ -75,7 +76,7 @@ module Nailed
                 "#{__method__}: Created/Updated pullrequest #{pr.repo} " \
                 "##{pr.number} with #{attributes.inspect}")
             end unless pulls.empty?
-            write_pull_trends(organization, repo)
+            write_pulltrends(organization, repo)
           else
             Nailed.logger.error("#{__method__}: #{repo} does not exist.")
           end
@@ -83,15 +84,15 @@ module Nailed
       end
     end
 
-    def write_pull_trends(org, repo)
+    def write_pulltrends(org, repo)
       Nailed.logger.info("#{__method__}: Writing pull trends for #{org}/#{repo}")
-      open = Pullrequest.where(repository_rname: repo, state: "open").count
-      closed = Pullrequest.where(repository_rname: repo, state: "closed").count
-      attributes = { time:                          Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                     open:                          open,
-                     closed:                        closed,
-                     repository_organization_oname: org,
-                     repository_rname:              repo }
+      open = Pullrequest.where(rname: repo, state: "open").count
+      closed = Pullrequest.where(rname: repo, state: "closed").count
+      attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                     open: open,
+                     closed: closed,
+                     oname: org,
+                     rname: repo }
 
       begin
         DB[:pulltrends].insert(attributes)
@@ -102,7 +103,7 @@ module Nailed
       Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
 
-    def write_allpull_trends
+    def write_allpulltrends
       Nailed.logger.info("#{__method__}: Writing pull trends for all repos")
       open = Pullrequest.where(state: "open").count
       closed = Pullrequest.where(state: "closed").count
@@ -110,7 +111,7 @@ module Nailed
                      open: open,
                      closed: closed}
       begin
-        DB[:allpull_trends].insert(attributes)
+        DB[:allpulltrends].insert(attributes)
       rescue Exception => e
         Nailed.logger.error("Could not write allpull trend:\n#{e}")
       end

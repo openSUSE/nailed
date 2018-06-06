@@ -6,7 +6,9 @@ require "haml"
 require "json"
 require "time"
 require_relative "lib/nailed"
-require_relative "db/database"
+require_relative "lib/nailed/github"
+require_relative "lib/nailed/bugzilla"
+require_relative "db/model"
 
 class App < Sinatra::Base
 
@@ -19,7 +21,8 @@ class App < Sinatra::Base
     @title = Nailed::Config["title"] || "Dashboard"
     @products = Nailed::Config.products.map { |_p, v| v["versions"] }.flatten.compact
     @product_query = @products.join("&product=")
-    @org_query = Nailed::Github.orgs.map { |o| o.prepend("user%3A") }.join("+")
+    @orgs = Nailed::Github.orgs
+    @org_query = Nailed::Github.orgs.map { |o| o.dup.prepend("user%3A") }.join("+")
     @colors = Nailed.get_colors
   end
 
@@ -53,7 +56,7 @@ class App < Sinatra::Base
           if Bugtrend.count(product_name: item) > 20
             "SELECT (SELECT COUNT(0) " \
             "FROM #{table} t1 " \
-            "WHERE t1.id <= t2.id " \
+            "WHERE t1.rowid <= t2.rowid " \
             "AND product_name = '#{item}') " \
             "AS tmp_id, time, open, fixed, product_name " \
             "FROM #{table} AS t2 " \
@@ -61,7 +64,7 @@ class App < Sinatra::Base
             "AND (tmp_id % ((SELECT COUNT(*) " \
             "FROM #{table} " \
             "WHERE product_name = '#{item}')/20) = 0) " \
-            "ORDER BY id"
+            "ORDER BY time"
           else
             "SELECT time, open, fixed " \
             "FROM #{table} " \
@@ -69,68 +72,76 @@ class App < Sinatra::Base
           end
         trends = Bugtrend.fetch(sql_statement)
         trends.each do |col|
-          json << { time: col.time, open: col.open, fixed: col.fixed }
+          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col.open, fixed: col.fixed }
         end
       when :pull
         table = "pulltrends"
         sql_statement =
-          if (Pulltrend.count(repository_organization_oname: item[0], repository_rname: item[1]) > 20)
+          if (Pulltrend.count(oname: item[0], rname: item[1]) > 20)
             "SELECT (SELECT COUNT(0) " \
             "FROM #{table} t1 " \
-            "WHERE t1.id <= t2.id AND repository_rname = '#{item[1]}' " \
-            "AND repository_organization_oname = '#{item[0]}')" \
-            "AS tmp_id, time, open, repository_rname " \
+            "WHERE t1.rowid <= t2.rowid AND rname = '#{item[1]}' " \
+            "AND oname = '#{item[0]}')" \
+            "AS tmp_id, time, open, rname " \
             "FROM #{table} AS t2 " \
-            "WHERE repository_rname = '#{item[1]}' " \
-            "AND repository_organization_oname = '#{item[0]}' " \
+            "WHERE rname = '#{item[1]}' " \
+            "AND oname = '#{item[0]}' " \
             "AND (tmp_id % ((SELECT COUNT(*) " \
-            "FROM #{table} WHERE repository_rname = '#{item[1]}' " \
-            "AND repository_organization_oname = '#{item[0]}')/20) = 0)" \
-            "ORDER BY id"
+            "FROM #{table} WHERE rname = '#{item[1]}' " \
+            "AND oname = '#{item[0]}')/20) = 0)" \
+            "ORDER BY time"
           else
             "SELECT time, open " \
             "FROM #{table} " \
-            "WHERE repository_rname = '#{item[1]}' " \
-            "AND repository_organization_oname = '#{item[0]}'"
+            "WHERE rname = '#{item[1]}' " \
+            "AND oname = '#{item[0]}'"
           end
         trends = Pulltrend.fetch(sql_statement)
         trends.each do |col|
-          json << { time: col.time, open: col.open }
+          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col.open }
         end
       when :allpulls
-        table = "allpull_trends"
+        table = "allpulltrends"
         filter =
-          if AllpullTrend.count > 20
-            "WHERE (id % ((SELECT COUNT(*) " \
+          if Allpulltrend.count > 20
+            # we only want roughly 20 data points and the newest data point:
+            "WHERE (rowid % ((SELECT COUNT(*) " \
             "FROM #{table})/20) = 0) " \
-            "OR (id = (SELECT MAX(id) FROM #{table}));"
+            "OR (time = (SELECT MAX(time) FROM #{table}));"
           else
             ""
           end
-        trends = AllbugTrend.fetch("SELECT * FROM #{table} #{filter}")
+        trends = Allbugtrend.fetch("SELECT * FROM #{table} #{filter}")
         trends.each do |col|
-          json << { time: col.time, open: col.open }
+          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col.open }
         end
       when :allbugs
-        table = "allbug_trends"
+        table = "allbugtrends"
         sql_statement = "SELECT * " \
                         "FROM (SELECT * FROM #{table} ORDER BY time) " \
                         "GROUP BY date(time)"
-        trends = AllbugTrend.fetch(sql_statement)
+        trends = Allbugtrend.fetch(sql_statement)
         trends.each do |col|
-          json << { time: col.time, open: col.open }
+          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col.open }
         end
       when :l3
-        table = "l3_trends"
+        table = "l3trends"
         filter =
-          if L3Trend.count > 20
-            "WHERE (id % ((SELECT COUNT(*) FROM #{table})/20) = 0)"
+          if L3trend.count > 20
+            # we only want roughly 20 data points or the newest data point:
+            "WHERE (rowid % ((SELECT COUNT(*) FROM #{table})/20) = 0)" \
+            "OR (time = (SELECT MAX(time) FROM #{table}));"
           else
             ""
           end
-        trends = L3Trend.fetch("SELECT * FROM #{table} #{filter}")
+        trends = L3trend.fetch("SELECT * FROM #{table} #{filter}")
         trends.each do |col|
-          json << { time: col.time, open: col.open }
+          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col.open }
         end
       end
       json.to_json
@@ -139,7 +150,11 @@ class App < Sinatra::Base
     ### github helpers
 
     def get_github_repos
-      Repository.all
+      repos = []
+      Nailed::Config.products.each do |_product, values|
+        repos.concat values["repos"]
+      end
+      repos
     end
   end
 
@@ -214,20 +229,15 @@ class App < Sinatra::Base
     versions.each do |version|
       get "/json/bugzilla/#{version.tr(" ", "_")}/donut/component" do
         top5_components = []
-        sql_statement = "SELECT component AS label, " \
-                        "COUNT(component) AS value " \
-                        "FROM bugreports " \
-                        "WHERE product_name = '#{version}' " \
-                        "AND is_open = true " \
-                        "GROUP BY component " \
-                        "ORDER BY COUNT(component) " \
-                        "DESC LIMIT 5"
-        components = Repository.fetch(sql_statement).all
-        components.each do |bar|
-          top5_components << { label: bar[:label], value: bar[:value] }
+        top_components = Bugreport
+          .select(:component, :is_open)
+          .where(is_open: true, product_name: version)
+          .group_and_count(:component)
+          .order(Sequel.desc(:count))
+          .limit(5).all
+        top_components.each do |component|
+          top5_components << { label: component.component, value: component[:count] }
         end
-        component_labels = top5_components.map { |a| a.values[0] }
-        component_values = top5_components.map { |a| a.values[1] }
         top5_components.to_json
       end
     end unless versions.nil?
@@ -293,8 +303,8 @@ class App < Sinatra::Base
   #
   # trends
   #
-  github_repos = Pullrequest.reverse(:created_at).all.map do |row|
-    [row.repository_organization_oname, row.repository_rname]
+  github_repos = Pullrequest.order(Sequel.desc(:created_at)).all.map do |row|
+    [row.oname, row.rname]
   end.uniq
 
   github_repos.each do |repo|
@@ -314,10 +324,10 @@ class App < Sinatra::Base
   get "/json/github/donut/allpulls" do
     pulltop = []
     open_pulls = Pullrequest.where(state: "open")
-    grouped_pulls = open_pulls.group_and_count(:repository_rname,
-                                               :repository_organization_oname).all
+    grouped_pulls = open_pulls.group_and_count(:rname,
+                                               :oname).all
     grouped_pulls.each do |pull|
-      pulltop << { label: "#{pull.repository_organization_oname}/#{pull.repository_rname}",
+      pulltop << { label: "#{pull.oname}/#{pull.rname}",
                    value: pull[:count] }
     end
     pulltop.to_json
@@ -333,16 +343,16 @@ class App < Sinatra::Base
   end
 
   # all open pull requests for repo
-  github_repos = Pullrequest.where(state: "open").reverse(:created_at).map do |row|
-    [row.repository_organization_oname, row.repository_rname]
+  github_repos = Pullrequest.where(state: "open").order(Sequel.desc(:created_at)).map do |row|
+    [row.oname, row.rname]
   end.uniq
 
   github_repos.each do |repo|
     get "/json/github/#{repo[0]}/#{repo[1]}/open" do
       Pullrequest.where(
-        state:                         "open",
-        repository_rname:              repo[1],
-        repository_organization_oname: repo[0]).naked.all.to_json
+        state: "open",
+        rname: repo[1],
+        oname: repo[0]).naked.all.to_json
     end
   end
 
@@ -371,8 +381,8 @@ class App < Sinatra::Base
     end unless versions.nil?
   end
 
-  github_repos = Pullrequest.reverse(:created_at).all.map do |row|
-    [row.repository_organization_oname, row.repository_rname]
+  github_repos = Pullrequest.order(Sequel.desc(:created_at)).all.map do |row|
+    [row.oname, row.rname]
   end.uniq
 
   github_repos.each do |repo|

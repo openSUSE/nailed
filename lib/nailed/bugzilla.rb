@@ -1,3 +1,5 @@
+require_relative "../../db/model"
+
 module Nailed
   class Bugzilla
     def initialize
@@ -42,7 +44,7 @@ module Nailed
       end
     end
 
-    def write_bug_trends
+    def write_bugtrends
       Nailed::Config.products.each do |_product, values|
         values["versions"].each do |version|
           Nailed.logger.info("#{__method__}: Writing bug trends for #{version}")
@@ -65,7 +67,7 @@ module Nailed
       end
     end
 
-    def write_allbug_trends
+    def write_allbugtrends
       Nailed.logger.info("#{__method__}: Aggregating all bug trends for all products")
       open = Bugreport.where(is_open: true).count
 
@@ -73,7 +75,7 @@ module Nailed
                      open: open }
 
       begin
-        DB[:allbug_trends].insert(attributes)
+        DB[:allbugtrends].insert(attributes)
       rescue Exception => e
         Nailed.logger.error("Could not write allbug trend:\n#{e}")
       end
@@ -81,7 +83,7 @@ module Nailed
       Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
 
-    def write_l3_trends
+    def write_l3trends
       open = 0
       Nailed::Config.products.each do |_product, values|
         values["versions"].each do |version|
@@ -93,7 +95,7 @@ module Nailed
                      open: open }
 
       begin
-        DB[:l3_trends].insert(attributes)
+        DB[:l3trends].insert(attributes)
       rescue Exception => e
         Nailed.logger.error("Could not write l3 trend:\n#{e}")
       end

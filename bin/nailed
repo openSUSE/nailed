@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
-require "trollop"
-require File.join(File.expand_path("..", File.dirname(__FILE__)), "lib", "nailed")
-require File.join(File.expand_path("..", File.dirname(__FILE__)), "db", "database")
+require 'trollop'
+require_relative "../lib/nailed"
 
 opts = Trollop.options do
+  opt :new, "Create new database", short: "n"
   opt :migrate, "Migrate/Upgrade database", short: "m"
   opt :bugzilla, "Refresh bugzilla database records", short: "b"
   opt :github, "Refresh github database records", short: "g"
@@ -33,41 +33,38 @@ end
 
 opts.each_pair do |key, val|
   case key
+  when :new
+    if val
+      require_relative "../db/migrate/create_new_db.rb"
+      newDB
+      Nailed.logger.info("Created new database. DB_ID: #{$CURRENT_DB_ID}")
+    end
   when :migrate
     if val
-      Product.auto_upgrade!
-      Bugreport.auto_upgrade!
-      Bugtrend.auto_upgrade!
-      AllbugTrend.auto_upgrade!
-      L3Trend.auto_upgrade!
-      Organization.auto_upgrade!
-      Repository.auto_upgrade!
-      Pullrequest.auto_upgrade!
-      Pulltrend.auto_upgrade!
-      AllpullTrend.auto_upgrade!
-      github_client = Nailed::Github.new
-      Nailed.fill_db_after_migration(github_client.client)
-      Nailed.logger.info("Database migrated")
-      puts "Database migrated"
-      exit 0
+      require_relative "../db/migrate/migrate.rb"
+      migrateDB
+      Nailed.logger.info("Database tables are up-to-date")
     end
   when :bugzilla
     if val
+      require_relative "../lib/nailed/bugzilla"
       bugzilla_client = Nailed::Bugzilla.new
       bugzilla_client.get_bugs
-      bugzilla_client.write_bug_trends
-      bugzilla_client.write_allbug_trends
-      bugzilla_client.write_l3_trends
+      bugzilla_client.write_bugtrends
+      bugzilla_client.write_allbugtrends
+      bugzilla_client.write_l3trends
     end
   when :github
     if val
+      require_relative "../lib/nailed/github"
       github_client = Nailed::Github.new
       github_client.get_pull_requests
-      github_client.write_allpull_trends
+      github_client.write_allpulltrends
     end
   when :list
     if val
       begin
+        require_relative "../lib/nailed/github"
         github_client = Nailed::Github.new
         Nailed.list_org_repos(github_client.client, val)
       rescue
