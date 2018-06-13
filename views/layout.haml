@@ -29,7 +29,7 @@
               %ul.dropdown-menu{:role => 'menu'}
                 - @github_repos.each do |repo|
                   %li
-                    %a{:href => "/github/#{@orgs[0]}/#{repo}"} #{repo}
+                    %a{:href => "/github/#{repo.organization.name}/#{repo.name}"} #{repo.name}
             %li
               %a.dropdown-toggle{:role => 'button', :href => '/help'}
                 Help

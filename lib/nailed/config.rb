@@ -1,32 +1,60 @@
-#
-# Nailed::Config
-#
+require 'yaml'
+
+require_relative '../nailed'
 
 module Nailed
-  #
-  # Config
-  #
   class Config
-    # load config.yml once
-    def self.content
-      @@conf ||= File.join(TOPLEVEL, "config", "config.yml")
+    def self.parse_config(path_to_config = nil)
+      path_to_config ||= File.join("config", "config.yml")
       begin
-        @@yaml ||= YAML.load_file(@@conf)
+        @@content = YAML.load_file(path_to_config) || nil
       rescue Exception => e
-        # 'log' to stderr since logger might not be initialized yet
-        STDERR.puts "Can't load '#{@@conf}': #{e}"
+        STDERR.puts("Can't load '#{path_to_config}': #{e}")
+        exit 1
       end
-      @@yaml
+
+      self.is_valid?
+
+      # init class variables:
+      @@organizations = []
+      @@content['organizations'].each do |org|
+        org_obj = Organization.new(org['name'])
+        org['repositories'].each do |repo|
+          org_obj.repositories.add(repo)
+        end
+        @@organizations.push(org_obj)
+      end
+
+      @@all_repositories = []
+      @@organizations.each do |org|
+        @@all_repositories.concat(org.repositories.to_a)
+      end
     end
 
-    # access config section by name
-    def self.[](name)
-      content[name]
+    def self.is_valid?
+      if @@content.nil? || @@content.empty?
+        abort("Config empty or corrupted")
+      elsif @@content['products'].nil? || @@content['products'].empty?
+        abort("Config incomplete: No products found")
+      end
+      true
     end
 
-    # access products section, abort if empty
+    # attr_accessor:
     def self.products
-      content["products"] || abort("No products defined in config.yml")
+      @@content['products']
+    end
+
+    def self.organizations
+      @@organizations
+    end
+
+    def self.all_repositories
+      @@all_repositories
+    end
+
+    def self.content
+      @@content
     end
   end
 end

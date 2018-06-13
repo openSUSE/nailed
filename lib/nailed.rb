@@ -1,8 +1,5 @@
-require "yaml"
-require "octokit"
-require "bicho"
-
-TOPLEVEL = File.expand_path("..", File.dirname(__FILE__))
+require 'set'
+require 'yaml'
 
 require_relative "nailed/config"
 require_relative "nailed/logger"
@@ -16,7 +13,66 @@ module Nailed
   end
 
   def get_colors
-    conf = File.join(TOPLEVEL, "config", "colors.yml")
-    YAML.load_file(conf)
+    path_to_colors = File.join("config", "colors.yml")
+    @@colors ||= YAML.load_file(path_to_colors)
+  end
+
+  class Repository
+    attr_accessor :name
+    attr_accessor :organization
+
+    def initialize(name, organization)
+      @name = name
+      @organization = organization
+      @organization.repositories.add(self)
+    end
+
+    def ==(other)
+      if !(other.is_a? Repository)
+        super
+      else
+        (@name == other.name && @organization == other.organization)
+      end
+    end
+  end
+
+  class Organization
+    attr_accessor :name
+    attr_accessor :repositories
+
+    def initialize(name, repos = [])
+      @name = name
+      @repositories = Repositories.new(self)
+      repos.each do |repo|
+        @repositories.add(repo)
+      end
+    end
+
+    def ==(other)
+      if !(other.is_a? Organization)
+        super
+      else
+        (@name == other.name)
+      end
+    end
+  end
+
+  class Repositories < Set
+    attr_accessor :organization
+    def initialize(organization)
+      @organization = organization
+      super()
+    end
+
+    def add(repo)
+      if repo.is_a? String
+        Repository.new(repo, @organization)
+      elsif repo.is_a? Repository
+        repo.organization = @organization
+        super(repo)
+      else
+        Nailed.logger.error("Can't handle repository: #{repo}")
+      end
+    end
   end
 end

@@ -1,4 +1,9 @@
+require 'octokit'
+
+require_relative './config'
+require_relative '../nailed'
 require_relative '../../db/model'
+
 #
 # Nailed::Github
 #
@@ -16,71 +21,52 @@ module Nailed
     repos.each { |r| puts "- #{r}" }
   end
 
-  def get_github_repos_from_yaml
-    repos = []
-    Config.products.each do |_product, values|
-      values["repos"].each do |repo|
-        repos << repo
-      end unless values["repos"].nil?
-    end
-    repos
-  end
-
   class Github
     attr_reader :client
 
-    def self.orgs
-      @@orgs ||= []
-      if @@orgs.empty?
-        Config.products.each do |_product, values|
-          @@orgs << values["organization"]
-        end
-      end
-      @@orgs
-    end
-
     def initialize
+      Nailed::Config.parse_config
       Octokit.auto_paginate = true
-      @client = Octokit::Client.new(netrc: Config["netrc"] || false)
+      netrc = Nailed::Config.content["netrc"] || false
+      @client = Octokit::Client.new(netrc: netrc)
     end
 
     def get_pull_requests(state: 'all')
       Nailed.logger.info("Github: #{__method__}")
-      Nailed::Config.products.each do |_product, values|
-        organization = values["organization"]
-        repos = values["repos"]
-        remote_repos = @client.org_repos(organization).map(&:name)
-        repos.each do |repo|
-          if remote_repos.include?(repo)
-            Nailed.logger.info("#{__method__}: Getting #{state} pullrequests for #{organization}/#{repo}")
-            pulls = @client.pull_requests("#{organization}/#{repo}", :state => state)
-            pulls.each do |pr|
-              attributes = { pr_number: pr.number,
-                             title: pr.title,
-                             state: pr.state,
-                             url: pr.html_url,
-                             created_at: pr.created_at,
-                             updated_at: pr.updated_at,
-                             closed_at: pr.closed_at,
-                             merged_at: pr.merged_at,
-                             rname: repo,
-                             oname: organization }
+      Nailed::Config.all_repositories.each do |repo|
+        full_repo_name = "#{repo.organization.name}/#{repo.name}"
+        Nailed.logger.info("#{__method__}: Getting #{state} pullrequests " \
+                           "for #{full_repo_name}")
+        begin
+          pulls = @client.pull_requests("#{full_repo_name}", :state => state)
+        rescue Exception => e
+          Nailed.logger.error("Could not get Pulls for #{full_repo_name}: #{e}")
+          next
+        end
+        pulls.each do |pr|
+          attributes = { pr_number: pr.number,
+                         title: pr.title,
+                         state: pr.state,
+                         url: pr.html_url,
+                         created_at: pr.created_at,
+                         updated_at: pr.updated_at,
+                         closed_at: pr.closed_at,
+                         merged_at: pr.merged_at,
+                         rname: repo.name,
+                         oname: repo.organization.name}
 
-              begin
-                DB[:pullrequests].insert_conflict(:replace).insert(attributes)
-              rescue Exception => e
-                Nailed.logger.error("Could not write pullrequest:\n#{e}")
-              end
-
-              Nailed.logger.debug(
-                "#{__method__}: Created/Updated pullrequest #{pr.repo} " \
-                "##{pr.number} with #{attributes.inspect}")
-            end unless pulls.empty?
-            write_pulltrends(organization, repo)
-          else
-            Nailed.logger.error("#{__method__}: #{repo} does not exist.")
+          begin
+            DB[:pullrequests].insert_conflict(:replace).insert(attributes)
+          rescue Exception => e
+            Nailed.logger.error("Could not write pullrequest:\n#{e}")
+            next
           end
-        end unless repos.nil?
+
+          Nailed.logger.debug(
+            "#{__method__}: Created/Updated pullrequest #{pr.repo} " \
+            "##{pr.number} with #{attributes.inspect}")
+        end unless pulls.empty?
+        write_pulltrends(repo.organization.name, repo.name)
       end
     end
 

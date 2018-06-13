@@ -1,12 +1,11 @@
-#
-# Nailed::Logger
-#
 require "logger"
+
+require_relative './config'
 
 module Nailed
   class Logger < ::Logger
     def initialize
-      logname = Config["logfile"]
+      logname = Nailed::Config.content["logfile"]
       logfile = nil
       case logname
       when "stderr", "STDERR", "", nil
@@ -33,7 +32,7 @@ module Nailed
         end
       end
       super logfile
-      self.level = case Config["debug"]
+      self.level = case Nailed::Config.content["debug"]
                    when "debug" then Logger::DEBUG
                    when "info" then Logger::INFO
                    when "warn" then Logger::WARN

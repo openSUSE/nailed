@@ -6,23 +6,23 @@ require "haml"
 require "json"
 require "time"
 require_relative "lib/nailed"
-require_relative "lib/nailed/github"
-require_relative "lib/nailed/bugzilla"
 require_relative "db/model"
 
 class App < Sinatra::Base
 
+  Nailed::Config.parse_config()
+
   enable :logging
   set :bind, "0.0.0.0"
-  set :port, Nailed::Config["port"] || 4567
-  theme = Nailed::Config["theme"] || "default"
+  set :port, Nailed::Config.content["port"] || 4567
+  theme = Nailed::Config.content["theme"] || "default"
 
   before do
-    @title = Nailed::Config["title"] || "Dashboard"
-    @products = Nailed::Config.products.map { |_p, v| v["versions"] }.flatten.compact
+    @title = Nailed::Config.content["title"] || "Dashboard"
+    @products = Nailed::Config.products
     @product_query = @products.join("&product=")
-    @orgs = Nailed::Github.orgs
-    @org_query = Nailed::Github.orgs.map { |o| o.dup.prepend("user%3A") }.join("+")
+    @orgs = Nailed::Config.organizations
+    @org_query = @orgs.map { |o| o.name.dup.prepend("user%3A") }.join("+")
     @colors = Nailed.get_colors
   end
 
@@ -150,11 +150,7 @@ class App < Sinatra::Base
     ### github helpers
 
     def get_github_repos
-      repos = []
-      Nailed::Config.products.each do |_product, values|
-        repos.concat values["repos"]
-      end
-      repos
+      Nailed::Config.all_repositories
     end
   end
 
@@ -165,52 +161,47 @@ class App < Sinatra::Base
   #
   # bar
   #
-  Nailed::Config.products.each do |_product, values|
-    versions = values["versions"]
-    versions.each do |version|
-      get "/json/bugzilla/#{version.tr(" ", "_")}/bar/priority" do
-        bugprio = []
-        { "P0 - Crit Sit" => "p0",
-          "P1 - Urgent"   => "p1",
-          "P2 - High"     => "p2",
-          "P3 - Medium"   => "p3",
-          "P4 - Low"      => "p4",
-          "P5 - None"     => "p5" }.each_pair do |key, val|
-          bugprio << { "bugprio" => key, val => Bugreport.where(product_name: version, priority: key, is_open: true).count }
-        end
-        bugprio.to_json
+  Nailed::Config.products.each do |product|
+    get "/json/bugzilla/#{product.tr(" ", "_")}/bar/priority" do
+      bugprio = []
+      { "P0 - Crit Sit" => "p0",
+        "P1 - Urgent"   => "p1",
+        "P2 - High"     => "p2",
+        "P3 - Medium"   => "p3",
+        "P4 - Low"      => "p4",
+        "P5 - None"     => "p5" }.each_pair do |key, val|
+        bugprio << { "bugprio" => key, val => Bugreport.where(product_name: product, priority: key, is_open: true).count }
       end
-    end unless versions.nil?
+      bugprio.to_json
+    end
   end
   #
   # status
   #
-  Nailed::Config.products.each do |_product, values|
-    versions = values["versions"]
-    versions.each do |version|
-      get "/json/bugzilla/#{version.tr(" ", "_")}/bar/status" do
-        bugstatus = []
-        { "NEW"         => 's0',
-          "CONFIRMED"   => 's1',
-          "IN_PROGRESS" => 's2',
-          "REOPENED"    => 's3' }.each_pair do |key, val|
-          bugstatus << { "bugstatus" => key, val => Bugreport.where(product_name: version, status: key, is_open: true).count }
-        end
-        bugstatus.to_json
+  Nailed::Config.products.each do |product|
+    get "/json/bugzilla/#{product.tr(" ", "_")}/bar/status" do
+      bugstatus = []
+      { "NEW"         => 's0',
+        "CONFIRMED"   => 's1',
+        "IN_PROGRESS" => 's2',
+        "REOPENED"    => 's3' }.each_pair do |key, val|
+        bugstatus << { "bugstatus" => key,
+                       val => Bugreport.where(
+                         product_name: product,
+                         status: key,
+                         is_open: true).count }
       end
-    end unless versions.nil?
+      bugstatus.to_json
+    end
   end
 
   #
   # trends
   #
-  Nailed::Config.products.each do |_product, values|
-    versions = values["versions"]
-    versions.each do |version|
-      get "/json/bugzilla/#{version.tr(" ", "_")}/trend/open" do
-        get_trends(:bug, version)
-      end
-    end unless versions.nil?
+  Nailed::Config.products.each do |product|
+    get "/json/bugzilla/#{product.tr(" ", "_")}/trend/open" do
+      get_trends(:bug, product)
+    end
   end
 
   get "/json/bugzilla/trend/allopenl3" do
@@ -224,34 +215,28 @@ class App < Sinatra::Base
   #
   # donut
   #
-  Nailed::Config.products.each do |_product, values|
-    versions = values["versions"]
-    versions.each do |version|
-      get "/json/bugzilla/#{version.tr(" ", "_")}/donut/component" do
-        top5_components = []
-        top_components = Bugreport
-          .select(:component, :is_open)
-          .where(is_open: true, product_name: version)
-          .group_and_count(:component)
-          .order(Sequel.desc(:count))
-          .limit(5).all
-        top_components.each do |component|
-          top5_components << { label: component.component, value: component[:count] }
-        end
-        top5_components.to_json
+  Nailed::Config.products.each do |product|
+    get "/json/bugzilla/#{product.tr(" ", "_")}/donut/component" do
+      top5_components = []
+      top_components = Bugreport
+                         .select(:component, :is_open)
+                         .where(is_open: true, product_name: product)
+                         .group_and_count(:component)
+                         .order(Sequel.desc(:count))
+                         .limit(5).all
+      top_components.each do |component|
+        top5_components << { label: component.component, value: component[:count] }
       end
-    end unless versions.nil?
+      top5_components.to_json
+    end
   end
 
   get "/json/bugzilla/donut/allbugs" do
     bugtop = []
-    Nailed::Config.products.each do |_product, values|
-      versions = values["versions"]
-      versions.each do |version|
-        open = Bugreport.where(product_name: version, is_open: true).count
-        bugtop << { label: version, value: open } unless open == 0
-      end unless versions.nil?
-    end
+      Nailed::Config.products.each do |product|
+        open = Bugreport.where(product_name: product, is_open: true).count
+        bugtop << { label: product, value: open } unless open == 0
+      end
     bugtop.to_json
   end
 
@@ -275,26 +260,27 @@ class App < Sinatra::Base
   end
 
   # product -> openwithoutl3
-  Nailed::Config.products.each do |_product, values|
-    versions = values["versions"]
-    versions.each do |version|
-      get "/json/bugzilla/#{version.tr(" ", "_")}/openwithoutl3" do
-        open_bugs = Bugreport.where(is_open: true, product_name: version).naked.all
-        open_l3_bugs = Bugreport.where(is_open: true, product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all
-        (open_bugs - open_l3_bugs).to_json
-      end
-    end unless versions.nil?
+  Nailed::Config.products.each do |product|
+    get "/json/bugzilla/#{product.tr(" ", "_")}/openwithoutl3" do
+      open_bugs = Bugreport.where(is_open: true,
+                                  product_name: product).naked.all
+      open_l3_bugs = Bugreport
+                       .where(is_open: true,
+                              product_name: product)
+                       .where(Sequel.like(:whiteboard, "%openL3%")).naked.all
+      (open_bugs - open_l3_bugs).to_json
+    end
   end
 
   # product -> openl3
-  Nailed::Config.products.each do |_product, values|
-    versions = values["versions"]
-    versions.each do |version|
-      get "/json/bugzilla/#{version.tr(" ", "_")}/openl3" do
-        Bugreport.where(is_open: true, product_name: version).where(Sequel.like(:whiteboard, "%openL3%")).naked.all.to_json
+    Nailed::Config.products.each do |product|
+      get "/json/bugzilla/#{product.tr(" ", "_")}/openl3" do
+        Bugreport
+          .where(is_open: true,
+                 product_name: product)
+          .where(Sequel.like(:whiteboard, "%openL3%")).naked.all.to_json
       end
-    end unless versions.nil?
-  end
+    end
 
   #
   # GITHUB Routes
@@ -366,20 +352,16 @@ class App < Sinatra::Base
     haml :index
   end
 
-  Nailed::Config.products.each do |_product, values|
-    versions = values["versions"]
-    versions.each do |version|
-      get "/#{version.tr(" ", "_")}/bugzilla" do
+    Nailed::Config.products.each do |product|
+      get "/#{product.tr(" ", "_")}/bugzilla" do
         @github_repos = get_github_repos
 
-        @product = version
-        @product_ = version.tr(" ", "_")
-        @top5 = values["qe"]
+        @product = product
+        @product_ = product.tr(" ", "_")
 
         haml :bugzilla
       end
-    end unless versions.nil?
-  end
+    end
 
   github_repos = Pullrequest.order(Sequel.desc(:created_at)).all.map do |row|
     [row.oname, row.rname]
