@@ -16,6 +16,7 @@ class NailedDB < Sequel::Migration
       string :assigned_to
       DateTime :creation_time
       DateTime :last_change_time
+      DateTime :fetched_at
       String :url
       text :requestee
     end

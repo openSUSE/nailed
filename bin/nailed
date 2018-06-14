@@ -38,6 +38,7 @@ opts.each_pair do |key, val|
       require_relative "../lib/nailed/bugzilla"
       bugzilla_client = Nailed::Bugzilla.new
       bugzilla_client.get_bugs
+      bugzilla_client.remove_stale_bugs
       bugzilla_client.write_bugtrends
       bugzilla_client.write_allbugtrends
       bugzilla_client.write_l3trends

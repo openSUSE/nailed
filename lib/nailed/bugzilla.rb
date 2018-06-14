@@ -28,6 +28,7 @@ module Nailed
               assigned_to:      bug.assigned_to,
               creation_time:    "#{bug.creation_time.to_date}T#{bug.creation_time.hour}:#{bug.creation_time.min}:#{bug.creation_time.sec}+00:00",
               last_change_time: "#{bug.last_change_time.to_date}T#{bug.last_change_time.hour}:#{bug.last_change_time.min}:#{bug.last_change_time.sec}+00:00",
+              fetched_at:       Time.now,
               url:              bug.url.gsub(/novell.com\//, "suse.com/show_bug.cgi?id=")
             }
 
@@ -102,6 +103,19 @@ module Nailed
       end
 
       Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
+    end
+
+    def remove_stale_bugs
+      Bugreport.select(:bug_id, :fetched_at).each do |bug|
+        if (Time.now - bug.fetched_at > 60 * 60 * 24)
+          begin
+            bug.destroy
+            Nailed.logger.info("#{__method__}: bug_id: ##{bug.bug_id}")
+          rescue Exception => e
+            Nailed.logger.error("#{__Method__}: Can't remove bug ##{bug.bug_id}")
+          end
+        end
+      end
     end
   end
 end
