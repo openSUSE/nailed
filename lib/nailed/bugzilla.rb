@@ -14,6 +14,7 @@ module Nailed
       Nailed::Config.products.each do |product|
         Nailed.logger.info("#{__method__}: Fetching bugs for #{product}")
         begin
+          retries ||= 0
           Bicho::Bug.where(product: product).each do |bug|
             attributes = {
               bug_id:           bug.id,
@@ -42,6 +43,7 @@ module Nailed
             Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
           end
         rescue Exception => e
+          retry if (retries += 1) < 2
           Nailed.logger.error("Could not fetch Bugs for #{product}:\n#{e}")
         end
       end

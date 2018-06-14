@@ -38,8 +38,10 @@ module Nailed
         Nailed.logger.info("#{__method__}: Getting #{state} pullrequests " \
                            "for #{full_repo_name}")
         begin
+          retries ||= 0
           pulls = @client.pull_requests("#{full_repo_name}", :state => state)
         rescue Exception => e
+          retry if (retries += 1) < 2
           Nailed.logger.error("Could not get Pulls for #{full_repo_name}: #{e}")
           next
         end
