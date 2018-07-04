@@ -1,16 +1,9 @@
-require "yaml"
-require "octokit"
-require "bicho"
-
-TOPLEVEL = File.expand_path("..", File.dirname(__FILE__))
+require 'set'
+require 'yaml'
 
 require_relative "nailed/config"
 require_relative "nailed/logger"
-require_relative "nailed/bugzilla"
-require_relative "nailed/github"
 require_relative "nailed/version"
-
-require File.join(TOPLEVEL, "db", "database")
 
 module Nailed
   extend self
@@ -20,38 +13,66 @@ module Nailed
   end
 
   def get_colors
-    conf = File.join(TOPLEVEL, "config", "colors.yml")
-    YAML.load_file(conf)
+    path_to_colors = File.join("config", "colors.yml")
+    @@colors ||= YAML.load_file(path_to_colors)
   end
 
-  #
-  # database helpers
-  #
-  def save_state(db_handler)
-    unless db_handler.save
-      puts("ERROR: #{__method__}: set 'debug: error' in config.yml and see logfile")
-      logger.error("#{__method__}: #{db_handler.errors.inspect}")
+  class Repository
+    attr_accessor :name
+    attr_accessor :organization
+
+    def initialize(name, organization)
+      @name = name
+      @organization = organization
+      @organization.repositories.add(self)
     end
-  end
 
-  #
-  # needs to be splitted into Github and Bugzilla parts
-  #
-  def fill_db_after_migration(github_client)
-    Config.products.each do |_product, values|
-      organization = values["organization"]
-      next if organization.nil?
-      db_handler = Organization.first_or_create(oname: organization)
-      save_state(db_handler)
-      org_repos_github = get_org_repos(github_client, organization)
-      org_repos_yml = values["repos"]
-      org_repos_yml.each do |org_repo|
-        if org_repos_github.include?(org_repo)
-          db_handler = Repository.first_or_create(rname: org_repo, organization_oname: organization)
-          save_state(db_handler)
-        end
+    def ==(other)
+      if !(other.is_a? Repository)
+        super
+      else
+        (@name == other.name && @organization == other.organization)
       end
     end
   end
 
+  class Organization
+    attr_accessor :name
+    attr_accessor :repositories
+
+    def initialize(name, repos = [])
+      @name = name
+      @repositories = Repositories.new(self)
+      repos.each do |repo|
+        @repositories.add(repo)
+      end
+    end
+
+    def ==(other)
+      if !(other.is_a? Organization)
+        super
+      else
+        (@name == other.name)
+      end
+    end
+  end
+
+  class Repositories < Set
+    attr_accessor :organization
+    def initialize(organization)
+      @organization = organization
+      super()
+    end
+
+    def add(repo)
+      if repo.is_a? String
+        Repository.new(repo, @organization)
+      elsif repo.is_a? Repository
+        repo.organization = @organization
+        super(repo)
+      else
+        Nailed.logger.error("Can't handle repository: #{repo}")
+      end
+    end
+  end
 end

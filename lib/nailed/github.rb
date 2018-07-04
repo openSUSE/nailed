@@ -1,3 +1,9 @@
+require 'octokit'
+
+require_relative './config'
+require_relative '../nailed'
+require_relative '../../db/model'
+
 #
 # Nailed::Github
 #
@@ -15,132 +21,89 @@ module Nailed
     repos.each { |r| puts "- #{r}" }
   end
 
-  def get_github_repos_from_yaml
-    repos = []
-    Config.products.each do |_product, values|
-      values["repos"].each do |repo|
-        repos << repo
-      end unless values["repos"].nil?
-    end
-    repos
-  end
-
   class Github
     attr_reader :client
 
-    def self.orgs
-      @@orgs ||= []
-      if @@orgs.empty?
-        Config.products.each do |_product, values|
-          @@orgs << values["organization"]
-        end
-      end
-      @@orgs
-    end
-
     def initialize
+      Nailed::Config.parse_config
       Octokit.auto_paginate = true
-      @client = Octokit::Client.new(netrc: Config["netrc"] || false)
+      netrc = Nailed::Config.content["netrc"] || false
+      @client = Octokit::Client.new(netrc: netrc)
     end
 
     def get_pull_requests(state: 'all')
       Nailed.logger.info("Github: #{__method__}")
-      Nailed::Config.products.each do |_product, values|
-        organization = values["organization"]
-        repos = values["repos"]
-        remote_repos = @client.org_repos(organization).map(&:name)
-        repos.each do |repo|
-          if remote_repos.include?(repo)
-            Nailed.logger.info("#{__method__}: Getting #{state} pullrequests for #{organization}/#{repo}")
-            pulls = @client.pull_requests("#{organization}/#{repo}", :state => state)
-            pulls.each do |pr|
-              attributes = { pr_number:                     pr.number,
-                             title:                         pr.title,
-                             state:                         pr.state,
-                             url:                           pr.html_url,
-                             created_at:                    pr.created_at,
-                             updated_at:                    pr.updated_at,
-                             closed_at:                     pr.closed_at,
-                             merged_at:                     pr.merged_at,
-                             repository_rname:              repo,
-                             repository_organization_oname: organization }
-
-              # if pr exists dont create a new record
-              pull_to_update = Pullrequest.all(pr_number: pr.number, repository_rname: repo)
-              if pull_to_update.empty?
-                db_handler = Pullrequest.first_or_create(attributes)
-                Nailed.logger.debug("#{__method__}: Created new pullrequest #{pr.repo} ##{pr.number} with #{attributes.inspect}")
-              else
-                # update saves the state, so we dont need a db_handler
-                # TODO check return code for true if saved correctly
-                pull_to_update[0].update(attributes)
-                Nailed.logger.debug("#{__method__}: Updated #{pr.repo} ##{pr.number} with #{attributes.inspect}")
-              end
-
-              Nailed.save_state(db_handler) unless defined? db_handler
-              Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
-            end unless pulls.empty?
-            write_pull_trends(organization, repo)
-          else
-            Nailed.logger.error("#{__method__}: #{repo} does not exist anymore.")
-          end
-        end unless repos.nil?
-      end
-    end
-
-    def update_pull_states
-      # only update open PRs
-      pulls = Pullrequest.all(state: "open")
-      Nailed.logger.info("#{__method__}: I have #{pulls.count} Prs to update")
-      pulls.each do |db_pull|
-        number = db_pull.pr_number
-        repo = db_pull.repository_rname
-        org = db_pull.repository_organization_oname
+      Nailed::Config.all_repositories.each do |repo|
+        full_repo_name = "#{repo.organization.name}/#{repo.name}"
+        Nailed.logger.info("#{__method__}: Getting #{state} pullrequests " \
+                           "for #{full_repo_name}")
         begin
-          github_pull = @client.pull_request("#{org}/#{repo}", number)
-        rescue Octokit::NotFound
-          # TODO(itxaka): Set it as deleted instead of really deleting it from our db?
-          Nailed.logger.error("#{__method__}: Pullrequest #{org}/#{repo}, ##{number} not found. Deleting from database...")
-          db_pull.destroy
+          retries ||= 0
+          pulls = @client.pull_requests("#{full_repo_name}", :state => state)
+        rescue Exception => e
+          retry if (retries += 1) < 2
+          Nailed.logger.error("Could not get Pulls for #{full_repo_name}: #{e}")
           next
         end
-        Nailed.logger.info("#{__method__}: Checking state of pullrequest #{number} from #{org}/#{repo}")
-        if github_pull.state == "closed"
-          # If closed, update its status on the database
-          Nailed.logger.info("#{__method__}: Updating closed pullrequest #{number} from #{org}/#{repo}")
-          db_pull.state = "closed"
-          db_pull.save
-        end
+        pulls.each do |pr|
+          attributes = { pr_number: pr.number,
+                         title: pr.title,
+                         state: pr.state,
+                         url: pr.html_url,
+                         created_at: pr.created_at,
+                         updated_at: pr.updated_at,
+                         closed_at: pr.closed_at,
+                         merged_at: pr.merged_at,
+                         rname: repo.name,
+                         oname: repo.organization.name}
+
+          begin
+            DB[:pullrequests].insert_conflict(:replace).insert(attributes)
+          rescue Exception => e
+            Nailed.logger.error("Could not write pullrequest:\n#{e}")
+            next
+          end
+
+          Nailed.logger.debug(
+            "#{__method__}: Created/Updated pullrequest #{pr.repo} " \
+            "##{pr.number} with #{attributes.inspect}")
+        end unless pulls.empty?
+        write_pulltrends(repo.organization.name, repo.name)
       end
     end
 
-    def write_pull_trends(org, repo)
+    def write_pulltrends(org, repo)
       Nailed.logger.info("#{__method__}: Writing pull trends for #{org}/#{repo}")
-      open = Pullrequest.count(repository_rname: repo, state: "open")
-      closed = Pullrequest.count(repository_rname: repo, state: "closed")
-      attributes = { time:                          Time.new.strftime("%Y-%m-%d %H:%M:%S"),
-                     open:                          open,
-                     closed:                        closed,
-                     repository_organization_oname: org,
-                     repository_rname:              repo }
+      open = Pullrequest.where(rname: repo, state: "open").count
+      closed = Pullrequest.where(rname: repo, state: "closed").count
+      attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
+                     open: open,
+                     closed: closed,
+                     oname: org,
+                     rname: repo }
 
-      db_handler = Pulltrend.first_or_create(attributes)
+      begin
+        DB[:pulltrends].insert(attributes)
+      rescue Exception => e
+        Nailed.logger.error("Could not write pull trend for #{org}/#{repo}:\n#{e}")
+      end
 
-      Nailed.save_state(db_handler)
       Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
 
-    def write_allpull_trends
+    def write_allpulltrends
       Nailed.logger.info("#{__method__}: Writing pull trends for all repos")
-      open = Pullrequest.count(state: "open")
-      closed = Pullrequest.count(state: "closed")
+      open = Pullrequest.where(state: "open").count
+      closed = Pullrequest.where(state: "closed").count
       attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                      open: open,
                      closed: closed}
+      begin
+        DB[:allpulltrends].insert(attributes)
+      rescue Exception => e
+        Nailed.logger.error("Could not write allpull trend:\n#{e}")
+      end
 
-      db_handler = AllpullTrend.first_or_create(attributes)
-
-      Nailed.save_state(db_handler)
       Nailed.logger.debug("#{__method__}: Saved #{attributes.inspect}")
     end
   end

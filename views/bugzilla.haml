@@ -62,13 +62,6 @@
                 %th{:data => {:field => "requestee", :sortable => "true", :class => "requestee"}}
                   needinfo?
 
-!= js :jquery
-!= js :jqueryplugin
-!= js :bootstrap
-!= js :morris
-!= js :bootstrap_table
-!= js :customjs
-
 :javascript
   $(document).ready(function(){
     bugzilla(#{@colors.to_json}, "#{@product_}");

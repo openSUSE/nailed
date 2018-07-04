@@ -26,9 +26,9 @@
   %div.col-md-12
     %ul.nav.nav-tabs
       %li.active
-        %a{"data-toggle" => "tab", href: '#L3'} L3 List
+        %a{"data-toggle" => "tab", href: '#L3'} L3 Bugs
       %li
-        %a{"data-toggle" => "tab", href: '#Bugs'} All Bugs
+        %a{"data-toggle" => "tab", href: '#Bugs'} Non L3 Bugs
       %li
         %a{"data-toggle" => "tab", href: '#PRs'} Pull Requests
       .tab-content
@@ -76,13 +76,6 @@
                   Repository
                 %th{:data => {:field => "created_at", :sortable => "true", :formatter => "timestampReduce"}}
                   Created at
-
-!= js :jquery
-!= js :jqueryplugin
-!= js :bootstrap
-!= js :bootstrap_table
-!= js :morris
-!= js :customjs
 
 :javascript
   $(document).ready(function(){
