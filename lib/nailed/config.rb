@@ -5,7 +5,7 @@ require_relative '../nailed'
 module Nailed
   class Config
     def self.parse_config(path_to_config = nil)
-      path_to_config ||= File.join("config", "config.yml")
+      path_to_config ||= File.join(__dir__, "..", "..", "config", "config.yml")
       begin
         @@content = YAML.load_file(path_to_config) || nil
       rescue Exception => e
