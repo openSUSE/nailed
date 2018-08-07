@@ -53,7 +53,7 @@ class App < Sinatra::Base
       when :bug
         table = "bugtrends"
         sql_statement =
-          if Bugtrend.count(product_name: item) > 20
+          if Bugtrend.count(product_name: item) > 40
             "SELECT (SELECT COUNT(0) " \
             "FROM #{table} t1 " \
             "WHERE t1.rowid <= t2.rowid " \
@@ -63,7 +63,7 @@ class App < Sinatra::Base
             "WHERE product_name = '#{item}' " \
             "AND (tmp_id % ((SELECT COUNT(*) " \
             "FROM #{table} " \
-            "WHERE product_name = '#{item}')/20) = 0) " \
+            "WHERE product_name = '#{item}')/40) = 0) " \
             "ORDER BY time"
           else
             "SELECT time, open, fixed " \
