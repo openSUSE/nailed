@@ -10,7 +10,8 @@ require_relative "db/model"
 
 class App < Sinatra::Base
 
-  Nailed::Config.parse_config()
+  Nailed::Config.parse_config
+  Nailed::Cache.initialize
 
   enable :logging
   set :bind, "0.0.0.0"
@@ -48,6 +49,11 @@ class App < Sinatra::Base
   helpers do
 
     def get_trends(action, item)
+      call = "#{__method__}-#{action}-#{item})".to_sym
+      json = Nailed::Cache.get_cache(call)
+
+      return json unless json.nil?
+
       json = []
       case action
       when :bug
@@ -144,7 +150,11 @@ class App < Sinatra::Base
                     open: col.open }
         end
       end
-      json.to_json
+
+      json = json.to_json
+      Nailed::Cache.set_cache(call, json)
+
+      return json
     end
 
     ### github helpers
