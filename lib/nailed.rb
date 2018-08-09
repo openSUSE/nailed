@@ -1,5 +1,6 @@
 require 'set'
 require 'yaml'
+require 'time'
 
 require_relative "nailed/config"
 require_relative "nailed/logger"
@@ -15,6 +16,32 @@ module Nailed
   def get_colors
     path_to_colors = File.join("config", "colors.yml")
     @@colors ||= YAML.load_file(path_to_colors)
+  end
+
+  class Cache
+    def self.initialize
+      @@cache ||= Hash.new
+      @@threshold ||= Nailed::Config.content["cache-threshold"] || 21600 # 6 hours
+    end
+
+    def self.get_cache(call)
+      last_call_time = @@cache.fetch(call, Hash.new)[:time] || Time.at(0)
+      now = Time.now
+
+      if now - last_call_time > @@threshold
+        return nil
+      else
+        return @@cache[call][:value]
+      end
+    end
+
+    def self.set_cache(call, value)
+      new_cache = Hash.new
+      new_cache[:time] = Time.now
+      new_cache[:value] = value
+
+      @@cache[call] = new_cache
+    end
   end
 
   class Repository
