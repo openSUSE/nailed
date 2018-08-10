@@ -59,7 +59,7 @@ class App < Sinatra::Base
       when :bug
         table = "bugtrends"
         sql_statement =
-          if Bugtrend.count(product_name: item) > 40
+          if Bugtrend.where(product_name: item).count > 40
             "SELECT (SELECT COUNT(0) " \
             "FROM #{table} t1 " \
             "WHERE t1.rowid <= t2.rowid " \
@@ -84,7 +84,7 @@ class App < Sinatra::Base
       when :pull
         table = "pulltrends"
         sql_statement =
-          if (Pulltrend.count(oname: item[0], rname: item[1]) > 20)
+          if (Pulltrend.where(oname: item[0], rname: item[1]).count > 20)
             "SELECT (SELECT COUNT(0) " \
             "FROM #{table} t1 " \
             "WHERE t1.rowid <= t2.rowid AND rname = '#{item[1]}' " \
