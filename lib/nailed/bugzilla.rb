@@ -109,12 +109,12 @@ module Nailed
 
     def remove_stale_bugs
       Bugreport.select(:bug_id, :fetched_at).each do |bug|
-        if (Time.now - bug.fetched_at > 60 * 60 * 24)
+        if (Time.now - bug.fetched_at > 86400) # stale for 1 day
           begin
             bug.destroy
             Nailed.logger.info("#{__method__}: bug_id: ##{bug.bug_id}")
           rescue Exception => e
-            Nailed.logger.error("#{__Method__}: Can't remove bug ##{bug.bug_id}")
+            Nailed.logger.error("#{__Method__}: Can't remove bug ##{bug.bug_id}: #{e}")
           end
         end
       end
