@@ -1,5 +1,8 @@
 SHELL := /bin/bash
-all: migrate fetch server
+all: new migrate fetch server
+
+new:
+	bundle exec bin/nailed --new
 
 migrate:
 	bundle exec bin/nailed --migrate
