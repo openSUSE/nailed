@@ -50,9 +50,9 @@ machine api.github.com
 
 ## Configuration
 
-All configuration is read from [config/config.yml](./config/config.yml)
+All configuration is read from [config/config.yml](https://raw.githubusercontent.com/openSUSE/nailed/master/config/config.yml.example)
 
-* configure your [config/config.yml](./config/config.yml)
+* configure your [config/config.yml](https://raw.githubusercontent.com/openSUSE/nailed/master/config/config.yml.example)
 * to setup the database run
 
 ```
@@ -84,7 +84,7 @@ nailed --github
 
 * start the webserver with `nailed --server`
 
-## Running as a Docker container (OUTDATED!)
+## Running as a Docker container
 
 * Build the image
 
@@ -102,7 +102,7 @@ mkdir -p /tmp/storage/config
 
 Add `~/.netrc` when you want to collect data from a private GitHub repo, `config/colors.yml` `config/config.yml`, and if you are from SUSE `~/.oscrc` into `/tmp/storage/config`.
 
-For trying out Nailed, just use [test/config.yml](./test/config.yml)
+For trying out Nailed, just use [test/config.yml](https://raw.githubusercontent.com/openSUSE/nailed/master/test/config.yml)
 
 That directory will be mounted as the /nailed/data volume in the container.
 
