@@ -7,9 +7,9 @@ e.g. it relies on bugs being tagged as L3. The plan is to make it optional in th
 
 ## How does it look like?
 
-![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/blob/master/pics/nailed_overview.png)
-![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/blob/master/pics/nailed_bugzilla.png)
-![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/blob/master/pics/nailed_github.png)
+![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/raw/master/pics/nailed_overview.png)
+![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/raw/master/pics/nailed_bugzilla.png)
+![alt tag](https://github.com/MaximilianMeister/maximilianmeister.github.io/raw/master/pics/nailed_github.png)
 
 ## Installation using git (recommended)
 You can use nailed directly from a git checkout as well. Make sure to fetch the dependencies and call `nailed` from the `bin` directory.
