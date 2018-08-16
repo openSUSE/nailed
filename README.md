@@ -27,6 +27,7 @@ bundle install
 ```
 $ nailed -h
 Options:
+          --new, -n:   Create new database 
       --migrate, -m:   Migrate/Upgrade database
      --bugzilla, -b:   Refresh bugzilla database records
        --github, -g:   Refresh github database records

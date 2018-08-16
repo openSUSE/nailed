@@ -22,6 +22,7 @@ You can use nailed directly from a git checkout as well. Make sure to fetch the 
 
    $ nailed -h
    Options:
+             --new, -n:   Create new database
          --migrate, -m:   Set database to pristine state
          --upgrade, -u:   Upgrade database
         --bugzilla, -b:   Refresh bugzilla database records
