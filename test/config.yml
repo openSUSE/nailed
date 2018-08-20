@@ -5,7 +5,7 @@ title: Nailed Example
 bugzilla: https://bugzilla.mozilla.org
 products:
   - Calendar
-organization: 
+organizations: 
   - name: mozilla
     repositories:
       - pdf.js
