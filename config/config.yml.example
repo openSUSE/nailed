@@ -11,7 +11,7 @@ bugzilla: # Url of your Bugzilla instance
 products: # list of exact product names as they appear on bugzilla
   - example_product_1
   - example_product_2
-organization: # here you add the github repos you care about
+organizations: # here you add the github repos you care about
   - name: opensuse
     repositories:
       - nailed # e.g. for github.com/opensuse/nailed
