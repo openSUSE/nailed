@@ -10,7 +10,7 @@ module Nailed
 
         # init class variables:
         @@organizations = []
-        (load_content['organization'] || []).each do |org|
+        (load_content['organizations'] || []).each do |org|
           org_obj = Organization.new(org['name'])
           org['repositories'].each do |repo|
             org_obj.repositories.add(repo)
