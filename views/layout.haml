@@ -21,7 +21,7 @@
               %ul.dropdown-menu{:role => 'menu'}
                 - @products.each do |product|
                   %li
-                    %a{:href => "/#{product.gsub(/ /,'_')}/bugzilla"} #{product}
+                    %a{:href => "/#{product.gsub(/ /,'_')}/bugzilla"} #{get_label(product)}
             %li.dropdown
               %a.dropdown-toggle{:role => 'button', :data => {:toggle => 'dropdown'}, :href => '/'}
                 Github

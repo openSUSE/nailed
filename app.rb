@@ -157,6 +157,15 @@ class App < Sinatra::Base
       return json
     end
 
+    # Receives a product and checks for given components. 
+    # If there is none the label becomes the name of the product.
+    # If there is one '/$components' is added to the products name.
+    # If there is more than one component '/subset' is added.
+    def get_label(product)
+      components = Nailed::Config.components[product]
+      label = components.nil? ? product : product + "/#{components.length > 1 ? 'subset' : components.fetch(0)}"
+    end
+
     ### github helpers
 
     def get_github_repos
@@ -245,7 +254,7 @@ class App < Sinatra::Base
     bugtop = []
       Nailed::Config.products.each do |product|
         open = Bugreport.where(product_name: product, is_open: true).count
-        bugtop << { label: product, value: open } unless open == 0
+        bugtop << { label: get_label(product), value: open } unless open == 0
       end
     bugtop.to_json
   end
@@ -366,7 +375,7 @@ class App < Sinatra::Base
       get "/#{product.tr(" ", "_")}/bugzilla" do
         @github_repos = get_github_repos
 
-        @product = product
+        @product = get_label(product)
         @product_ = product.tr(" ", "_")
 
         haml :bugzilla

@@ -35,7 +35,7 @@ function index(colors, product_query, org_query){
       if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
         jQuery.noop();
       else
-        window.open("/"+row.label.replace(/ /g,'_')+"/bugzilla","_self");
+        window.open("/"+row.label.replace(/ /g,'_').split('/')[0]+"/bugzilla","_self");
     });
   });
   $.getJSON("/json/bugzilla/trend/allopenl3", function (json) {
