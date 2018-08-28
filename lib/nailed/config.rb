@@ -35,7 +35,18 @@ module Nailed
 
       # attr_accessor:
       def products
-        load_content['products']
+        @@components = Hash.new
+        products = load_content['products'].clone
+        products.each_index do |x|
+          if products[x].class == Hash
+            hash_components(products[x])
+            products[x] = products[x].keys.first
+          end
+        end
+      end
+
+      def components
+        @@components
       end
 
       def organizations
@@ -51,6 +62,10 @@ module Nailed
       end
 
       private
+
+      def hash_components(product)
+        @@components[product.keys.first]=product.values.last unless product.fetch("components",nil).nil?
+      end
 
       def load_content
         path_to_config ||= File.join(__dir__, "..", "..", "config", "config.yml")

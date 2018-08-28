@@ -13,9 +13,11 @@ module Nailed
     def get_bugs
       Nailed::Config.products.each do |product|
         Nailed.logger.info("#{__method__}: Fetching bugs for #{product}")
+        components = Nailed::Config.components[product]
+        query = components.nil? ? {product: product} : {product: product, component: components}
         begin
           retries ||= 0
-          Bicho::Bug.where(product: product).each do |bug|
+          Bicho::Bug.where(query).each do |bug|
             attributes = {
               bug_id:           bug.id,
               summary:          bug.summary,
