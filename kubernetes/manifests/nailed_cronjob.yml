@@ -1,0 +1,76 @@
+kind: CronJob
+apiVersion: batch/v1beta1
+metadata:
+  name: nailed-refresh
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          initContainers:
+          - name: nailed-db-init
+            image: opensuse/nailed:latest
+            volumeMounts:
+              - name: nailed-db
+                mountPath: /nailed/db/nailed_0.db
+                subPath: nailed_0.db
+                readOnly: False
+              - name: config-vol
+                mountPath: /nailed/data/config/config.yml
+                subPath: config.yml
+            command: ['sh','-c','make new']
+          containers:
+          - image: opensuse/nailed:latest
+            name: nailed-database
+            resources:
+              requests:
+                cpu: "500m"
+                memory: "128Mi"
+              limits: 
+                cpu: "1000m"
+                memory: "256Mi"
+            ports:
+              - containerPort: 4567
+                name: http
+                protocol: TCP
+            volumeMounts:
+              - name: config-vol
+                mountPath: /nailed/data/config/config.yml
+                subPath: config.yml
+              - name: colors-vol
+                mountPath: /nailed/data/config/colors.yml
+                subPath: colors.yml
+              - name: oscrc-vol
+                mountPath: /nailed/data/config/.oscrc
+                subPath: .oscrc
+              - name: netrc-vol
+                mountPath: /nailed/data/config/.netrc
+                subPath: .netrc
+              - name: nailed-db
+                mountPath: /nailed/db/nailed_0.db
+                subPath: nailed_0.db
+                readOnly: False
+            args:
+              - sh
+              - -c
+              - make migrate && make fetch
+          volumes:
+          - name: config-vol
+            configMap:
+              name: nailed-config
+          - name: colors-vol
+            configMap:
+              name: nailed-colors
+          - name: oscrc-vol
+            secret:
+              secretName: nailed-oscrc
+              defaultMode: 384
+          - name: netrc-vol
+            secret:
+              secretName: nailed-netrc
+              defaultMode: 384
+          - name: nailed-db
+            persistentVolumeClaim:
+              claimName: nailed-db
