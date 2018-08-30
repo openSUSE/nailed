@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nailed
+  name: nailed-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nailed
+  template:
+    metadata:
+      labels:
+        app: nailed
+    spec:
+      containers:
+      - image: opensuse/nailed:latest
+        name: nailed-webui
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "128Mi"
+          limits: 
+            cpu: "1000m"
+            memory: "256Mi"
+        ports:
+          - containerPort: 4567
+            name: http
+            protocol: TCP
+        volumeMounts:
+          - name: config-vol
+            mountPath: /nailed/data/config/config.yml
+            subPath: config.yml
+          - name: colors-vol
+            mountPath: /nailed/data/config/colors.yml
+            subPath: colors.yml
+          - name: nailed-db
+            mountPath: /nailed/db/nailed_0.db
+            subPath: nailed_0.db
+        args:
+          - make
+          - server
+      volumes:
+      - name: config-vol
+        configMap:
+          name: nailed-config
+      - name: colors-vol
+        configMap:
+          name: nailed-colors
+      - name: nailed-db
+        persistentVolumeClaim:
+          claimName: nailed-db
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: nailed
+  name: nailed-service
+spec:
+  selector:
+    app: nailed
+  type: NodePort
+  ports:
+  - name: nailed
+    nodePort: 30001
+    protocol: TCP
+    port: 4567
