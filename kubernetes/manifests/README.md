@@ -2,7 +2,7 @@
 
 `kubectl create secret generic nailed-oscrc --from-file=$OSCRC`
 
-`kucectl create secret generic nailed-netrc --from-file=$NETRC`
+`kubectl create secret generic nailed-netrc --from-file=$NETRC`
 
 Edit `config.yml` in `nailed_configmaps.yml` according to your needs.
 An example config can be found in `/config/config.yml.example`.
@@ -11,6 +11,9 @@ Afterwards create the configMaps with:
 `kubectl apply -f nailed_configmaps.yml`
 
 `kubectl apply -f nailed_volume.yml`
+
+Make sure that an empty file called `nailed_0.db` does exist in your
+hostpath directory on the host. 
 
 `kubectl apply -f nailed_cronjob.yml`
 
