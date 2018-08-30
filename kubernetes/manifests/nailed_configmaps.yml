@@ -7,7 +7,9 @@ data:
     title: Nailed Example
     bugzilla: https://bugzilla.mozilla.org
     products:
-      - Calendar
+      - Bugzilla:
+        components:
+          - Documentation
     organizations:
       - name: mozilla
         repositories:
