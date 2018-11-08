@@ -5,17 +5,17 @@ debug: # fatal, error, warn, info, debug; defaults to 'fatal'
 logfile: # STDERR, STDOUT, or path; defaults to STDERR
 title: # Give me a name, or (default) call me Dashboard
 port: # Specify a port where you can reach the webinterface, or (default) 4567
-cache-threshold: # Specify how long specifig routes get cached in seconds (default: 6 hours)
+cache-threshold: # Specify how long certain routes get cached in seconds (default: 6 hours)
 netrc: # true or false (default). For private GitHub repos you will need to use a .netrc
 bugzilla: # Url of your Bugzilla instance
-products: # list of exact product names as they appear on bugzilla
+products: # list of exact product names as they appear on Bugzilla
   - example_product_1
   - example_product_2
   - example_product_3:
     components: # if you want to filter the given product by components
     - example_component_1
     - example_component_2
-organizations: # here you add the github repos you care about
+organizations: # here you add the GitHub repos you care about
   - name: opensuse
     repositories:
       - nailed # e.g. for github.com/opensuse/nailed
