@@ -20,6 +20,7 @@ class App < Sinatra::Base
 
   before do
     @title = Nailed::Config.content["title"] || "Dashboard"
+    @bugzilla = Nailed::Config.content.fetch("bugzilla")
     @products = Nailed::Config.products
     @product_query = @products.join("&product=")
     @orgs = Nailed::Config.organizations
