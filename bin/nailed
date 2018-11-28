@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
-require 'trollop'
+require 'optimist'
 require_relative "../lib/nailed"
 
-opts = Trollop.options do
+opts = Optimist.options do
   opt :new, "Create new database", short: "n"
   opt :migrate, "Migrate/Upgrade database", short: "m"
   opt :bugzilla, "Refresh bugzilla database records", short: "b"

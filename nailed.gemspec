@@ -1,3 +1,4 @@
+# OUTDATED, DO NOT USE ANYMORE!
 require_relative "lib/nailed/version"
 
 Gem::Specification.new do |s|
