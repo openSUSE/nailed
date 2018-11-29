@@ -107,18 +107,10 @@ class App < Sinatra::Base
         end
       when :l3
         table = "l3trends"
-        filter =
-          if L3trend.count > 20
-            # we only want roughly 20 data points or the newest data point:
-            "WHERE (rowid % ((SELECT COUNT(*) FROM #{table})/20) = 0)" \
-            "OR (time = (SELECT MAX(time) FROM #{table}));"
-          else
-            ""
-          end
-        trends = L3trend.fetch("SELECT * FROM #{table} #{filter}")
-        trends.each do |col|
-          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: col.open }
+        trends = L3trend.fetch("SELECT * FROM #{table}")
+        filter(trends).each do |col|
+          json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col[:open] }
         end
       end
 
