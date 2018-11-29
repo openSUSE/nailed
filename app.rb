@@ -100,10 +100,10 @@ class App < Sinatra::Base
         sql_statement = "SELECT * " \
                         "FROM (SELECT * FROM #{table} ORDER BY time) " \
                         "GROUP BY date(time)"
-        trends = Allbugtrend.fetch(sql_statement)
-        trends.each do |col|
-          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: col.open }
+        trends = Allbugtrend.fetch(sql_statement).naked.all
+        filter(trends).each do |col|
+          json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col[:open] }
         end
       when :l3
         table = "l3trends"
