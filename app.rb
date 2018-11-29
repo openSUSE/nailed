@@ -60,24 +60,15 @@ class App < Sinatra::Base
       json = []
       case action
       when :bug
-        table = "bugtrends"
-        sql_statement =
-          "SELECT time, open, fixed " \
-          "FROM #{table} " \
-          "WHERE product_name = '#{item}'"
-        trends = Bugtrend.fetch(sql_statement).naked.all
+        trends = Bugtrend.select(:time, :open, :fixed)
+          .where(product_name: item).naked.all
         filter(trends).each do |col|
           json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
                     open: col[:open], fixed: col[:fixed] }
         end
       when :change
-        table = "changetrends"
-        sql_statement =
-          "SELECT time, open " \
-          "FROM #{table} " \
-          "WHERE rname = '#{item[1]}' " \
-          "AND oname = '#{item[0]}'"
-        trends = Changetrend.fetch(sql_statement).naked.all
+        trends = Changetrend.select(:time, :open)
+          .where(oname: item[0], rname: item[1]).naked.all
         filter(trends).each do |col|
           json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
                     open: col[:open] }
@@ -96,18 +87,13 @@ class App < Sinatra::Base
           json << col.merge({time: col[:time].strftime("%Y-%m-%d %H:%M:%S")})
         end
       when :allbugs
-        table = "allbugtrends"
-        sql_statement = "SELECT * " \
-                        "FROM (SELECT * FROM #{table} ORDER BY time) " \
-                        "GROUP BY date(time)"
-        trends = Allbugtrend.fetch(sql_statement).naked.all
+        trends = Allbugtrend.order_by(:time).naked.all
         filter(trends).each do |col|
           json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
                     open: col[:open] }
         end
       when :l3
-        table = "l3trends"
-        trends = L3trend.fetch("SELECT * FROM #{table}")
+        trends = L3trend.naked.all
         filter(trends).each do |col|
           json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
                     open: col[:open] }
