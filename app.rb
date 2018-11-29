@@ -85,24 +85,15 @@ class App < Sinatra::Base
       when :allopenchanges
         table = "allchangetrends"
         origin = ""
-        filter =
-          if Allchangetrend.count > 20
-            # we only want roughly 20 data points and the newest data point:
-            "WHERE (rowid % ((SELECT COUNT(*) " \
-            "FROM #{table})/20) = 0) " \
-            "OR (time = (SELECT MAX(time) FROM #{table}))"
-          else
-            ""
-          end
         @supported_vcs.each do |vcs|
           origin.concat("LEFT JOIN (SELECT time as t_#{vcs}, open as #{vcs} " \
                         "FROM #{table} WHERE origin='#{vcs}') ON time=t_#{vcs} ")
         end
         trends = Allchangetrend.fetch("SELECT time, #{@supported_vcs.join(', ')} " \
-                                      "FROM ((SELECT DISTINCT time FROM #{table} " \
-                                      "#{filter}) #{origin})")
-        trends.each do |col|
-          json << col.values.merge({time: col.time.strftime("%Y-%m-%d %H:%M:%S")})
+                                      "FROM ((SELECT DISTINCT time FROM #{table}) " \
+                                      "#{origin})").naked.all
+        filter(trends).each do |col|
+          json << col.merge({time: col[:time].strftime("%Y-%m-%d %H:%M:%S")})
         end
       when :allbugs
         table = "allbugtrends"
