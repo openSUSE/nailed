@@ -57,7 +57,7 @@ class NailedDB < Sequel::Migration
       DateTime :closed_at
       DateTime :merged_at
 
-      primary_key [:rname, :pr_number], name: :pr_identifier
+      primary_key [:oname, :rname, :pr_number], name: :pr_identifier
     end
 
     # stores trend of a specific repo:
@@ -68,7 +68,7 @@ class NailedDB < Sequel::Migration
       String :rname, null: false
       String :oname
 
-      primary_key [:time, :rname], name: :pulltrend_identifier
+      primary_key [:time, :oname, :rname], name: :pulltrend_identifier
     end
 
     # stores trend of all repos combined:
