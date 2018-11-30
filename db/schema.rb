@@ -44,9 +44,9 @@ class NailedDB < Sequel::Migration
 
     end
 
-    ## Github tables:
-    create_table? :pullrequests do
-      Integer :pr_number, null: false
+    ## Github/Gitlab tables:
+    create_table? :changerequests do
+      Integer :change_number, null: false
       String :title, null: false
       String :state, null: false
       String :url, null: false
@@ -57,25 +57,26 @@ class NailedDB < Sequel::Migration
       DateTime :closed_at
       DateTime :merged_at
 
-      primary_key [:oname, :rname, :pr_number], name: :pr_identifier
+      primary_key [:oname, :rname, :change_number], name: :change_identifier
     end
 
     # stores trend of a specific repo:
-    create_table? :pulltrends do
+    create_table? :changetrends do
       DateTime :time
       Integer :open
       Integer :closed
       String :rname, null: false
       String :oname
 
-      primary_key [:time, :oname, :rname], name: :pulltrend_identifier
+      primary_key [:time, :oname, :rname], name: :changetrend_identifier
     end
 
     # stores trend of all repos combined:
-    create_table? :allpulltrends do
-      DateTime :time, primary_key: true
+    create_table? :allchangetrends do
+      DateTime :time
       Integer :open
       Integer :closed
+      primary_key [:time], name: :allchangetrend_identifier
     end
   end
 
@@ -86,8 +87,8 @@ class NailedDB < Sequel::Migration
       "bugtrends, " /
       "allbugtrends, " /
       "l3trends, " /
-      "pullrequests, " /
-      "pulltrends, " /
-      "allpulltrends"
+      "changerequests, " /
+      "changetrends, " /
+      "allchangetrends"
   end
 end
