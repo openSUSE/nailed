@@ -2,7 +2,8 @@ require 'sequel'
 
 db_path = ENV["DATABASE_URL"]
 # if not set, use default:
-db_path ||= File.join(File.expand_path(File.dirname(__FILE__)), "nailed_0.db")
+db_path ||= File.join(File.expand_path(File.dirname(__FILE__)),
+                      "nailed_#{Nailed::VERSION}.db")
 
 DB = Sequel.connect("sqlite://#{db_path}")
 
