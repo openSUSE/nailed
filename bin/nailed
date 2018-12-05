@@ -45,7 +45,7 @@ opts.each_pair do |key, val|
     end
   when :github
     if val
-      require_relative "../lib/nailed/github"
+      require_relative "../lib/nailed/changes/github"
       github_client = Nailed::Github.new
       github_client.get_pull_requests
       github_client.write_allpulltrends
@@ -53,7 +53,7 @@ opts.each_pair do |key, val|
   when :list
     if val
       begin
-        require_relative "../lib/nailed/github"
+        require_relative "../lib/nailed/changes/github"
         github_client = Nailed::Github.new
         Nailed.list_org_repos(github_client.client, val)
       rescue

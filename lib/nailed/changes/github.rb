@@ -1,8 +1,8 @@
 require 'octokit'
 
-require_relative './config'
-require_relative '../nailed'
-require_relative '../../db/model'
+require_relative '../config'
+require_relative '../../nailed'
+require_relative '../../../db/model'
 
 #
 # Nailed::Github
