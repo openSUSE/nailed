@@ -83,9 +83,9 @@ class App < Sinatra::Base
                     open: col.open, fixed: col.fixed }
         end
       when :pull
-        table = "pulltrends"
+        table = "changetrends"
         sql_statement =
-          if (Pulltrend.where(oname: item[0], rname: item[1]).count > 20)
+          if (Changetrend.where(oname: item[0], rname: item[1]).count > 20)
             "SELECT (SELECT COUNT(0) " \
             "FROM #{table} t1 " \
             "WHERE t1.rowid <= t2.rowid AND rname = '#{item[1]}' " \
@@ -104,15 +104,15 @@ class App < Sinatra::Base
             "WHERE rname = '#{item[1]}' " \
             "AND oname = '#{item[0]}'"
           end
-        trends = Pulltrend.fetch(sql_statement)
+        trends = Changetrend.fetch(sql_statement)
         trends.each do |col|
           json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
                     open: col.open }
         end
       when :allpulls
-        table = "allpulltrends"
+        table = "allchangetrends"
         filter =
-          if Allpulltrend.count > 20
+          if Allchangetrend.count > 20
             # we only want roughly 20 data points and the newest data point:
             "WHERE (rowid % ((SELECT COUNT(*) " \
             "FROM #{table})/20) = 0) " \
@@ -309,7 +309,7 @@ class App < Sinatra::Base
   #
   # trends
   #
-  github_repos = Pullrequest.order(Sequel.desc(:created_at)).all.map do |row|
+  github_repos = Changerequest.order(Sequel.desc(:created_at)).all.map do |row|
     [row.oname, row.rname]
   end.uniq
 
@@ -329,7 +329,7 @@ class App < Sinatra::Base
   #
   get "/json/github/donut/allpulls" do
     pulltop = []
-    open_pulls = Pullrequest.where(state: "open")
+    open_pulls = Changerequest.where(state: "open")
     grouped_pulls = open_pulls.group_and_count(:rname,
                                                :oname).all
     grouped_pulls.each do |pull|
@@ -345,17 +345,17 @@ class App < Sinatra::Base
 
   # allopenpulls
   get "/json/github/allopenpulls" do
-    Pullrequest.where(state: "open").naked.all.to_json
+    Changerequest.where(state: "open").naked.all.to_json
   end
 
   # all open pull requests for repo
-  github_repos = Pullrequest.where(state: "open").order(Sequel.desc(:created_at)).map do |row|
+  github_repos = Changerequest.where(state: "open").order(Sequel.desc(:created_at)).map do |row|
     [row.oname, row.rname]
   end.uniq
 
   github_repos.each do |repo|
     get "/json/github/#{repo[0]}/#{repo[1]}/open" do
-      Pullrequest.where(
+      Changerequest.where(
         state: "open",
         rname: repo[1],
         oname: repo[0]).naked.all.to_json
@@ -383,10 +383,9 @@ class App < Sinatra::Base
       end
     end
 
-  github_repos = Pullrequest.order(Sequel.desc(:created_at)).all.map do |row|
+  github_repos = Changerequest.order(Sequel.desc(:created_at)).all.map do |row|
     [row.oname, row.rname]
   end.uniq
-
   github_repos.each do |repo|
     get "/github/#{repo[0]}/#{repo[1]}" do
       @github_repos = get_github_repos

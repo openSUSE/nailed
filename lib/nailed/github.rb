@@ -47,7 +47,7 @@ module Nailed
           next
         end
         pulls.each do |pr|
-          attributes = { pr_number: pr.number,
+          attributes = { change_number: pr.number,
                          title: pr.title,
                          state: pr.state,
                          url: pr.html_url,
@@ -56,10 +56,11 @@ module Nailed
                          closed_at: pr.closed_at,
                          merged_at: pr.merged_at,
                          rname: repo.name,
-                         oname: repo.organization.name}
+                         oname: repo.organization.name,
+                         origin: "github" }
 
           begin
-            DB[:pullrequests].insert_conflict(:replace).insert(attributes)
+            DB[:changerequests].insert_conflict(:replace).insert(attributes)
             updated_pullrequests.append(pr.number)
           rescue Exception => e
             Nailed.logger.error("Could not write pullrequest:\n#{e}")
@@ -72,13 +73,13 @@ module Nailed
         end unless pulls.empty?
 
         # check for old pullrequests of this repo and close them:
-        Pullrequest.select(:pr_number, :state, :rname).where(state: "open", rname: repo.name).each do |pr|
-          unless updated_pullrequests.include? pr.pr_number
+        Changerequest.select(:change_number, :state, :rname).where(state: "open", rname: repo.name).each do |pr|
+          unless updated_pullrequests.include? pr.change_number
             begin
               pr.update(state: "closed")
-              Nailed.logger.info("Closed old pullrequest: #{repo.name}/#{pr.pr_number}")
+              Nailed.logger.info("Closed old pullrequest: #{repo.name}/#{pr.change_number}")
             rescue Exception => e
-              Nailed.logger.error("Could not close pullrequest #{repo.name}/#{pr.pr_number}:\n#{e}")
+              Nailed.logger.error("Could not close pullrequest #{repo.name}/#{pr.change_number}:\n#{e}")
             end
           end
         end
@@ -89,16 +90,17 @@ module Nailed
 
     def write_pulltrends(org, repo)
       Nailed.logger.info("#{__method__}: Writing pull trends for #{org}/#{repo}")
-      open = Pullrequest.where(rname: repo, state: "open").count
-      closed = Pullrequest.where(rname: repo, state: "closed").count
+      open = Changerequest.where(rname: repo, state: "open").count
+      closed = Changerequest.where(rname: repo, state: "closed").count
       attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                      open: open,
                      closed: closed,
                      oname: org,
-                     rname: repo }
+                     rname: repo,
+                     origin: "github" }
 
       begin
-        DB[:pulltrends].insert(attributes)
+        DB[:changetrends].insert(attributes)
       rescue Exception => e
         Nailed.logger.error("Could not write pull trend for #{org}/#{repo}:\n#{e}")
       end
@@ -108,13 +110,14 @@ module Nailed
 
     def write_allpulltrends
       Nailed.logger.info("#{__method__}: Writing pull trends for all repos")
-      open = Pullrequest.where(state: "open").count
-      closed = Pullrequest.where(state: "closed").count
+      open = Changerequest.where(state: "open").count
+      closed = Changerequest.where(state: "closed").count
       attributes = { time: Time.new.strftime("%Y-%m-%d %H:%M:%S"),
                      open: open,
-                     closed: closed}
+                     closed: closed,
+                     origin: "github" }
       begin
-        DB[:allpulltrends].insert(attributes)
+        DB[:allchangetrends].insert(attributes)
       rescue Exception => e
         Nailed.logger.error("Could not write allpull trend:\n#{e}")
       end

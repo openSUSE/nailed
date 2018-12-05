@@ -25,7 +25,7 @@ function bugzillaFromLink(url, row) {
 }
 
 function githubFromLink(url, row) {
-  return '<a class="btn btn-default btn-sm" href="' + url + '" target="_blank">' + row.pr_number + '</a>';
+  return '<a class="btn btn-default btn-sm" href="' + url + '" target="_blank">' + row.change_number + '</a>';
 }
 
 function routeUrl(url) {
