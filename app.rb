@@ -394,7 +394,7 @@ class App < Sinatra::Base
       @org = repo[0]
       @github_url_all_pulls = "https://github.com/#{@org}/#{repo}/pulls"
 
-      haml :github
+      haml :changes
     end
   end
 
