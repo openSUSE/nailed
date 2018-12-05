@@ -29,9 +29,9 @@ opts.each_pair do |key, val|
     end
   when :migrate
     if val
-      require_relative "../db/migrate/migrate.rb"
+      # migrate nailed_0.db
+      require_relative "../db/migrate/migrate_0.rb"
       migrateDB
-      Nailed.logger.info("Database tables are up-to-date")
     end
   when :bugzilla
     if val
