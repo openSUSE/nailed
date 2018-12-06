@@ -47,8 +47,8 @@ opts.each_pair do |key, val|
     if val
       require_relative "../lib/nailed/changes/github"
       github_client = Nailed::Github.new
-      github_client.get_pull_requests
-      github_client.write_allpulltrends
+      github_client.get_change_requests
+      Nailed.write_allchangetrends
     end
   when :list
     if val
