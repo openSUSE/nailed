@@ -23,7 +23,7 @@ class App < Sinatra::Base
     @bugzilla = Nailed::Config.content.fetch("bugzilla")
     @products = Nailed::Config.products
     @product_query = @products.join("&product=")
-    @orgs = Nailed::Config.organizations
+    @orgs = Nailed::Config.organizations["github"]
     @org_query = @orgs.map { |o| o.name.dup.prepend("user%3A") }.join("+")
     @colors = Nailed.get_colors
   end
@@ -170,7 +170,7 @@ class App < Sinatra::Base
     ### github helpers
 
     def get_github_repos
-      Nailed::Config.all_repositories
+      Nailed::Config.all_repositories["github"]
     end
   end
 

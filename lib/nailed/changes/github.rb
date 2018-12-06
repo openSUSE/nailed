@@ -33,7 +33,7 @@ module Nailed
 
     def get_pull_requests(state: 'open')
       Nailed.logger.info("Github: #{__method__}")
-      Nailed::Config.all_repositories.each do |repo|
+      Nailed::Config.all_repositories["github"].each do |repo|
         updated_pullrequests = []
         full_repo_name = "#{repo.organization.name}/#{repo.name}"
         Nailed.logger.info("#{__method__}: Getting #{state} pullrequests " \

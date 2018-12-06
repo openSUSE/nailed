@@ -5,22 +5,29 @@ require_relative '../nailed'
 module Nailed
   class Config
     class << self
+
+      # list of supported version-control-systems
+      @@SUPPORTED_VCS = [ 'github' ]
+
       def parse_config
         is_valid?
 
-        # init class variables:
-        @@organizations = []
-        (load_content['organizations'] || []).each do |org|
-          org_obj = Organization.new(org['name'])
-          org['repositories'].each do |repo|
-            org_obj.repositories.add(repo)
-          end
-          @@organizations.push(org_obj)
-        end
+        # init class variables for supported VCS's
+        init_vcs
 
-        @@all_repositories = []
-        @@organizations.each do |org|
-          @@all_repositories.concat(org.repositories.to_a)
+        # init class variables:
+        organizations.keys.each do |vcs|
+          (load_content[vcs]['organizations'] || []).each do |org|
+            org_obj = Organization.new(org['name'])
+            org['repositories'].each do |repo|
+              org_obj.repositories.add(repo)
+            end
+            @@organizations[vcs].push(org_obj)
+          end
+
+          @@organizations[vcs].each do |org|
+            @@all_repositories[vcs].concat(org.repositories.to_a)
+          end
         end
       end
 
@@ -57,6 +64,12 @@ module Nailed
         @@all_repositories
       end
 
+      def supported_vcs
+        @@SUPPORTED_VCS.select do |vcs|
+          content.keys.map(&:downcase).include?(vcs)
+        end
+      end
+
       def content
         load_content
       end
@@ -65,6 +78,15 @@ module Nailed
 
       def hash_components(product)
         @@components[product.keys.first]=product.values.last unless product.fetch("components",nil).nil?
+      end
+
+      def init_vcs
+        @@organizations = Hash.new
+        @@all_repositories = Hash.new
+        supported_vcs.each do |vcs|
+          @@organizations[vcs] = Array.new
+          @@all_repositories[vcs] = Array.new
+        end
       end
 
       def load_content
