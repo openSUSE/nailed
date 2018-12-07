@@ -1,5 +1,14 @@
 module Nailed
 
+  #
+  # helpers
+  #
+  def list_org_repos(client, org)
+    repos = client.get_org_repos(org)
+    repos = repos.map(&:name)
+    repos.each { |r| puts "- #{r}" }
+  end
+
   def write_allchangetrends
     Nailed.logger.info("#{__method__}: Writing change trends for all repos")
     time = Time.new.strftime("%Y-%m-%d %H:%M:%S")

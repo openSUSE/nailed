@@ -55,7 +55,7 @@ opts.each_pair do |key, val|
       begin
         require_relative "../lib/nailed/changes/github"
         github_client = Nailed::Github.new
-        Nailed.list_org_repos(github_client.client, val)
+        Nailed.list_org_repos(github_client, val)
       rescue
       end
     end

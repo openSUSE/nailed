@@ -8,13 +8,6 @@ require_relative '../../../db/model'
 # Nailed::Github
 #
 module Nailed
-  #
-  # github helpers
-  #
-  def list_org_repos(github_client, org)
-    repos = self.get_org_repos(org)
-    repos.each { |r| puts "- #{r}" }
-  end
 
   class Github < Changes
     attr_reader :client
@@ -48,3 +41,4 @@ module Nailed
     end
   end
 end
+
