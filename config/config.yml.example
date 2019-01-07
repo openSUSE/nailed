@@ -25,4 +25,11 @@ github: # here you add the Github repos you care about
       repositories:
         - repo1
         - repo2
+gitlab: # add your gitlab repos here
+  endpoint: https://gitlab.example.com/api/v4 # endpoint of your gitlab API
+  private_token: [your private token] # here you add your gitlab private token
+  organizations:
+    - name: example_organization
+      repositories:
+        - example_repo
 ...
