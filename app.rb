@@ -25,6 +25,7 @@ class App < Sinatra::Base
     @product_query = @products.join("&product=")
     @orgs = Nailed::Config.organizations["github"]
     @org_query = @orgs.map { |o| o.name.dup.prepend("user%3A") }.join("+")
+    @changes_repos = get_repos
     @colors = Nailed.get_colors
   end
 
@@ -167,9 +168,7 @@ class App < Sinatra::Base
       label = components.nil? ? product : product + "/#{components.length > 1 ? 'subset' : components.fetch(0)}"
     end
 
-    ### github helpers
-
-    def get_github_repos
+    def get_repos
       Nailed::Config.all_repositories["github"]
     end
   end
@@ -367,15 +366,11 @@ class App < Sinatra::Base
   #
 
   get "/" do
-    @github_repos = get_github_repos
-
     haml :index
   end
 
     Nailed::Config.products.each do |product|
       get "/#{product.tr(" ", "_")}/bugzilla" do
-        @github_repos = get_github_repos
-
         @product = get_label(product)
         @product_ = product.tr(" ", "_")
 
@@ -388,7 +383,6 @@ class App < Sinatra::Base
   end.uniq
   github_repos.each do |repo|
     get "/github/#{repo[0]}/#{repo[1]}" do
-      @github_repos = get_github_repos
 
       @repo = repo[1]
       @org = repo[0]
@@ -411,8 +405,6 @@ class App < Sinatra::Base
   end
 
   get "/help" do
-    @github_repos = get_github_repos
-
     haml :help
   end
 

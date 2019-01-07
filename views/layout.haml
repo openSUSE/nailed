@@ -27,7 +27,7 @@
                 Github
                 %span.caret
               %ul.dropdown-menu{:role => 'menu'}
-                - @github_repos.each do |repo|
+                - @changes_repos.each do |repo|
                   %li
                     %a{:href => "/github/#{repo.organization.name}/#{repo.name}"} #{repo.name}
             %li
