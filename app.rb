@@ -83,7 +83,7 @@ class App < Sinatra::Base
           json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
                     open: col.open, fixed: col.fixed }
         end
-      when :pull
+      when :change
         table = "changetrends"
         sql_statement =
           if (Changetrend.where(oname: item[0], rname: item[1]).count > 20)
@@ -110,7 +110,7 @@ class App < Sinatra::Base
           json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
                     open: col.open }
         end
-      when :allpulls
+      when :allopenchanges
         table = "allchangetrends"
         filter =
           if Allchangetrend.count > 20
@@ -308,51 +308,51 @@ class App < Sinatra::Base
   #
   # trends
   #
-  github_repos = Changerequest.order(Sequel.desc(:created_at)).all.map do |row|
+  changes_repos = Changerequest.order(Sequel.desc(:created_at)).all.map do |row|
     [row.oname, row.rname]
   end.uniq
 
-  github_repos.each do |repo|
+  changes_repos.each do |repo|
     get "/json/github/#{repo[0]}/#{repo[1]}/trend/open" do
-      get_trends(:pull, repo)
+      get_trends(:change, repo)
     end
   end
 
-  # all open pull requests
+  # all open change requests
   get "/json/github/trend/allpulls" do
-    get_trends(:allpulls, nil)
+    get_trends(:allopenchanges, nil)
   end
 
   #
   # donut
   #
   get "/json/github/donut/allpulls" do
-    pulltop = []
-    open_pulls = Changerequest.where(state: "open")
-    grouped_pulls = open_pulls.group_and_count(:rname,
+    changetop = []
+    open_changes = Changerequest.where(state: "open")
+    grouped_changes = open_changes.group_and_count(:rname,
                                                :oname).all
-    grouped_pulls.each do |pull|
-      pulltop << { label: "#{pull.oname}/#{pull.rname}",
-                   value: pull[:count] }
+    grouped_changes.each do |change|
+      changetop << { label: "#{change.oname}/#{change.rname}",
+                   value: change[:count] }
     end
-    pulltop.to_json
+    changetop.to_json
   end
 
   #
   # tables
   #
 
-  # allopenpulls
+  # allopenchanges
   get "/json/github/allopenpulls" do
     Changerequest.where(state: "open").naked.all.to_json
   end
 
   # all open pull requests for repo
-  github_repos = Changerequest.where(state: "open").order(Sequel.desc(:created_at)).map do |row|
+  changes_repos = Changerequest.where(state: "open").order(Sequel.desc(:created_at)).map do |row|
     [row.oname, row.rname]
   end.uniq
 
-  github_repos.each do |repo|
+  changes_repos.each do |repo|
     get "/json/github/#{repo[0]}/#{repo[1]}/open" do
       Changerequest.where(
         state: "open",
@@ -378,10 +378,10 @@ class App < Sinatra::Base
       end
     end
 
-  github_repos = Changerequest.order(Sequel.desc(:created_at)).all.map do |row|
+  changes_repos = Changerequest.order(Sequel.desc(:created_at)).all.map do |row|
     [row.oname, row.rname]
   end.uniq
-  github_repos.each do |repo|
+  changes_repos.each do |repo|
     get "/github/#{repo[0]}/#{repo[1]}" do
 
       @repo = repo[1]

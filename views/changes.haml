@@ -6,11 +6,11 @@
         #{@org}/#{@repo}
     .row
       .col-md-12
-        %h5 Pull Request Trend
+        %h5 Change Request Trend
         #pull_trend
     .row
       .col-md-12
-        %h5 Pull Requests
+        %h5 Change Requests
         %table{:data => {:toggle => "table", :url => "/json/github/#{@org}/#{@repo}/open", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
           %thead
             %tr
@@ -23,5 +23,5 @@
 
 :javascript
   $(document).ready(function(){
-    github(#{@colors.to_json}, "#{@org}", "#{@repo}");
+    changes(#{@colors.to_json}, "#{@org}", "#{@repo}");
   });
