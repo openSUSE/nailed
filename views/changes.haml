@@ -11,7 +11,7 @@
     .row
       .col-md-12
         %h5 Change Requests
-        %table{:data => {:toggle => "table", :url => "/json/github/#{@org}/#{@repo}/open", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+        %table{:data => {:toggle => "table", :url => "/json/changes/#{@org}/#{@repo}/open", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
           %thead
             %tr
               %th{:data => {:field => "url", :sortable => "true", :formatter => "githubFromLink"}}

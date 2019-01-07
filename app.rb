@@ -312,7 +312,7 @@ class App < Sinatra::Base
     end
 
   #
-  # GITHUB Routes
+  # CHANGES Routes
   #
 
   #
@@ -323,20 +323,20 @@ class App < Sinatra::Base
   end.uniq
 
   changes_repos.each do |repo|
-    get "/json/github/#{repo[0]}/#{repo[1]}/trend/open" do
+    get "/json/changes/#{repo[0]}/#{repo[1]}/trend/open" do
       get_trends(:change, repo)
     end
   end
 
   # all open change requests
-  get "/json/github/trend/allpulls" do
+  get "/json/changes/trend/allopenchanges" do
     get_trends(:allopenchanges, nil)
   end
 
   #
   # donut
   #
-  get "/json/github/donut/allpulls" do
+  get "/json/changes/donut/allchanges" do
     Changerequest.where(state: "open", origin: @supported_vcs)
       .group_and_count(:rname, :oname, :origin).all.map {
       |change| { label: "#{change.oname}/#{change.rname}",
@@ -351,14 +351,14 @@ class App < Sinatra::Base
 
   # allopenchanges
   Nailed::Config.supported_vcs.each do |vcs|
-    get "/json/github/allopenpulls" do
+    get "/json/#{vcs}/allopenchanges" do
       Changerequest.where(state: "open", origin: vcs).naked.all.to_json
     end
   end
 
   # all open pull requests for repo
   Changerequest.select(:oname, :rname).distinct.where(state: "open").order(Sequel.desc(:created_at)).map do |repo|
-    get "/json/github/#{repo.oname}/#{repo.rname}/open" do
+    get "/json/changes/#{repo.oname}/#{repo.rname}/open" do
       Changerequest.where(
         state: "open",
         rname: repo.rname,
@@ -385,7 +385,7 @@ class App < Sinatra::Base
 
   Nailed::Config.supported_vcs.each do |vcs|
     Changerequest.select(:oname, :rname).distinct.where(origin: vcs).order(Sequel.desc(:created_at)).all.map do |repo|
-      get "/github/#{repo.oname}/#{repo.rname}" do
+      get "/#{vcs}/#{repo.oname}/#{repo.rname}" do
         @org = repo.oname
         @repo = repo.rname
         @github_url_all_pulls = "https://github.com/#{@org}/#{repo}/pulls"

@@ -1,5 +1,5 @@
 function index(colors, product_query, org_query){
-  $.getJSON("/json/github/donut/allpulls", function (json) {
+  $.getJSON("/json/changes/donut/allchanges", function (json) {
     new Morris.Donut({
       element: 'pull_top',
       data: json,
@@ -17,7 +17,7 @@ function index(colors, product_query, org_query){
       if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
         jQuery.noop();
       else
-        window.open("/github/"+row.label,"_self");
+        window.open("/"+row.origin+"/"+row.label,"_self");
     });
   });
   $.getJSON("/json/bugzilla/donut/allbugs", function (json) {
@@ -88,7 +88,7 @@ function index(colors, product_query, org_query){
         window.open("https://bugzilla.suse.com/buglist.cgi?product="+product_query+"&query_format=advanced&resolution=---");
     });
   });
-  $.getJSON("/json/github/trend/allpulls", function (json) {
+  $.getJSON("/json/changes/trend/allopenchanges", function (json) {
     new Morris.Line({
       element: 'allpulls_trend',
       data: json,

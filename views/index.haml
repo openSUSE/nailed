@@ -65,7 +65,7 @@
                 %th{:data => {:field => "requestee", :sortable => "true", :class => "requestee"}}
                   needinfo?
         #PRs.tab-pane
-          %table{:data => {:toggle => "table", :url => "/json/github/allopenpulls", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
+          %table{:data => {:toggle => "table", :url => "/json/github/allopenchanges", :search => "true", :show => {:refresh => "true", :columns => "true"}}}
             %thead
               %tr
                 %th{:data => {:field => "url", :sortable => "true", :formatter => "githubFromLink"}}
