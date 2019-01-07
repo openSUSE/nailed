@@ -3,6 +3,14 @@ module Nailed
   #
   # helpers
   #
+  def write_changes
+    Config.supported_vcs.each do |vcs|
+      client = const_get(vcs.capitalize).new
+      client.get_change_requests
+    end
+    write_allchangetrends
+  end
+
   def list_org_repos(client, org)
     repos = client.get_org_repos(org)
     repos = repos.map(&:name)

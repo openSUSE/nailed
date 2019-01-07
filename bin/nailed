@@ -46,9 +46,7 @@ opts.each_pair do |key, val|
   when :changes
     if val
       Dir[File.join(__dir__, '..', 'lib', 'nailed', 'changes', '*.rb')].each {|file| require file }
-      github_client = Nailed::Github.new
-      github_client.get_change_requests
-      Nailed.write_allchangetrends
+      Nailed.write_changes
     end
   when :list
     if val
