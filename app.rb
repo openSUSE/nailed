@@ -369,14 +369,14 @@ class App < Sinatra::Base
     haml :index
   end
 
-    Nailed::Config.products.each do |product|
-      get "/#{product.tr(" ", "_")}/bugzilla" do
-        @product = get_label(product)
-        @product_ = product.tr(" ", "_")
+  Nailed::Config.products.each do |product|
+    get "/#{product.tr(" ", "_")}/bugzilla" do
+      @product = get_label(product)
+      @product_ = product.tr(" ", "_")
 
-        haml :bugzilla
-      end
+      haml :bugzilla
     end
+  end
 
   changes_repos = Changerequest.order(Sequel.desc(:created_at)).all.map do |row|
     [row.oname, row.rname]
