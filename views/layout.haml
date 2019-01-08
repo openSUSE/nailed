@@ -22,14 +22,24 @@
                 - @products.each do |product|
                   %li
                     %a{:href => "/#{product.gsub(/ /,'_')}/bugzilla"} #{get_label(product)}
-            %li.dropdown
-              %a.dropdown-toggle{:role => 'button', :data => {:toggle => 'dropdown'}, :href => '/'}
-                Github
-                %span.caret
-              %ul.dropdown-menu{:role => 'menu'}
-                - @changes_repos["github"].each do |repo|
-                  %li
-                    %a{:href => "/github/#{repo.join('/')}"} #{repo.last}
+            - if !@changes_repos["github"].nil?
+              %li.dropdown
+                %a.dropdown-toggle{:role => 'button', :data => {:toggle => 'dropdown'}, :href => '/'}
+                  Github
+                  %span.caret
+                %ul.dropdown-menu{:role => 'menu'}
+                  - @changes_repos["github"].each do |repo|
+                    %li
+                      %a{:href => "/github/#{repo.join('/')}"} #{repo.last}
+            - if !@changes_repos["gitlab"].nil?
+              %li.dropdown
+                %a.dropdown-toggle{:role => 'button', :data => {:toggle => 'dropdown'}, :href => '/'}
+                  Gitlab
+                  %span.caret
+                %ul.dropdown-menu{:role => 'menu'}
+                  - @changes_repos["gitlab"].each do |repo|
+                    %li
+                      %a{:href => "/gitlab/#{repo.join('/')}"} #{repo.last}
             %li
               %a.dropdown-toggle{:role => 'button', :href => '/help'}
                 Help
