@@ -7,7 +7,7 @@ module Nailed
     class << self
 
       # list of supported version-control-systems
-      @@SUPPORTED_VCS = [ 'github' ]
+      @@SUPPORTED_VCS = [ 'github', 'gitlab' ]
 
       def parse_config
         is_valid?
