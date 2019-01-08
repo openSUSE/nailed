@@ -24,7 +24,8 @@ class App < Sinatra::Base
     @products = Nailed::Config.products
     @product_query = @products.join("&product=")
     @orgs = Nailed::Config.organizations["github"]
-    @org_query = @orgs.map { |o| o.name.dup.prepend("user%3A") }.join("+")
+    @org_query = @orgs.map { |o| o.name.dup.prepend("user%3A") }.join("+") unless @orgs.nil?
+    @supported_vcs = Nailed::Config.supported_vcs
     @changes_repos = get_repos
     @colors = Nailed.get_colors
   end
@@ -112,19 +113,25 @@ class App < Sinatra::Base
         end
       when :allopenchanges
         table = "allchangetrends"
+        origin = ""
         filter =
           if Allchangetrend.count > 20
             # we only want roughly 20 data points and the newest data point:
             "WHERE (rowid % ((SELECT COUNT(*) " \
             "FROM #{table})/20) = 0) " \
-            "OR (time = (SELECT MAX(time) FROM #{table}));"
+            "OR (time = (SELECT MAX(time) FROM #{table}))"
           else
             ""
           end
-        trends = Allbugtrend.fetch("SELECT * FROM #{table} #{filter}")
+        @supported_vcs.each do |vcs|
+          origin.concat("LEFT JOIN (SELECT time as t_#{vcs}, open as #{vcs} " \
+                        "FROM #{table} WHERE origin='#{vcs}') ON time=t_#{vcs} ")
+        end
+        trends = Allchangetrend.fetch("SELECT time, #{@supported_vcs.join(', ')} " \
+                                      "FROM ((SELECT DISTINCT time FROM #{table} " \
+                                      "#{filter}) #{origin})")
         trends.each do |col|
-          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: col.open }
+          json << col.values.merge({time: col.time.strftime("%Y-%m-%d %H:%M:%S")})
         end
       when :allbugs
         table = "allbugtrends"
@@ -169,7 +176,10 @@ class App < Sinatra::Base
     end
 
     def get_repos
-      Nailed::Config.all_repositories["github"]
+      Hash[ @supported_vcs.collect {
+        |vcs| [vcs, Changerequest.select(:oname, :rname).
+               distinct.where(origin: vcs).naked.map(&:values)]
+      }]
     end
   end
 
@@ -327,15 +337,12 @@ class App < Sinatra::Base
   # donut
   #
   get "/json/github/donut/allpulls" do
-    changetop = []
-    open_changes = Changerequest.where(state: "open")
-    grouped_changes = open_changes.group_and_count(:rname,
-                                               :oname).all
-    grouped_changes.each do |change|
-      changetop << { label: "#{change.oname}/#{change.rname}",
-                   value: change[:count] }
-    end
-    changetop.to_json
+    Changerequest.where(state: "open", origin: @supported_vcs)
+      .group_and_count(:rname, :oname, :origin).all.map {
+      |change| { label: "#{change.oname}/#{change.rname}",
+                 value: change[:count],
+                origin: change.origin }
+    }.to_json
   end
 
   #
@@ -343,21 +350,19 @@ class App < Sinatra::Base
   #
 
   # allopenchanges
-  get "/json/github/allopenpulls" do
-    Changerequest.where(state: "open").naked.all.to_json
+  Nailed::Config.supported_vcs.each do |vcs|
+    get "/json/github/allopenpulls" do
+      Changerequest.where(state: "open", origin: vcs).naked.all.to_json
+    end
   end
 
   # all open pull requests for repo
-  changes_repos = Changerequest.where(state: "open").order(Sequel.desc(:created_at)).map do |row|
-    [row.oname, row.rname]
-  end.uniq
-
-  changes_repos.each do |repo|
-    get "/json/github/#{repo[0]}/#{repo[1]}/open" do
+  Changerequest.select(:oname, :rname).distinct.where(state: "open").order(Sequel.desc(:created_at)).map do |repo|
+    get "/json/github/#{repo.oname}/#{repo.rname}/open" do
       Changerequest.where(
         state: "open",
-        rname: repo[1],
-        oname: repo[0]).naked.all.to_json
+        rname: repo.rname,
+        oname: repo.oname).naked.all.to_json
     end
   end
 
@@ -378,17 +383,15 @@ class App < Sinatra::Base
     end
   end
 
-  changes_repos = Changerequest.order(Sequel.desc(:created_at)).all.map do |row|
-    [row.oname, row.rname]
-  end.uniq
-  changes_repos.each do |repo|
-    get "/github/#{repo[0]}/#{repo[1]}" do
+  Nailed::Config.supported_vcs.each do |vcs|
+    Changerequest.select(:oname, :rname).distinct.where(origin: vcs).order(Sequel.desc(:created_at)).all.map do |repo|
+      get "/github/#{repo.oname}/#{repo.rname}" do
+        @org = repo.oname
+        @repo = repo.rname
+        @github_url_all_pulls = "https://github.com/#{@org}/#{repo}/pulls"
 
-      @repo = repo[1]
-      @org = repo[0]
-      @github_url_all_pulls = "https://github.com/#{@org}/#{repo}/pulls"
-
-      haml :changes
+        haml :changes
+      end
     end
   end
 
