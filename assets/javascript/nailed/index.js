@@ -95,7 +95,7 @@ function index(colors, product_query, org_query){
   });
   $.getJSON("/json/changes/trend/allopenchanges", function (json) {
     new Morris.Line({
-      element: 'allpulls_trend',
+      element: "allchanges_trend",
       data: json,
       xkey: 'time',
       ykeys: ['open'],
