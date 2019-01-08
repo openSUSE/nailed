@@ -384,11 +384,13 @@ class App < Sinatra::Base
   end
 
   Nailed::Config.supported_vcs.each do |vcs|
-    Changerequest.select(:oname, :rname).distinct.where(origin: vcs).order(Sequel.desc(:created_at)).all.map do |repo|
+    Changerequest.select(:oname, :rname, :url).distinct.where(origin: vcs).order(Sequel.desc(:created_at)).all.map do |repo|
       get "/#{vcs}/#{repo.oname}/#{repo.rname}" do
+        url = repo.url.rpartition("/").first
+
         @org = repo.oname
         @repo = repo.rname
-        @github_url_all_pulls = "https://github.com/#{@org}/#{repo}/pulls"
+        @url = url.concat(url.end_with?("s") ? "" : "s")
 
         haml :changes
       end

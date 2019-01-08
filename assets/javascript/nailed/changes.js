@@ -1,4 +1,4 @@
-function changes(colors, org, repo){
+function changes(colors, org, repo, url){
   $.getJSON("/json/changes/" + org + "/" + repo + "/trend/open", function (json) {
     new Morris.Line({
       element: 'pull_trend',
@@ -21,7 +21,7 @@ function changes(colors, org, repo){
       if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
         jQuery.noop();
       else
-        window.open("https://github.com/" + org + "/" + repo + "/pulls");
+        window.open(url);
     });
   });
 }
