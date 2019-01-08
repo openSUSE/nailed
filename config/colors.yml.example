@@ -22,6 +22,18 @@ pie:
   yellow: "#FFF176"
   green: "#81C784"
   blue: "#64B5F6"
+github:
+  col1: "#A1ACDF"
+  col2: "#6878C2"
+  col3: "#334CB9"
+  col4: "#172F9B"
+  col5: "#0732EA"
+gitlab:
+  col1: "#DF9698"
+  col2: "#C56566"
+  col3: "#B95253"
+  col4: "#BF3638"
+  col5: "#D50D10"
 grey:
   young:
     text: "mdc-text-grey-600"

@@ -1,14 +1,19 @@
 function index(colors, product_query, org_query){
   $.getJSON("/json/changes/donut/allchanges", function (json) {
+    function set_col() {
+      var cols = new Array();
+      for ( var x in json) {
+        if (json[x]["origin"] == "github")
+          cols.push(colors["github"]["col".concat(parseInt(x)%5+1)]);
+        else if (json[x]["origin"] == "gitlab")
+          cols.push(colors["gitlab"]["col".concat(parseInt(x)%5+1)]);
+      }
+      return cols;
+    }
     new Morris.Donut({
       element: 'pull_top',
       data: json,
-      colors: [ colors["pie"]["red"],
-                colors["pie"]["orange"],
-                colors["pie"]["yellow"],
-                colors["pie"]["green"],
-                colors["pie"]["blue"]
-              ],
+      colors: set_col(),
       resize: true,
       formatter: function(y, data){
         return y;
