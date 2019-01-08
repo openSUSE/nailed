@@ -94,17 +94,18 @@ function index(colors, product_query, org_query){
     });
   });
   $.getJSON("/json/changes/trend/allopenchanges", function (json) {
+    var origin = Object.keys(json.find(e => !!e)).slice(1);
     new Morris.Line({
       element: "allchanges_trend",
       data: json,
       xkey: 'time',
-      ykeys: ['open'],
+      ykeys: origin,
       yLabelFormat: function(y){return y != Math.round(y)?'':y;},
-      labels: ['Open'],
+      labels: origin,
       resize: true,
       hideHover: true,
-      lineColors: [ colors["line"]["red"],
-                    colors["line"]["green"]
+      lineColors: [ colors["line"]["blue"],
+                    colors["line"]["red"]
                   ],
       smooth: false,
       continuousLine: true,
@@ -116,7 +117,10 @@ function index(colors, product_query, org_query){
         jQuery.noop();
       else
         jQuery.noop();
-        window.open("https://github.com/pulls?q=is%3Aopen+is%3Apr+"+org_query)
+        if (org_query) {
+          // TODO: Add support for locally hosted github instances
+          window.open("https://github.com/pulls?q=is%3Aopen+is%3Apr+"+org_query)
+        }
     });
   });
 }
