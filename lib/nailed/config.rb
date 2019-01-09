@@ -31,15 +31,6 @@ module Nailed
         end
       end
 
-      def is_valid?
-        if load_content.nil? || load_content.empty?
-          abort("Config empty or corrupted")
-        elsif load_content['products'].nil? || load_content['products'].empty?
-          abort("Config incomplete: No products found")
-        end
-        true
-      end
-
       # attr_accessor:
       def products
         @@components = Hash.new
@@ -78,6 +69,15 @@ module Nailed
 
       def hash_components(product)
         @@components[product.keys.first]=product.values.last unless product.fetch("components",nil).nil?
+      end
+
+      def is_valid?
+        if load_content.nil? || load_content.empty?
+          abort("Config empty or corrupted")
+        elsif load_content['products'].nil? || load_content['products'].empty?
+          abort("Config incomplete: No products found")
+        end
+        true
       end
 
       def init_vcs
