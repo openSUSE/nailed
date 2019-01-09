@@ -73,29 +73,14 @@ class App < Sinatra::Base
       when :change
         table = "changetrends"
         sql_statement =
-          if (Changetrend.where(oname: item[0], rname: item[1]).count > 20)
-            "SELECT (SELECT COUNT(0) " \
-            "FROM #{table} t1 " \
-            "WHERE t1.rowid <= t2.rowid AND rname = '#{item[1]}' " \
-            "AND oname = '#{item[0]}')" \
-            "AS tmp_id, time, open, rname " \
-            "FROM #{table} AS t2 " \
-            "WHERE rname = '#{item[1]}' " \
-            "AND oname = '#{item[0]}' " \
-            "AND (tmp_id % ((SELECT COUNT(*) " \
-            "FROM #{table} WHERE rname = '#{item[1]}' " \
-            "AND oname = '#{item[0]}')/20) = 0)" \
-            "ORDER BY time"
-          else
-            "SELECT time, open " \
-            "FROM #{table} " \
-            "WHERE rname = '#{item[1]}' " \
-            "AND oname = '#{item[0]}'"
-          end
-        trends = Changetrend.fetch(sql_statement)
-        trends.each do |col|
-          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: col.open }
+          "SELECT time, open " \
+          "FROM #{table} " \
+          "WHERE rname = '#{item[1]}' " \
+          "AND oname = '#{item[0]}'"
+        trends = Changetrend.fetch(sql_statement).naked.all
+        filter(trends).each do |col|
+          json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col[:open] }
         end
       when :allopenchanges
         table = "allchangetrends"
