@@ -181,6 +181,16 @@ class App < Sinatra::Base
                distinct.where(origin: vcs).naked.map(&:values)]
       }]
     end
+
+    def filter(data, datapoints = 40)
+        filtered = Hash.new
+        num = data.length/datapoints
+        data.first.keys.each do |key|
+          filtered[key] = data.each_slice(num.zero? ? num.succ : num)
+            .map{|slice| slice.map{|value| value[key].nil? ? 0 : value[key]}.max}
+        end
+        filtered.values.transpose.map{|value| Hash[filtered.keys.zip(value)]}
+    end
   end
 
   #
