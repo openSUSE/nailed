@@ -62,27 +62,13 @@ class App < Sinatra::Base
       when :bug
         table = "bugtrends"
         sql_statement =
-          if Bugtrend.where(product_name: item).count > 40
-            "SELECT (SELECT COUNT(0) " \
-            "FROM #{table} t1 " \
-            "WHERE t1.rowid <= t2.rowid " \
-            "AND product_name = '#{item}') " \
-            "AS tmp_id, time, open, fixed, product_name " \
-            "FROM #{table} AS t2 " \
-            "WHERE product_name = '#{item}' " \
-            "AND (tmp_id % ((SELECT COUNT(*) " \
-            "FROM #{table} " \
-            "WHERE product_name = '#{item}')/40) = 0) " \
-            "ORDER BY time"
-          else
-            "SELECT time, open, fixed " \
-            "FROM #{table} " \
-            "WHERE product_name = '#{item}'"
-          end
-        trends = Bugtrend.fetch(sql_statement)
-        trends.each do |col|
-          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: col.open, fixed: col.fixed }
+          "SELECT time, open, fixed " \
+          "FROM #{table} " \
+          "WHERE product_name = '#{item}'"
+        trends = Bugtrend.fetch(sql_statement).naked.all
+        filter(trends).each do |col|
+          json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col[:open], fixed: col[:fixed] }
         end
       when :change
         table = "changetrends"
