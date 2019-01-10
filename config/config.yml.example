@@ -15,13 +15,21 @@ products: # list of exact product names as they appear on Bugzilla
     components: # if you want to filter the given product by components
     - example_component_1
     - example_component_2
-organizations: # here you add the GitHub repos you care about
-  - name: opensuse
-    repositories:
-      - nailed # e.g. for github.com/opensuse/nailed
-      - other_repo
-  - name: other_organization
-    repositories:
-      - repo1
-      - repo2
+github: # here you add the Github repos you care about
+  organizations:
+    - name: opensuse
+      repositories:
+        - nailed # e.g. for github.com/opensuse/nailed
+        - other_repo
+    - name: other_organization
+      repositories:
+        - repo1
+        - repo2
+gitlab: # add your gitlab repos here
+  endpoint: https://gitlab.example.com/api/v4 # endpoint of your gitlab API
+  private_token: [your private token] # here you add your gitlab private token
+  organizations:
+    - name: example_organization
+      repositories:
+        - example_repo
 ...

@@ -2,7 +2,8 @@ require 'sequel'
 
 db_path = ENV["DATABASE_URL"]
 # if not set, use default:
-db_path ||= File.join(File.expand_path(File.dirname(__FILE__)), "nailed_0.db")
+db_path ||= File.join(File.expand_path(File.dirname(__FILE__)),
+                      "nailed_#{Nailed::VERSION}.db")
 
 DB = Sequel.connect("sqlite://#{db_path}")
 
@@ -20,14 +21,14 @@ end
 class L3trend < Sequel::Model
 end
 
-## GitHub specific tables
-class Pullrequest < Sequel::Model
+## GitHub/GitLab specific tables
+class Changerequest < Sequel::Model
   many_to_one :repository
 end
 
-class Pulltrend < Sequel::Model
+class Changetrend < Sequel::Model
   many_to_one :repository
 end
 
-class Allpulltrend < Sequel::Model
+class Allchangetrend < Sequel::Model
 end

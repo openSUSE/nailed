@@ -8,7 +8,7 @@ migrate:
 	bundle exec bin/nailed --migrate
 
 fetch:
-	bundle exec bin/nailed --github && \
+	bundle exec bin/nailed --changes && \
 	bundle exec bin/nailed --bugzilla
 
 server:

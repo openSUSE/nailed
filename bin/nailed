@@ -7,7 +7,7 @@ opts = Optimist.options do
   opt :new, "Create new database", short: "n"
   opt :migrate, "Migrate/Upgrade database", short: "m"
   opt :bugzilla, "Refresh bugzilla database records", short: "b"
-  opt :github, "Refresh github database records", short: "g"
+  opt :changes, "Refresh (github/gitlab) changes database records", short: "g"
   opt :list, "List github repositories within organization", type: :string, short: "l"
   opt :server, "Start a dashboard webinterface", short: "s"
 end
@@ -29,9 +29,9 @@ opts.each_pair do |key, val|
     end
   when :migrate
     if val
-      require_relative "../db/migrate/migrate.rb"
+      # migrate nailed_0.db
+      require_relative "../db/migrate/migrate_0.rb"
       migrateDB
-      Nailed.logger.info("Database tables are up-to-date")
     end
   when :bugzilla
     if val
@@ -43,19 +43,17 @@ opts.each_pair do |key, val|
       bugzilla_client.write_allbugtrends
       bugzilla_client.write_l3trends
     end
-  when :github
+  when :changes
     if val
-      require_relative "../lib/nailed/github"
-      github_client = Nailed::Github.new
-      github_client.get_pull_requests
-      github_client.write_allpulltrends
+      Dir[File.join(__dir__, '..', 'lib', 'nailed', 'changes', '*.rb')].each {|file| require file }
+      Nailed.write_changes
     end
   when :list
     if val
       begin
-        require_relative "../lib/nailed/github"
+        require_relative "../lib/nailed/changes/github"
         github_client = Nailed::Github.new
-        Nailed.list_org_repos(github_client.client, val)
+        Nailed.list_org_repos(github_client, val)
       rescue
       end
     end
