@@ -60,103 +60,43 @@ class App < Sinatra::Base
       json = []
       case action
       when :bug
-        table = "bugtrends"
-        sql_statement =
-          if Bugtrend.where(product_name: item).count > 40
-            "SELECT (SELECT COUNT(0) " \
-            "FROM #{table} t1 " \
-            "WHERE t1.rowid <= t2.rowid " \
-            "AND product_name = '#{item}') " \
-            "AS tmp_id, time, open, fixed, product_name " \
-            "FROM #{table} AS t2 " \
-            "WHERE product_name = '#{item}' " \
-            "AND (tmp_id % ((SELECT COUNT(*) " \
-            "FROM #{table} " \
-            "WHERE product_name = '#{item}')/40) = 0) " \
-            "ORDER BY time"
-          else
-            "SELECT time, open, fixed " \
-            "FROM #{table} " \
-            "WHERE product_name = '#{item}'"
-          end
-        trends = Bugtrend.fetch(sql_statement)
-        trends.each do |col|
-          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: col.open, fixed: col.fixed }
+        trends = Bugtrend.select(:time, :open, :fixed)
+          .where(product_name: item).naked.all
+        filter(trends).each do |col|
+          json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col[:open], fixed: col[:fixed] }
         end
       when :change
-        table = "changetrends"
-        sql_statement =
-          if (Changetrend.where(oname: item[0], rname: item[1]).count > 20)
-            "SELECT (SELECT COUNT(0) " \
-            "FROM #{table} t1 " \
-            "WHERE t1.rowid <= t2.rowid AND rname = '#{item[1]}' " \
-            "AND oname = '#{item[0]}')" \
-            "AS tmp_id, time, open, rname " \
-            "FROM #{table} AS t2 " \
-            "WHERE rname = '#{item[1]}' " \
-            "AND oname = '#{item[0]}' " \
-            "AND (tmp_id % ((SELECT COUNT(*) " \
-            "FROM #{table} WHERE rname = '#{item[1]}' " \
-            "AND oname = '#{item[0]}')/20) = 0)" \
-            "ORDER BY time"
-          else
-            "SELECT time, open " \
-            "FROM #{table} " \
-            "WHERE rname = '#{item[1]}' " \
-            "AND oname = '#{item[0]}'"
-          end
-        trends = Changetrend.fetch(sql_statement)
-        trends.each do |col|
-          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: col.open }
+        trends = Changetrend.select(:time, :open)
+          .where(oname: item[0], rname: item[1]).naked.all
+        filter(trends).each do |col|
+          json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col[:open] }
         end
       when :allopenchanges
         table = "allchangetrends"
         origin = ""
-        filter =
-          if Allchangetrend.count > 20
-            # we only want roughly 20 data points and the newest data point:
-            "WHERE (rowid % ((SELECT COUNT(*) " \
-            "FROM #{table})/20) = 0) " \
-            "OR (time = (SELECT MAX(time) FROM #{table}))"
-          else
-            ""
-          end
         @supported_vcs.each do |vcs|
           origin.concat("LEFT JOIN (SELECT time as t_#{vcs}, open as #{vcs} " \
                         "FROM #{table} WHERE origin='#{vcs}') ON time=t_#{vcs} ")
         end
         trends = Allchangetrend.fetch("SELECT time, #{@supported_vcs.join(', ')} " \
-                                      "FROM ((SELECT DISTINCT time FROM #{table} " \
-                                      "#{filter}) #{origin})")
-        trends.each do |col|
-          json << col.values.merge({time: col.time.strftime("%Y-%m-%d %H:%M:%S")})
+                                      "FROM ((SELECT DISTINCT time FROM #{table}) " \
+                                      "#{origin})").naked.all
+        filter(trends).each do |col|
+          json << col.merge({time: col[:time].strftime("%Y-%m-%d %H:%M:%S")})
         end
       when :allbugs
-        table = "allbugtrends"
-        sql_statement = "SELECT * " \
-                        "FROM (SELECT * FROM #{table} ORDER BY time) " \
-                        "GROUP BY date(time)"
-        trends = Allbugtrend.fetch(sql_statement)
-        trends.each do |col|
-          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: col.open }
+        trends = Allbugtrend.order_by(:time).naked.all
+        filter(trends).each do |col|
+          json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col[:open] }
         end
       when :l3
-        table = "l3trends"
-        filter =
-          if L3trend.count > 20
-            # we only want roughly 20 data points or the newest data point:
-            "WHERE (rowid % ((SELECT COUNT(*) FROM #{table})/20) = 0)" \
-            "OR (time = (SELECT MAX(time) FROM #{table}));"
-          else
-            ""
-          end
-        trends = L3trend.fetch("SELECT * FROM #{table} #{filter}")
-        trends.each do |col|
-          json << { time: col.time.strftime("%Y-%m-%d %H:%M:%S"),
-                    open: col.open }
+        trends = L3trend.naked.all
+        filter(trends).each do |col|
+          json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
+                    open: col[:open] }
         end
       end
 
@@ -180,6 +120,16 @@ class App < Sinatra::Base
         |vcs| [vcs, Changerequest.select(:oname, :rname).
                distinct.where(origin: vcs).naked.map(&:values)]
       }]
+    end
+
+    def filter(data, datapoints = 40)
+        filtered = Hash.new
+        num = data.length/datapoints
+        data.first.keys.each do |key|
+          filtered[key] = data.each_slice(num.zero? ? num.succ : num)
+            .map{|slice| slice.map{|value| value[key].nil? ? 0 : value[key]}.max}
+        end
+        filtered.values.transpose.map{|value| Hash[filtered.keys.zip(value)]}
     end
   end
 
