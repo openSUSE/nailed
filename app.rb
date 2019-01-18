@@ -120,6 +120,11 @@ class App < Sinatra::Base
       label = components.nil? ? product : product + "/#{components.length > 1 ? 'subset' : components.fetch(0)}"
     end
 
+    def combine(product)
+      (comb = Nailed::Config.combined.fetch(
+        product, false)) ? comb : Array(product)
+    end
+
     def get_repos
       Hash[ @supported_vcs.collect {
         |vcs| [vcs, Changerequest.select(:oname, :rname).
@@ -154,7 +159,7 @@ class App < Sinatra::Base
         "P3 - Medium"   => "p3",
         "P4 - Low"      => "p4",
         "P5 - None"     => "p5" }.each_pair do |key, val|
-        bugprio << { "bugprio" => key, val => Bugreport.where(product_name: product, priority: key, is_open: true).count }
+        bugprio << { "bugprio" => key, val => Bugreport.where(product_name: combine(product), priority: key, is_open: true).count }
       end
       bugprio.to_json
     end
@@ -171,7 +176,7 @@ class App < Sinatra::Base
         "REOPENED"    => 's3' }.each_pair do |key, val|
         bugstatus << { "bugstatus" => key,
                        val => Bugreport.where(
-                         product_name: product,
+                         product_name: combine(product),
                          status: key,
                          is_open: true).count }
       end
@@ -184,7 +189,7 @@ class App < Sinatra::Base
   #
   Nailed::Config.products.each do |product|
     get "/json/bugzilla/#{product.tr(" ", "_")}/trend/open" do
-      get_trends(:bug, product)
+      get_trends(:bug, combine(product))
     end
   end
 
@@ -204,7 +209,8 @@ class App < Sinatra::Base
       top5_components = []
       top_components = Bugreport
                          .select(:component, :is_open)
-                         .where(is_open: true, product_name: product)
+                         .where(is_open: true,
+                                product_name: combine(product))
                          .group_and_count(:component)
                          .order(Sequel.desc(:count))
                          .limit(5).all
@@ -218,7 +224,7 @@ class App < Sinatra::Base
   get "/json/bugzilla/donut/allbugs" do
     bugtop = []
       Nailed::Config.products.each do |product|
-        open = Bugreport.where(product_name: product, is_open: true).count
+        open = Bugreport.where(product_name: combine(product), is_open: true).count
         bugtop << { label: get_label(product), value: open } unless open == 0
       end
     bugtop.to_json
@@ -246,11 +252,12 @@ class App < Sinatra::Base
   # product -> openwithoutl3
   Nailed::Config.products.each do |product|
     get "/json/bugzilla/#{product.tr(" ", "_")}/openwithoutl3" do
+      combination = combine(product)
       open_bugs = Bugreport.where(is_open: true,
-                                  product_name: product).naked.all
+                                  product_name: combination).naked.all
       open_l3_bugs = Bugreport
                        .where(is_open: true,
-                              product_name: product)
+                              product_name: combination)
                        .where(Sequel.like(:whiteboard, "%openL3%")).naked.all
       (open_bugs - open_l3_bugs).to_json
     end
@@ -261,7 +268,7 @@ class App < Sinatra::Base
       get "/json/bugzilla/#{product.tr(" ", "_")}/openl3" do
         Bugreport
           .where(is_open: true,
-                 product_name: product)
+                 product_name: combine(product))
           .where(Sequel.like(:whiteboard, "%openL3%")).naked.all.to_json
       end
     end
