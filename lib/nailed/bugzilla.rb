@@ -14,6 +14,7 @@ module Nailed
     end
 
     def get_bugs
+      time = Time.now
       @products.each do |product|
         Nailed.logger.info("#{__method__}: Fetching bugs for #{product}")
         components = Nailed::Config.components[product]
@@ -34,7 +35,7 @@ module Nailed
               assigned_to:      bug.assigned_to,
               creation_time:    "#{bug.creation_time.to_date}T#{bug.creation_time.hour}:#{bug.creation_time.min}:#{bug.creation_time.sec}+00:00",
               last_change_time: "#{bug.last_change_time.to_date}T#{bug.last_change_time.hour}:#{bug.last_change_time.min}:#{bug.last_change_time.sec}+00:00",
-              fetched_at:       Time.now,
+              fetched_at:       time,
               url:              bug.url.gsub(/novell.com\//, "suse.com/show_bug.cgi?id=")
             }
 
