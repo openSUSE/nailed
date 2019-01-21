@@ -8,10 +8,13 @@ module Nailed
     def initialize
       Nailed::Config.parse_config
       Bicho.client = Bicho::Client.new(Nailed::Config.content["bugzilla"])
+      @products = Nailed::Config.products.collect do |x|
+        Nailed::Config.combined.fetch(x, x)
+      end.flatten
     end
 
     def get_bugs
-      Nailed::Config.products.each do |product|
+      @products.each do |product|
         Nailed.logger.info("#{__method__}: Fetching bugs for #{product}")
         components = Nailed::Config.components[product]
         query = components.nil? ? {product: product} : {product: product, component: components}
@@ -52,7 +55,7 @@ module Nailed
     end
 
     def write_bugtrends
-      Nailed::Config.products.each do |product|
+      @products.each do |product|
         Nailed.logger.info("#{__method__}: Writing bug trends for #{product}")
         open = Bugreport.where(is_open: true, product_name: product).count
         fixed = Bugreport.where(status: "VERIFIED", product_name: product).count + \
@@ -90,7 +93,7 @@ module Nailed
 
     def write_l3trends
       open = 0
-      Nailed::Config.products.each do |product|
+      @products.each do |product|
         Nailed.logger.info("#{__method__}: Aggregating l3 trends for #{product}")
         open += Bugreport
                   .where(product_name: product,
