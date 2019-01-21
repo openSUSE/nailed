@@ -116,7 +116,7 @@ module Nailed
             bug.destroy
             Nailed.logger.info("#{__method__}: bug_id: ##{bug.bug_id}")
           rescue Exception => e
-            Nailed.logger.error("#{__Method__}: Can't remove bug ##{bug.bug_id}: #{e}")
+            Nailed.logger.error("#{__method__}: Can't remove bug ##{bug.bug_id}: #{e}")
           end
         end
       end
