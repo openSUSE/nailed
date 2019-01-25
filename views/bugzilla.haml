@@ -4,6 +4,12 @@
     .row
       %h1.page-header
         #{get_label(@product)}
+      - unless (combination = Nailed::Config.combined[@product]).nil?
+        %h4.lead
+          - combination.each do |product|
+            %a{:target => "_blank",
+               :href => "#{@bugzilla_url}#{product}&resolution=---"} #{product}
+            #{"," unless product == combination.last}
     .row
       %h5 Bug Trends
       #bug_trend
