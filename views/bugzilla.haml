@@ -3,7 +3,7 @@
   %div.col-md-12.main
     .row
       %h1.page-header
-        #{@product}
+        #{get_label(@product)}
     .row
       %h5 Bug Trends
       #bug_trend
@@ -63,6 +63,7 @@
                   needinfo?
 
 :javascript
+  bugzilla_url = "#{@bugzilla_url}" + "#{combine(@product).join("&product=")}";
   $(document).ready(function(){
-    bugzilla(#{@colors.to_json}, "#{@product_}", "#{@bugzilla}");
+    bugzilla(#{@colors.to_json}, "#{@product_}", bugzilla_url);
   });

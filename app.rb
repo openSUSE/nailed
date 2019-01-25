@@ -348,8 +348,9 @@ class App < Sinatra::Base
 
   Nailed::Config.products.each do |product|
     get "/#{product.tr(" ", "_")}/bugzilla" do
-      @product = get_label(product)
+      @product = product
       @product_ = product.tr(" ", "_")
+      @bugzilla_url = "#{@bugzilla}/buglist.cgi?product="
 
       haml :bugzilla
     end
