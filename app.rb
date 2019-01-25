@@ -65,11 +65,21 @@ class App < Sinatra::Base
       json = []
       case action
       when :bug
-        trends = DB[:bugtrends_view].select(:time, :open, :fixed)
-          .where(product_name: item).naked.all
+        table = "bugtrends_view";
+        bugs = ""
+        open_fixed = "#{item.each_index.map{|x| ["t#{x}.open", "t#{x}.fixed"]}
+          .transpose.map{|x| x.join(" + ")}.join(' AS open_bugs, ')} AS fixed_bugs"
+        item.each_with_index do |product, i|
+          bugs.concat("LEFT JOIN (SELECT date(time) AS date#{i}, open, fixed " \
+                      "FROM #{table} WHERE product_name = '#{product}' AND " \
+                      "open != 0 GROUP BY date(time)) AS t#{i} ON times = date#{i} ")
+        end
+        trends = DB.fetch("SELECT DISTINCT date(time) as times, " \
+                          "#{open_fixed} FROM #{table} #{bugs}WHERE " \
+                          "open_bugs IS NOT NULL;").naked.all
         filter(trends).each do |col|
-          json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
-                    open: col[:open], fixed: col[:fixed] }
+          json << { time: col[:times],
+                    open: col[:open_bugs], fixed: col[:fixed_bugs] }
         end
       when :change
         trends = DB[:changetrends_view].select(:time, :open)
