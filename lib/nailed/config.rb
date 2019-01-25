@@ -78,7 +78,8 @@ module Nailed
       private
 
       def hash_components(product)
-        @@components[product.keys.first] = product.fetch('components', nil)
+        @@components = Hash[(product['combine'] || [product.keys.first])
+          .collect{|p| [p, product.fetch('components',nil)]}]
       end
 
       def hash_combined(product)
