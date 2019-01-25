@@ -37,7 +37,7 @@ module Nailed
               last_change_time: "#{bug.last_change_time.to_date}T#{bug.last_change_time.hour}:#{bug.last_change_time.min}:#{bug.last_change_time.sec}+00:00",
               fetched_at:       time,
               url:              bug.url.gsub(/novell.com\//, "suse.com/show_bug.cgi?id=")
-            }
+            }.each{ |_, attr| if attr.is_a? String then attr.strip! end }
 
             attributes[:requestee] = bug.flags.collect do |flag|
               next unless flag["name"] == "needinfo"
