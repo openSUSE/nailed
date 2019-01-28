@@ -12,9 +12,12 @@ products: # list of exact product names as they appear on Bugzilla
   - example_product_1
   - example_product_2
   - example_product_3:
+    combine: # products you want to combine
+      - product_to_combine_1
+      - product_to_combine_2
     components: # if you want to filter the given product by components
-    - example_component_1
-    - example_component_2
+      - example_component_1
+      - example_component_2
 github: # here you add the Github repos you care about
   organizations:
     - name: opensuse
