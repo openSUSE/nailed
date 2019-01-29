@@ -65,21 +65,21 @@ class App < Sinatra::Base
       json = []
       case action
       when :bug
-        trends = Bugtrend.select(:time, :open, :fixed)
+        trends = DB[:bugtrends_view].select(:time, :open, :fixed)
           .where(product_name: item).naked.all
         filter(trends).each do |col|
           json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
                     open: col[:open], fixed: col[:fixed] }
         end
       when :change
-        trends = Changetrend.select(:time, :open)
+        trends = DB[:changetrends_view].select(:time, :open)
           .where(oname: item[0], rname: item[1]).naked.all
         filter(trends).each do |col|
           json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
                     open: col[:open] }
         end
       when :allopenchanges
-        table = "allchangetrends"
+        table = "allchangetrends_view"
         origin = ""
         @supported_vcs.each do |vcs|
           origin.concat("LEFT JOIN (SELECT time as t_#{vcs}, open as #{vcs} " \
@@ -92,13 +92,13 @@ class App < Sinatra::Base
           json << col.merge({time: col[:time].strftime("%Y-%m-%d %H:%M:%S")})
         end
       when :allbugs
-        trends = Allbugtrend.order_by(:time).naked.all
+        trends = DB[:allbugtrends_view].order_by(:time).naked.all
         filter(trends).each do |col|
           json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
                     open: col[:open] }
         end
       when :l3
-        trends = L3trend.naked.all
+        trends = DB[:l3trends_view].naked.all
         filter(trends).each do |col|
           json << { time: col[:time].strftime("%Y-%m-%d %H:%M:%S"),
                     open: col[:open] }
