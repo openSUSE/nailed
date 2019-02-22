@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-all: new migrate fetch server
+all: new migrate fetch jenkins server
 
 new:
 	bundle exec bin/nailed --new
@@ -10,6 +10,9 @@ migrate:
 fetch:
 	bundle exec bin/nailed --changes && \
 	bundle exec bin/nailed --bugzilla
+
+jenkins:
+	bundle exec bin/nailed --jenkins
 
 server:
 	bundle exec bin/nailed --server
