@@ -16,6 +16,7 @@ module Nailed
         init_vcs
 
         # init class variables:
+        @@jobs = load_content['jenkins']['jobs'] rescue []
         organizations.keys.each do |vcs|
           (load_content[vcs]['organizations'] || []).each do |org|
             org_obj = Organization.new(org['name'])
@@ -63,6 +64,10 @@ module Nailed
 
       def content
         load_content
+      end
+
+      def jobs
+        @@jobs
       end
 
       private
