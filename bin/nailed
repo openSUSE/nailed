@@ -8,6 +8,7 @@ opts = Optimist.options do
   opt :migrate, "Migrate/Upgrade database", short: "m"
   opt :bugzilla, "Refresh bugzilla database records", short: "b"
   opt :changes, "Refresh (github/gitlab) changes database records", short: "g"
+  opt :jenkins, "Refresh jenkins databse records", short: "j"
   opt :list, "List github repositories within organization", type: :string, short: "l"
   opt :server, "Start a dashboard webinterface", short: "s"
 end
@@ -47,6 +48,18 @@ opts.each_pair do |key, val|
     if val
       Dir[File.join(__dir__, '..', 'lib', 'nailed', 'changes', '*.rb')].each {|file| require file }
       Nailed.write_changes
+    end
+  when :jenkins
+    if val
+      begin
+        require_relative "../lib/nailed/jenkins"
+        jenkins_client = Nailed::Jenkins.new
+        jenkins_client.update_parameters
+        jenkins_client.update_builds
+        jenkins_client.update_parameter_values
+      rescue Exception => e
+        Nailed.logger.debug(e)
+      end
     end
   when :list
     if val
