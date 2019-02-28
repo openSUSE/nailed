@@ -32,7 +32,7 @@ class App < Sinatra::Base
     DB.tables.select{|s| s.to_s.include?('trends')}.each do |table|
       DB.run("CREATE TEMP VIEW IF NOT EXISTS #{table.to_s.concat("_view")} "\
              "AS SELECT * FROM #{table} WHERE date(time) > date('now', '-1 year')")
-   end
+    end
   end
 
   # sprockets asset management:
