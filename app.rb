@@ -85,9 +85,9 @@ class App < Sinatra::Base
           origin.concat("LEFT JOIN (SELECT time as t_#{vcs}, open as #{vcs} " \
                         "FROM #{table} WHERE origin='#{vcs}') ON time=t_#{vcs} ")
         end
-        trends = Allchangetrend.fetch("SELECT time, #{@supported_vcs.join(', ')} " \
-                                      "FROM ((SELECT DISTINCT time FROM #{table}) " \
-                                      "#{origin})").naked.all
+        trends = DB.fetch("SELECT time, #{@supported_vcs.join(', ')} " \
+                          "FROM ((SELECT DISTINCT time FROM #{table}) " \
+                          "#{origin})").naked.all
         filter(trends).each do |col|
           json << col.merge({time: col[:time].strftime("%Y-%m-%d %H:%M:%S")})
         end
