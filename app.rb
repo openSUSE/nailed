@@ -136,6 +136,78 @@ class App < Sinatra::Base
         end
         filtered.values.transpose.map{|value| Hash[filtered.keys.zip(value)]}
     end
+
+    ### jenkins helpers ###
+
+    # returns a formatted string with all build parameters for the popover
+    def get_jenkins_build_parameters(job, build_number)
+      all_build_parameters = Jenkinsparametervalue.where(
+        jenkinsbuild_job: job,
+        jenkinsbuild_number: build_number)
+
+      description = Jenkinsbuild.where(
+        number: build_number,
+        job: job
+      ).map(&:description)[0] || ""
+
+      ret = ""
+      all_build_parameters.each do |bp|
+        ret += bp.jenkinsparameter_name + " = " + bp.value + "\n" unless bp.value.empty?
+      end
+
+      ret + "\nequal_builds:" + get_equal_builds(job, build_number).to_s +
+        "\ndescription: " + description.split("/").to_s
+    end
+
+    # find equal jenkins builds
+    def get_equal_builds(job, build_number)
+      Jenkinsbuild.where(
+        job: job,
+        number: build_number
+      ).map(&:equal_builds)[0].split(",").take(10)
+    end
+
+    # generates a view object for a specific build parameter within a job
+    # TODO: Refactor function to execute faster (e.g. execute for all params combined)
+    #       For now the data is just being cached for one hour.
+    def get_jenkins_view_object(job, parameter)
+
+      call = "#{__method__}-#{job}-#{parameter})".to_sym
+      view_object = Nailed::Cache.get_cache(call, 3600)
+
+      return view_object unless view_object.nil?
+
+      view_object = {}
+      all_parameters = Jenkinsparametervalue.where(
+        jenkinsparameter_name: parameter,
+        jenkinsparameter_job: job,
+        jenkinsbuild_number: Jenkinsbuild.exclude(result: nil).select(:number)
+        ).map(&:value).uniq.sort
+
+      all_parameters.each do |parameter_name|
+        view_object[parameter_name] = {}
+        all_builds_with_parameter = Jenkinsparametervalue.where(
+          jenkinsparameter_name: parameter,
+          jenkinsparameter_job: job,
+          value: parameter_name)
+          .order(Sequel.desc(:jenkinsbuild_number)).limit(15)
+
+        all_builds_with_parameter.each do |build|
+          build_number = build.jenkinsbuild_number
+          build_details = Jenkinsbuild.where(job: job, number: build_number)
+          build_details.each do |build_detail|
+            view_object[parameter_name][build_number] = {
+              build_url: build_detail.url,
+              build_result: build_detail.result,
+              build_parameters: get_jenkins_build_parameters(job, build_number)
+            }
+          end
+        end
+      end
+
+      Nailed::Cache.set_cache(call, view_object)
+      view_object
+    end
   end
 
   #
