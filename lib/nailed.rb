@@ -24,11 +24,11 @@ module Nailed
       @@threshold ||= Nailed::Config.content["cache-threshold"] || 21600 # 6 hours
     end
 
-    def self.get_cache(call)
+    def self.get_cache(call, threshold = @@threshold)
       last_call_time = @@cache.fetch(call, Hash.new)[:time] || Time.at(0)
       now = Time.now
 
-      if now - last_call_time > @@threshold
+      if now - last_call_time > threshold
         return nil
       else
         return @@cache[call][:value]
