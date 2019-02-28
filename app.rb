@@ -28,6 +28,7 @@ class App < Sinatra::Base
     @supported_vcs = Nailed::Config.supported_vcs
     @changes_repos = get_repos
     @colors = Nailed.get_colors
+    @jenkins_jobs = Nailed::Config.jobs
 
     DB.tables.select{|s| s.to_s.include?('trends')}.each do |table|
       DB.run("CREATE TEMP VIEW IF NOT EXISTS #{table.to_s.concat("_view")} "\
@@ -408,6 +409,8 @@ class App < Sinatra::Base
         next if blacklist.include? parameter
         @view_object[parameter] = get_jenkins_view_object(job, parameter)
       end
+
+      haml :jenkins
     end
   end unless Nailed::Config.jobs.empty?
 
