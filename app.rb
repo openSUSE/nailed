@@ -394,6 +394,24 @@ class App < Sinatra::Base
   end
 
   #
+  # JENKINS Routes
+  #
+
+  Nailed::Config.jobs.each do |job|
+    get "/jenkins/#{job}" do
+
+      @job = job
+      @view_object = {}
+      blacklist = Nailed::Config.content["jenkins"]["blacklist"]["parameter"] || []
+      all_parameters = Jenkinsparameter.where(job: job).map(&:name).sort_by(&:downcase)
+      all_parameters.each do |parameter|
+        next if blacklist.include? parameter
+        @view_object[parameter] = get_jenkins_view_object(job, parameter)
+      end
+    end
+  end unless Nailed::Config.jobs.empty?
+
+  #
   # MAIN Routes
   #
 
