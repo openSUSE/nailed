@@ -1,0 +1,36 @@
+!!!
+.container
+  %div.col-md-12
+    .row.no-hide
+      %h1.title #{@job}
+    .row.no-hide
+    - @view_object.each do |table_name, table_data|
+      .col-md-12
+        %hr
+        %h5.title #{table_name}
+        %table.jenkins
+          - table_data.each do |parameter_name, build_data|
+            - parameter_name.strip.empty? && parameter_name = "undefined"
+            %tr{:id => "parametercolumn-#{table_name}-#{parameter_name}"}
+              %td.jenkins-value
+                #{parameter_name}
+              %td.jenkins-builds
+                %table
+                  - build_data.each do |build_number, build_details|
+                    - if build_details[:build_result] == "SUCCESS"
+                      %td
+                        %a.btn-sm.btn-success{:id => "successful-#{build_number}", :href => "#{build_details[:build_url]}", :target => "_blank", :data => {:container => "body", :content => "#{build_details[:build_parameters]}", :toggle => "popover", :trigger => "hover"}}
+                          #{build_number}
+                    - if build_details[:build_result] == "FAILURE"
+                      %td
+                        %a.btn-sm.btn-danger{:id => "failed-#{build_number}", :href => "#{build_details[:build_url]}", :target => "_blank", :data => {:container => "body", :content => "#{build_details[:build_parameters]}", :toggle => "popover", :trigger => "hover"}}
+                          #{build_number}
+                    - if build_details[:build_result] == "ABORTED"
+                      %td
+                        %a.btn-sm.btn-warning.jenkins-aborted{:id => "aborted-#{build_number}", :href => "#{build_details[:build_url]}", :target => "_blank", :data => {:container => "body", :content => "#{build_details[:build_parameters]}", :toggle => "popover", :trigger => "hover"}}
+                          #{build_number}
+
+:javascript
+  $(function () {
+      $("[data-toggle='popover']").popover();
+  });

@@ -32,3 +32,12 @@ end
 
 class Allchangetrend < Sequel::Model
 end
+
+class Jenkinsbuild < Sequel::Model
+end
+
+class Jenkinsparametervalue < Sequel::Model
+end
+
+class Jenkinsparameter < Sequel::Model
+end

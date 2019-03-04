@@ -40,6 +40,16 @@
                   - @changes_repos["gitlab"].each do |repo|
                     %li
                       %a{:href => "/gitlab/#{repo.join('/')}"} #{repo.last}
+            - if !@jenkins_jobs.empty?
+              %li.dropdown
+                %a.dropdown-toggle{:role => 'button', :data => {:toggle => 'dropdown'}, :href => '/'}
+                  Jenkins
+                  %span.caret
+                %ul.dropdown-menu{:role => 'menu'}
+                  - @jenkins_jobs.each do |job|
+                    %li
+                      %a{:href => "/jenkins/#{job}"} #{job}
+
             %li
               %a.dropdown-toggle{:role => 'button', :href => '/help'}
                 Help

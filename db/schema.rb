@@ -82,6 +82,39 @@ class NailedDB < Sequel::Migration
 
       primary_key [:time, :origin], name: :allchangetrend_identifier
     end
+
+    create_table? :jenkinsparameters do
+      String :name
+      String :job
+      String :type
+      String :description
+      String :default
+
+      primary_key [:name, :job], name: :jenkinsparameters_identifier
+    end
+
+    create_table? :jenkinsbuilds do
+      Integer :number
+      String  :job
+      String  :url
+      String  :result
+      String  :built_on
+      String  :description
+      String  :equal_builds
+
+      primary_key [:number, :job], name: :jenkinsbuilds_identifier
+    end
+
+    create_table? :jenkinsparametervalues do
+      String  :value
+      Integer :jenkinsbuild_number
+      String  :jenkinsbuild_job
+      String  :jenkinsparameter_name
+      String  :jenkinsparameter_job
+
+      foreign_key [:jenkinsparameter_name, :jenkinsparameter_job], :jenkinsparameters
+      foreign_key [:jenkinsbuild_number, :jenkinsbuild_job], :jenkinsbuilds
+    end
   end
 
   def down
@@ -94,5 +127,8 @@ class NailedDB < Sequel::Migration
       "changerequests, " /
       "changetrends, " /
       "allchangetrends"
+      "jenkinsparameters" /
+      "jenkinsbuilds" /
+      "jenkinsparametervalues"
   end
 end

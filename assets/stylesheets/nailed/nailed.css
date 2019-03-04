@@ -21,6 +21,50 @@ body {
   border-top: none !important;
 }
 
+.jenkins {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.jenkins td {
+  white-space: nowrap;
+  padding: 8px;
+}
+
+.jenkins-value {
+  width: 25%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.jenkins-value:hover {
+  overflow: visible;
+  word-wrap: break-word;
+  white-space: normal;
+  background-color #ffffff;
+}
+
+.jenkins-builds {
+  width: 75%;
+  word-wrap: break-word;
+}
+
+.jenkins-aborted {
+  background-color: #ababab;
+  border-color: #ababab;
+}
+
+.jenkins-aborted:hover,
+.jenkins-aborted:focus {
+  color: #ffffff;
+  background-color: #8e8e8e;
+  border-color: #8e8e8e;
+}
+
+.popover {
+  word-wrap: break-word;
+}
+
 .nav.nav-tabs {
   margin-top: 100px;
   margin-bottom: 100px;
