@@ -3,7 +3,13 @@
   %div.col-md-12.main
     .row
       %h1.page-header
-        #{@product}
+        #{get_label(@product)}
+      - unless (combination = Nailed::Config.combined[@product]).nil?
+        %h4.lead
+          - combination.each do |product|
+            %a{:target => "_blank",
+               :href => "#{@bugzilla_url}#{product}&resolution=---"} #{product}
+            #{"," unless product == combination.last}
     .row
       %h5 Bug Trends
       #bug_trend
@@ -63,6 +69,7 @@
                   needinfo?
 
 :javascript
+  bugzilla_url = "#{@bugzilla_url}" + "#{combine(@product).join("&product=")}";
   $(document).ready(function(){
-    bugzilla(#{@colors.to_json}, "#{@product_}", "#{@bugzilla}");
+    bugzilla(#{@colors.to_json}, "#{@product_}", bugzilla_url);
   });

@@ -35,13 +35,23 @@ module Nailed
       # attr_accessor:
       def products
         @@components = Hash.new
+        @@combined = Hash.new
         products = load_content['products'].clone
-        products.each_index do |x|
-          if products[x].class == Hash
-            hash_components(products[x])
-            products[x] = products[x].keys.first
+        products.each_with_index do |product, x|
+          if product.class == Hash
+            if product.fetch('combine', false)
+              hash_combined(product)
+            end
+            if product.fetch('components', false)
+              hash_components(product)
+            end
+            products[x] = product.keys.first
           end
         end
+      end
+
+      def combined
+        @@combined
       end
 
       def components
@@ -73,7 +83,12 @@ module Nailed
       private
 
       def hash_components(product)
-        @@components[product.keys.first]=product.values.last unless product.fetch("components",nil).nil?
+        @@components = Hash[(product['combine'] || [product.keys.first])
+          .collect{|p| [p, product.fetch('components',nil)]}]
+      end
+
+      def hash_combined(product)
+        @@combined[product.keys.first] = product.fetch('combine', nil)
       end
 
       def is_valid?

@@ -23,7 +23,7 @@ function bugzilla(colors, product, bugzilla_url){
       if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
         jQuery.noop();
       else
-        window.open(bugzilla_url+"/buglist.cgi?product="+product_+"&query_format=advanced&resolution=---");
+        window.open(bugzilla_url+"&query_format=advanced&resolution=---");
     });
   });
   $.getJSON("/json/bugzilla/" + product + "/bar/priority", function (json) {
@@ -62,7 +62,7 @@ function bugzilla(colors, product, bugzilla_url){
       if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
         jQuery.noop();
       else
-        window.open(bugzilla_url+"/buglist.cgi?order=Importance&priority="+row.bugprio+"&product="+product_+"&query_format=advanced&resolution=---");
+        window.open(bugzilla_url+"&order=Importance&priority="+row.bugprio+"&query_format=advanced&resolution=---");
     });
   });
   $.getJSON("/json/bugzilla/" + product + "/bar/status", function (json) {
@@ -96,7 +96,7 @@ function bugzilla(colors, product, bugzilla_url){
       if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
         jQuery.noop();
       else
-        window.open(bugzilla_url+"/buglist.cgi?bug_status="+row.bugstatus+"&product="+product_+"&query_format=advanced&resolution=---");
+        window.open(bugzilla_url+"&bug_status="+row.bugstatus+"&query_format=advanced&resolution=---");
     });
   });
   $.getJSON("/json/bugzilla/" + product + "/donut/component", function (json) {
@@ -117,7 +117,7 @@ function bugzilla(colors, product, bugzilla_url){
       if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
         jQuery.noop();
       else
-        window.open(bugzilla_url+"/buglist.cgi?order=Importance&component="+row.label+"&product="+product_+"&query_format=advanced&resolution=---");
+        window.open(bugzilla_url+"&order=Importance&component="+row.label+"&query_format=advanced&resolution=---");
     });
   });
 }

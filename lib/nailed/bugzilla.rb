@@ -8,10 +8,14 @@ module Nailed
     def initialize
       Nailed::Config.parse_config
       Bicho.client = Bicho::Client.new(Nailed::Config.content["bugzilla"])
+      @products = Nailed::Config.products.collect do |x|
+        Nailed::Config.combined.fetch(x, x)
+      end.flatten
     end
 
     def get_bugs
-      Nailed::Config.products.each do |product|
+      time = Time.now
+      @products.each do |product|
         Nailed.logger.info("#{__method__}: Fetching bugs for #{product}")
         components = Nailed::Config.components[product]
         query = components.nil? ? {product: product} : {product: product, component: components}
@@ -31,9 +35,9 @@ module Nailed
               assigned_to:      bug.assigned_to,
               creation_time:    "#{bug.creation_time.to_date}T#{bug.creation_time.hour}:#{bug.creation_time.min}:#{bug.creation_time.sec}+00:00",
               last_change_time: "#{bug.last_change_time.to_date}T#{bug.last_change_time.hour}:#{bug.last_change_time.min}:#{bug.last_change_time.sec}+00:00",
-              fetched_at:       Time.now,
+              fetched_at:       time,
               url:              bug.url.gsub(/novell.com\//, "suse.com/show_bug.cgi?id=")
-            }
+            }.each{ |_, attr| if attr.is_a? String then attr.strip! end }
 
             attributes[:requestee] = bug.flags.collect do |flag|
               next unless flag["name"] == "needinfo"
@@ -52,7 +56,7 @@ module Nailed
     end
 
     def write_bugtrends
-      Nailed::Config.products.each do |product|
+      @products.each do |product|
         Nailed.logger.info("#{__method__}: Writing bug trends for #{product}")
         open = Bugreport.where(is_open: true, product_name: product).count
         fixed = Bugreport.where(status: "VERIFIED", product_name: product).count + \
@@ -90,7 +94,7 @@ module Nailed
 
     def write_l3trends
       open = 0
-      Nailed::Config.products.each do |product|
+      @products.each do |product|
         Nailed.logger.info("#{__method__}: Aggregating l3 trends for #{product}")
         open += Bugreport
                   .where(product_name: product,
