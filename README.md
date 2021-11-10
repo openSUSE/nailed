@@ -1,3 +1,5 @@
+# This project is unmaintained! Use at your own risk.
+
 ## What is nailed?
 
 `nailed` consists of a back-end CLI for data collection and a sinatra based web front-end for visualization of relevant development data of Products that have their bugtracker on Bugzilla and (optionally) their codebase on GitHub.
